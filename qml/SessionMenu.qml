@@ -96,6 +96,7 @@ Rectangle {
       model: root.actions
 
       delegate: Rectangle {
+        id: btn
         required property var modelData
         required property int index
         readonly property bool isPending: root.pendingKey === modelData.key
@@ -115,11 +116,12 @@ Rectangle {
 
           // countdown ring canvas (only when pending)
           Canvas {
+            id: ringCanvas
             readonly property real r: Config.sessionButtonSize * 0.28
             Layout.preferredWidth: r * 2
             Layout.preferredHeight: r * 2
             Layout.alignment: Qt.AlignHCenter
-            visible: parent.parent.isPending
+            visible: btn.isPending
             onPaint: {
               const ctx = getContext("2d")
               const s = width
@@ -131,28 +133,28 @@ Rectangle {
               ctx.stroke()
               ctx.strokeStyle = "#ffffff"
               ctx.beginPath()
-              ctx.arc(s/2, s/2, r-2, -Math.PI/2, -Math.PI/2 + 2*Math.PI*parent.parent.progress)
+              ctx.arc(s/2, s/2, r-2, -Math.PI/2, -Math.PI/2 + 2*Math.PI*btn.progress)
               ctx.stroke()
             }
             Connections {
-              target: parent.parent
-              function onProgressChanged() { parent.requestPaint() }
+              target: btn
+              function onProgressChanged() { ringCanvas.requestPaint() }
             }
           }
 
           ShellText {
             Layout.alignment: Qt.AlignHCenter
-            text: parent.parent.isPending
+            text: btn.isPending
                   ? Math.max(1, Math.ceil(root.timeRemaining / 1000)) + "s"
                   : modelData.glyph
-            color: parent.parent.isPending ? "white" : (modelData.shutdown ? Config.red : Config.text)
+            color: btn.isPending ? "white" : (modelData.shutdown ? Config.red : Config.text)
             font.pixelSize: Config.fsMedium * 1.6
           }
 
           ShellText {
             Layout.alignment: Qt.AlignHCenter
             text: modelData.label
-            color: parent.parent.isPending ? "white" : Config.text
+            color: btn.isPending ? "white" : Config.text
             font.pixelSize: Config.fsSmall + 2
           }
         }
