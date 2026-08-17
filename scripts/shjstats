@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# shjstats — one-line system stats poller for shelljar.
+# Prints a single tab-separated line:
+#   cpu%  ramUsed  ramTotal  dlBps  ulBps  diskUsed  diskTotal  netDev
+# All units are bytes (disk too); the QML widget formats them.
+# Deliberately zero-dependency: only /proc, /sys and df(1) from coreutils/minimal.
+
+set -u
+
+CACHE="${TMPDIR:-/tmp}/shjstats-${USER:-user}.cache"
+
+now() { date +%s%N; }
+
+# ---- CPU: delta between two /proc/stat samples ----
+read_cpu() { awk '/^cpu / { for (i=2; i<=NF; i++) s+=$i; print s }' /proc/stat; }
+
+# ---- RAM ----
+read_mem() {
+  awk '/^MemTotal:/ { t=$2 } /^MemAvailable:/ { a=$2 } END { printf "%d %d", (t-a)*1024, t*1024 }' /proc/meminfo
+}
+
+# ---- NET: sum rx/tx over non-loopback interfaces ----
+read_net() {
+  local rx=0 tx=0
+  local dev
+  for dev in /sys/class/net/*; do
+    local name="${dev##*/}"
+    [[ "$name" == "lo" ]] && continue
+    [[ -r "$dev/statistics/rx_bytes" ]] || continue
+    rx=$(( rx + $(<"$dev/statistics/rx_bytes") ))
+    tx=$(( tx + $(<"$dev/statistics/tx_bytes") ))
+  done
+  printf "%d %d" "$rx" "$tx"
+}
+
+# ---- DISK: root filesystem ----
+read_disk() {
+  df -P / | awk 'NR==2 { printf "%d %d", $3*1024, $2*1024 }'
+}
+
+# ---- delta calc using the cache file ----
+prev_cpu=0; prev_rx=0; prev_tx=0; prev_time=0
+if [[ -r "$CACHE" ]]; then
+  read -r prev_cpu prev_rx prev_tx prev_time < "$CACHE"
+fi
+
+CUR_CPU="$(read_cpu)"
+read -r CUR_RX CUR_TX <<< "$(read_net)"
+CUR_TIME="$(now)"
+
+if (( prev_time == 0 )); then
+  CPU=0; DL=0; UL=0
+else
+  dT=$(( (CUR_TIME - prev_time) / 1000000 )) # ms
+  if (( dT <= 0 )); then dT=1; fi
+  CPU=$(( (CUR_CPU - prev_cpu) * 100 / 4 / dT )) # /proc/stat units are jiffies*... use HZ~100
+  (( CPU < 0 )) && CPU=0; (( CPU > 100 )) && CPU=100
+  DL=$(( (CUR_RX - prev_rx) * 1000 / dT ))
+  UL=$(( (CUR_TX - prev_tx) * 1000 / dT ))
+  (( DL < 0 )) && DL=0; (( UL < 0 )) && UL=0
+fi
+
+printf "%s %s %s\n" "$CUR_CPU" "$CUR_RX" "$CUR_TX" > "$CACHE"
+
+read -r RAM_USED RAM_TOTAL <<< "$(read_mem)"
+read -r DISK_USED DISK_TOTAL <<< "$(read_disk)"
+
+printf "%d\t%d\t%d\t%d\t%d\t%d\t%d\n" "$CPU" "$RAM_USED" "$RAM_TOTAL" "$DL" "$UL" "$DISK_USED" "$DISK_TOTAL"

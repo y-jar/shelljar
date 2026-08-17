@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# shjwall — cycle wallpapers in the wallpaper dir and apply via awww.
+# Usage: shjwall next | prev | random | set <path>
+# Applies through the existing awww-daemon (same backend niri uses).
+
+set -u
+
+DIR="${SHJ_WALL_DIR:-$HOME/resjar/wall-jar/wall-bin}"
+STATE="${TMPDIR:-/tmp}/shjwall-${USER:-user}.idx"
+
+apply() { awww-daemon set-wallpaper "$1" 2>/dev/null; }
+
+shopt -s nullglob
+mapfile -t WALLS < <(find "$DIR" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \) | sort)
+
+(( ${#WALLS[@]} == 0 )) && { echo "shjwall: no wallpapers in $DIR" >&2; exit 1; }
+
+N=${#WALLS[@]}
+IDX=$(<"$STATE" 2>/dev/null); IDX=$(( ${IDX:-0} % N ))
+
+case "${1:-next}" in
+  next) IDX=$(( (IDX + 1) % N ));;
+  prev) IDX=$(( (IDX + N - 1) % N ));;
+  random) IDX=$(( RANDOM % N ));;
+  set) apply "${2:-${WALLS[IDX]}}"; exit 0;;
+  *) echo "shjwall: unknown action '$1' (next|prev|random|set)" >&2; exit 1;;
+esac
+
+echo "$IDX" > "$STATE"
+apply "${WALLS[IDX]}"
+echo "${WALLS[IDX]}"
