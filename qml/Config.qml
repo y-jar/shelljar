@@ -35,6 +35,11 @@ Item {
   readonly property int launcherHeight: Math.round(480 * uiScale)
   readonly property int controlCenterWidth: Math.round(330 * uiScale)
 
+  // ---- session power menu ----
+  readonly property real sessionButtonSize: Math.round(190 * uiScale)
+  readonly property int sessionCountdownMs: 3000
+  readonly property int sessionColumns: 3
+
   // ---- font sizes (scaled) ----
   readonly property int fsTiny: Math.round(9 * uiScale)
   readonly property int fsSmall: Math.round(11 * uiScale)

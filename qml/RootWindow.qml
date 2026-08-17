@@ -30,7 +30,8 @@ PanelWindow {
 
   property bool launcherOpen: false
   property bool controlsOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen
+  property bool sessionOpen: false
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen
 
   // clickthrough: full screen while a popup is open (scrim closes it),
   // otherwise only the island strip + toasts are interactive.
@@ -107,6 +108,18 @@ PanelWindow {
     visible: root.controlsOpen
     open: root.controlsOpen
     notificationServer: notiServer
+    onOpenSession: {
+      root.controlsOpen = false
+      root.sessionOpen = true
+    }
+  }
+
+  // ---- full-screen power menu ----
+  SessionMenu {
+    anchors.fill: parent
+    visible: root.sessionOpen
+    open: root.sessionOpen
+    onCloseRequested: root.sessionOpen = false
   }
 
   // ---- toast notifications (top-right) ----
@@ -190,6 +203,7 @@ PanelWindow {
   function closeAll() {
     root.launcherOpen = false
     root.controlsOpen = false
+    root.sessionOpen = false
   }
 
   // ---- IPC ----
@@ -209,6 +223,11 @@ PanelWindow {
     function toggleControlCenter(): void {
       root.controlsOpen = !root.controlsOpen
       if (root.controlsOpen && root.launcherOpen) root.launcherOpen = false
+    }
+
+    function toggleSession(): void {
+      root.closeAll()
+      root.sessionOpen = !root.sessionOpen
     }
 
     function wallpaperCycle(dir: string): void {

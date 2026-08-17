@@ -21,6 +21,7 @@ Rectangle {
 
   // wired up by shell.qml
   property var notificationServer: null
+  signal openSession
 
   ScrollView {
     anchors.fill: parent
@@ -94,7 +95,39 @@ Rectangle {
         color: Qt.rgba(1,1,1,0.06)
       }
 
-      PowerWidget { Layout.fillWidth: true }
+      // full-screen power menu trigger
+      Rectangle {
+        Layout.fillWidth: true
+        implicitHeight: 40
+        radius: 10
+        color: Config.surface
+        border.color: Qt.rgba(1,1,1,0.08)
+
+        RowLayout {
+          anchors.fill: parent
+          anchors.margins: 12
+          spacing: 8
+          ShellText {
+            text: "⏻"
+            color: Config.red
+            font.pixelSize: Config.fsMedium + 2
+          }
+          ShellText {
+            text: "Power menu"
+            color: root.textColor
+            font.pixelSize: Config.fsSmall
+          }
+        }
+
+        MouseArea {
+          anchors.fill: parent
+          hoverEnabled: true
+          cursorShape: Qt.PointingHandCursor
+          onEntered: parent.color = Config.surfaceAlt
+          onExited: parent.color = Config.surface
+          onClicked: root.openSession()
+        }
+      }
     }
   }
 
