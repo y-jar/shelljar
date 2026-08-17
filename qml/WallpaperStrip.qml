@@ -41,7 +41,7 @@ RowLayout {
     MouseArea {
       anchors.fill: parent
       cursorShape: Qt.PointingHandCursor
-      onWheel: root.cycle(wheel.angleDelta.y > 0 ? "next" : "prev")
+      onWheel: event => root.cycle(event.angleDelta.y > 0 ? "next" : "prev")
       onClicked: wallProc.exec(["sh", "-c", "waypaper"])  // fallback; picker keybind also exists
       onDoubleClicked: wallProc.exec(["sh", "-c", "waypaper"])
     }

@@ -43,7 +43,7 @@ RowLayout {
         else modelData.activate()
       }
 
-      onWheel: { if (modelData) modelData.scroll(wheel.angleDelta.y > 0 ? 1 : -1, false) }
+      onWheel: event => { if (modelData) modelData.scroll(event.angleDelta.y > 0 ? 1 : -1, false) }
     }
   }
 
