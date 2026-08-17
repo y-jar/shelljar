@@ -31,7 +31,8 @@ PanelWindow {
   property bool launcherOpen: false
   property bool controlsOpen: false
   property bool sessionOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen
+  property bool menuOpen: false
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || menuOpen
 
   // clickthrough: full screen while a popup is open (scrim closes it),
   // otherwise only the island strip + toasts are interactive.
@@ -79,18 +80,40 @@ PanelWindow {
     }
   }
 
-  // ---- top-center island (auto-hide card) ----
+  // ---- top-center island pill (main-menu launcher) ----
   Island {
     id: island
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.top: parent.top
-    pinned: root.popupOpen
-    onUserClicked: { root.controlsOpen = !root.controlsOpen }
-    onPowerClicked: {
+    onMenuClicked: {
+      root.menuOpen = !root.menuOpen
       root.launcherOpen = false
       root.controlsOpen = false
-      root.sessionOpen = !root.sessionOpen
+      root.sessionOpen = false
     }
+  }
+
+  // ---- main menu (right-click on the pill) ----
+  MainMenu {
+    id: mainMenu
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.top: island.bottom
+    anchors.topMargin: 8
+    visible: root.menuOpen
+    open: root.menuOpen
+    onOpenPower: {
+      root.menuOpen = false
+      root.sessionOpen = true
+    }
+    onOpenLauncher: {
+      root.menuOpen = false
+      root.launcherOpen = true
+    }
+    onOpenControlCenter: {
+      root.menuOpen = false
+      root.controlsOpen = true
+    }
+    onCloseRequested: root.menuOpen = false
   }
 
   // ---- launcher (grid) ----
@@ -209,6 +232,7 @@ PanelWindow {
     root.launcherOpen = false
     root.controlsOpen = false
     root.sessionOpen = false
+    root.menuOpen = false
   }
 
   // ---- IPC ----
@@ -233,10 +257,6 @@ PanelWindow {
     function toggleSession(): void {
       root.closeAll()
       root.sessionOpen = !root.sessionOpen
-    }
-
-    function wallpaperCycle(dir: string): void {
-      island.wallpaperCycle(dir)
     }
   }
 }
