@@ -50,9 +50,5 @@ RowLayout {
 
   Process {
     id: wallProc
-    stdout: StdioCollector {
-      onStreamFinished: { if (text && text.trim() !== "") console.log("[shelljar] wallpaper:", text.trim()) }
-    }
-    onRunningChanged: { if (!running) running = false }
   }
 }

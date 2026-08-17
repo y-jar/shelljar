@@ -7,8 +7,10 @@ import QtQuick.Layouts
 Item {
   id: root
 
-  width: Config.islandWidth
+  width: (expanded || pinned) ? Math.max(Config.minIslandWidth, root.contentWidth) : Config.stripPillWidth
   height: (expanded || pinned) ? Config.islandHeight : Config.stripHeight
+
+  readonly property real contentWidth: row ? row.implicitWidth + 12 : Config.islandWidth
 
   property bool expanded: false
   property bool pinned: false // kept expanded by an open popup
@@ -16,6 +18,7 @@ Item {
   property color subColor: Config.subtext
   signal userClicked
 
+  Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
 
   function wallpaperCycle(dir) {
@@ -37,7 +40,6 @@ Item {
     radius: Config.cornerRadius
     color: Config.bg
     border.color: Qt.rgba(1,1,1,0.08)
-    clip: true
 
     RowLayout {
       id: row
