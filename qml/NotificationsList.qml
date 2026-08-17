@@ -13,7 +13,7 @@ ColumnLayout {
   // Live from the shell's NotificationServer.
   property var server: null // set by shell.qml
 
-  Text {
+  ShellText {
     Layout.fillWidth: true
     text: "Notifications"
     color: root.textColor
@@ -45,17 +45,17 @@ ColumnLayout {
         anchors.margins: 10
         spacing: 8
 
-        Text { text: "•"; color: Config.accent; font.pixelSize: Config.fsMedium }
+        ShellText { text: "•"; color: Config.accent; font.pixelSize: Config.fsMedium }
 
         ColumnLayout {
           Layout.fillWidth: true
           spacing: 0
-          Text {
+          ShellText {
             text: modelData.appName || ""
             color: root.subColor
             font.pixelSize: Config.fsTiny
           }
-          Text {
+          ShellText {
             id: notifText
             text: (modelData.summary || "") + (modelData.body ? "\n" + modelData.body : "")
             color: root.textColor
@@ -65,7 +65,7 @@ ColumnLayout {
           }
         }
 
-        Text {
+        ShellText {
           text: "✕"
           color: root.subColor
           font.pixelSize: Config.fsTiny

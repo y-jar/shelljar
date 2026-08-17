@@ -34,7 +34,7 @@ RowLayout {
     MouseArea {
       anchors.fill: parent
       onClicked: root.toggleMute()
-      Text {
+      ShellText {
         anchors.centerIn: parent
         text: root.muted ? "🔇" : (root.vol === 0 ? "🔈" : (root.vol < 0.5 ? "🔉" : "🔊"))
         font.pixelSize: Config.fsMedium
@@ -64,7 +64,7 @@ RowLayout {
     }
   }
 
-  Text {
+  ShellText {
     text: Math.round(root.vol * 100) + "%"
     color: root.textColor
     font.pixelSize: Config.fsSmall

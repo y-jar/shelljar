@@ -26,12 +26,12 @@ RowLayout {
     ColumnLayout {
       anchors.centerIn: parent
       spacing: 0
-      Text {
+      ShellText {
         text: "🖼  Wallpapers"
         color: root.textColor
         font.pixelSize: Config.fsSmall
       }
-      Text {
+      ShellText {
         text: "scroll to change"
         color: root.subColor
         font.pixelSize: Config.fsTiny

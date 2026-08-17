@@ -14,14 +14,14 @@ ColumnLayout {
     Layout.alignment: Qt.AlignHCenter
     spacing: 2
 
-    Text {
+    ShellText {
       text: clock.hours
       color: root.textColor
       font.pixelSize: Config.fsLarge
       font.weight: Font.DemiBold
     }
 
-    Text {
+    ShellText {
       // separator blinks on even seconds
       text: clock.blink ? ":" : " "
       color: root.dateColor
@@ -29,7 +29,7 @@ ColumnLayout {
       font.weight: Font.DemiBold
     }
 
-    Text {
+    ShellText {
       text: clock.minutes
       color: root.textColor
       font.pixelSize: Config.fsLarge
@@ -37,7 +37,7 @@ ColumnLayout {
     }
   }
 
-  Text {
+  ShellText {
     text: clock.dateStr
     color: root.dateColor
     font.pixelSize: Config.fsSmall

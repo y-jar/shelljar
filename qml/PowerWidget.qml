@@ -13,7 +13,7 @@ ColumnLayout {
 
   function run(cmd) { sysProc.exec(["sh", "-c", cmd]) }
 
-  Text {
+  ShellText {
     text: "Session"
     color: root.textColor
     font.pixelSize: Config.fsMedium
@@ -33,7 +33,7 @@ ColumnLayout {
         color: Config.surface
         border.color: Qt.rgba(1,1,1,0.05)
 
-        Text {
+        ShellText {
           anchors.centerIn: parent
           text: ({ lock: "🔒", logout: "↪", reboot: "⟳", power: "⏻" }[modelData] || "")
           color: root.textColor

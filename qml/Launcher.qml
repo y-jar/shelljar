@@ -57,7 +57,7 @@ Rectangle {
         anchors.leftMargin: 10
         anchors.rightMargin: 10
         spacing: 8
-        Text { text: "🔍"; color: root.subColor; font.pixelSize: Config.fsMedium }
+        ShellText { text: "🔍"; color: root.subColor; font.pixelSize: Config.fsMedium }
         TextField {
           id: searchBox
           Layout.fillWidth: true
@@ -103,7 +103,7 @@ Rectangle {
               asynchronous: true
               source: Quickshell.iconPath(modelData.icon, "image-missing")
             }
-            Text {
+            ShellText {
               text: modelData.name
               color: root.textColor
               font.pixelSize: Config.fsSmall

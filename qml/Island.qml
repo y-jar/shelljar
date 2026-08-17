@@ -78,7 +78,7 @@ Item {
           width: 34; height: 34; radius: 17
           color: Config.surface
           border.color: Qt.rgba(1,1,1,0.08)
-          Text {
+          ShellText {
             anchors.centerIn: parent
             text: "👤"
             font.pixelSize: Config.fsMedium
@@ -92,7 +92,7 @@ Item {
           }
         }
 
-        Text {
+        ShellText {
           text: "◎"
           color: root.subColor
           font.pixelSize: Config.fsSmall

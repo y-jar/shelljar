@@ -39,7 +39,7 @@ Rectangle {
           width: Math.round(42 * Config.uiScale); height: Math.round(42 * Config.uiScale); radius: 21
           color: Config.surface
           border.color: Qt.rgba(1,1,1,0.08)
-          Text {
+          ShellText {
             anchors.centerIn: parent
             text: "👤"
             font.pixelSize: Config.fsLarge
@@ -48,14 +48,14 @@ Rectangle {
 
         ColumnLayout {
           spacing: 2
-          Text {
+          ShellText {
             id: userLabel
             text: user()
             color: root.textColor
             font.pixelSize: Config.fsMedium
             font.weight: Font.DemiBold
           }
-          Text {
+          ShellText {
             text: "mouse-friendly shell"
             color: root.subColor
             font.pixelSize: Config.fsTiny
@@ -71,7 +71,7 @@ Rectangle {
         color: Qt.rgba(1,1,1,0.06)
       }
 
-      Text { text: "Audio"; color: root.subColor; font.pixelSize: Config.fsTiny }
+      ShellText { text: "Audio"; color: root.subColor; font.pixelSize: Config.fsTiny }
       AudioWidget { }
 
       Rectangle {

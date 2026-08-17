@@ -24,7 +24,7 @@ RowLayout {
     MouseArea {
       anchors.fill: parent
       onClicked: root.player.previous()
-      Text { anchors.centerIn: parent; text: "⏮"; font.pixelSize: root.iconSize; color: root.textColor }
+      ShellText { anchors.centerIn: parent; text: "⏮"; font.pixelSize: root.iconSize; color: root.textColor }
     }
   }
 
@@ -35,7 +35,7 @@ RowLayout {
     MouseArea {
       anchors.fill: parent
       onClicked: root.player.togglePlaying()
-      Text {
+      ShellText {
         anchors.centerIn: parent
         text: root.player.isPlaying ? "⏸" : "▶"
         font.pixelSize: root.iconSize + 2
@@ -50,21 +50,21 @@ RowLayout {
     MouseArea {
       anchors.fill: parent
       onClicked: root.player.next()
-      Text { anchors.centerIn: parent; text: "⏭"; font.pixelSize: root.iconSize; color: root.textColor }
+      ShellText { anchors.centerIn: parent; text: "⏭"; font.pixelSize: root.iconSize; color: root.textColor }
     }
   }
 
   ColumnLayout {
     spacing: 0
     visible: !root.nothingPlaying
-    Text {
+    ShellText {
       text: root.player.trackTitle || ""
       color: root.textColor
       font.pixelSize: Config.fsSmall
       elide: Text.ElideRight
       Layout.preferredWidth: Math.round(160 * Config.uiScale)
     }
-    Text {
+    ShellText {
       text: root.player.trackArtist || root.player.identity || ""
       color: root.subColor
       font.pixelSize: Config.fsTiny
