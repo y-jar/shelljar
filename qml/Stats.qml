@@ -5,11 +5,13 @@ import Quickshell.Io
 
 // Live system stats fed by scripts/shjstats (single tab-separated line):
 // cpu% ramUsed ramTotal dlBps ulBps diskUsed diskTotal
-ColumnLayout {
+// Compact single-row display that fits the island bar.
+RowLayout {
   id: root
 
   property color textColor: Config.text
   property color subColor: Config.subtext
+  spacing: 8
 
   readonly property int cpu: stats.cpu
   readonly property int ramUsed: stats.ramUsed
@@ -42,6 +44,36 @@ ColumnLayout {
     property int diskTotal: 1
   }
 
+  // ---- compact single-line readout ----
+  ShellText {
+    text: (root.cpu || 0) + "%"
+    color: root.textColor
+    font.pixelSize: Config.fsTiny
+  }
+
+  ShellText {
+    text: root.human(root.ramUsed) + "/" + root.human(root.ramTotal)
+    color: root.textColor
+    font.pixelSize: Config.fsTiny
+  }
+
+  ShellText {
+    text: "↓" + root.human(root.dlBps) + "/s"
+    color: Config.green
+    font.pixelSize: Config.fsTiny
+  }
+  ShellText {
+    text: "↑" + root.human(root.ulBps) + "/s"
+    color: Config.red
+    font.pixelSize: Config.fsTiny
+  }
+
+  ShellText {
+    text: "◧" + root.human(root.diskUsed) + "/" + root.human(root.diskTotal)
+    color: Config.yellow
+    font.pixelSize: Config.fsTiny
+  }
+
   // Poll shjstats every interval; StdioCollector receives each run's full output.
   Timer {
     id: pollTimer
@@ -69,64 +101,4 @@ ColumnLayout {
       }
     }
   }
-
-  // ---- bars ----
-  ColumnLayout {
-    Layout.fillWidth: true
-    spacing: 4
-
-    // CPU
-    RowLayout {
-      Layout.fillWidth: true
-      spacing: 6
-      Rectangle {
-        width: 44; height: 4; radius: 2
-        color: Config.surfaceAlt
-        Rectangle {
-          width: parent.width * (stats.cpu / 100)
-          height: parent.height
-          radius: 2
-          color: Config.accent
-        }
-      }
-      ShellText { text: stats.cpu + "%"; color: root.textColor; font.pixelSize: Config.fsTiny }
-    }
-
-    // RAM
-    RowLayout {
-      Layout.fillWidth: true
-      spacing: 6
-      Rectangle {
-        width: 44; height: 4; radius: 2
-        color: Config.surfaceAlt
-        Rectangle {
-          width: parent.width * (root.pct(root.ramUsed, root.ramTotal) / 100)
-          height: parent.height
-          radius: 2
-          color: Config.blue
-        }
-      }
-      ShellText { text: root.human(root.ramUsed) + "/" + root.human(root.ramTotal); color: root.textColor; font.pixelSize: Config.fsTiny }
-    }
-
-    // NET
-    RowLayout {
-      Layout.fillWidth: true
-      spacing: 6
-      ShellText { text: "↓"; color: Config.green; font.pixelSize: Config.fsTiny }
-      ShellText { text: root.human(root.dlBps) + "/s"; color: root.textColor; font.pixelSize: Config.fsTiny }
-      ShellText { text: "↑"; color: Config.red; font.pixelSize: Config.fsTiny; Layout.leftMargin: 4 }
-      ShellText { text: root.human(root.ulBps) + "/s"; color: root.textColor; font.pixelSize: Config.fsTiny }
-    }
-
-    // DISK
-    RowLayout {
-      Layout.fillWidth: true
-      spacing: 6
-      ShellText { text: "◧"; color: Config.yellow; font.pixelSize: Config.fsTiny }
-      ShellText { text: root.human(root.diskUsed) + "/" + root.human(root.diskTotal); color: root.textColor; font.pixelSize: Config.fsTiny }
-    }
-  }
-
-  Item { Layout.fillWidth: true; Layout.fillHeight: true }
 }

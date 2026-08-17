@@ -46,20 +46,14 @@ Item {
       spacing: Config.spacing
       visible: root.expanded
 
-      // ---- left: tray + stats ----
+      // ---- left: tray + stats (horizontal) ----
       RowLayout {
         Layout.fillWidth: true
-        spacing: 10
-        ColumnLayout {
-          spacing: 4
-          Tray { }
-          Stats {
-            Layout.preferredWidth: 170
-            Layout.alignment: Qt.AlignLeft
-          }
-        }
-        Item { Layout.fillWidth: true }
+        spacing: 8
+        Tray { }
+        Stats { }
       }
+      Item { Layout.fillWidth: true }
 
       // ---- center: clock + wallpaper ----
       RowLayout {

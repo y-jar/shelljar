@@ -22,9 +22,9 @@ Item {
   readonly property real uiScale: 0.85
 
   // ---- island geometry ----
-  readonly property real islandWidth: Math.round(560 * uiScale) // expanded island width
+  readonly property real islandWidth: Math.round(680 * uiScale) // expanded island width
   readonly property real stripHeight: Math.round(8 * uiScale)   // collapsed hover strip at top center
-  readonly property real islandHeight: Math.round(46 * uiScale) // expanded island thickness
+  readonly property real islandHeight: Math.round(48 * uiScale) // expanded island thickness
   readonly property real cornerRadius: 12
   readonly property real spacing: 8
 
