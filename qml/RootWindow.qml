@@ -42,9 +42,8 @@ PanelWindow {
     Region {
       x: toasts.x
       y: toasts.y
-      width: toasts.width
-      height: toasts.height
-      visible: !root.popupOpen && toasts.visible
+      width: (!root.popupOpen && toasts.visible) ? toasts.width : 0
+      height: (!root.popupOpen && toasts.visible) ? toasts.height : 0
     }
   }
 
