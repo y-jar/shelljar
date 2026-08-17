@@ -33,7 +33,7 @@ Item {
   Repeater {
     id: screens
     model: Quickshell.screens
-    delegate: ShellScreen {
+    delegate: PerScreen {
       required property var modelData
       screen: modelData
       notificationServer: notiServer
