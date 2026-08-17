@@ -11,12 +11,10 @@ RowLayout {
   property int iconSize: 18
   spacing: 2
 
-  // Referencing the singleton turns on tray tracking.
-  SystemTray { id: tray }
-
+  // Referencing the SystemTray singleton turns on tray tracking.
   Repeater {
     id: items
-    model: tray.items
+    model: SystemTray.items.values
 
     delegate: MouseArea {
       required property var modelData
