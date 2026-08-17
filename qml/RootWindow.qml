@@ -86,6 +86,11 @@ PanelWindow {
     anchors.top: parent.top
     pinned: root.popupOpen
     onUserClicked: { root.controlsOpen = !root.controlsOpen }
+    onPowerClicked: {
+      root.launcherOpen = false
+      root.controlsOpen = false
+      root.sessionOpen = !root.sessionOpen
+    }
   }
 
   // ---- launcher (grid) ----

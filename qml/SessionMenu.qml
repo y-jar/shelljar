@@ -65,10 +65,10 @@ Rectangle {
 
   Timer {
     id: timer
-    interval: 100
+    interval: 250
     repeat: true
     onTriggered: {
-      timeRemaining -= 100
+      timeRemaining -= 250
       if (timeRemaining <= 0) root.execute(root.pendingKey)
     }
   }
@@ -104,15 +104,9 @@ Rectangle {
         width: Config.sessionButtonSize
         height: Config.sessionButtonSize
         radius: Math.round(Config.cornerRadius * 1.5)
-        color: isPending ? Config.accent : Config.surface
+        color: isPending ? Config.accent : (hoverArea.containsMouse ? Config.surfaceAlt : Config.surface)
         border.width: 1
         border.color: isPending ? Config.accent : Qt.rgba(1,1,1,0.12)
-
-        Behavior on color { ColorAnimation { duration: 120 } }
-
-        // hover scale
-        scale: hoverArea.containsMouse && !isPending ? 1.05 : 1.0
-        Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
         ColumnLayout {
           anchors.centerIn: parent

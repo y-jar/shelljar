@@ -17,6 +17,7 @@ Item {
   property color textColor: Config.text
   property color subColor: Config.subtext
   signal userClicked
+  signal powerClicked
 
   Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
@@ -89,12 +90,33 @@ Item {
           }
         }
 
-        ShellText {
-          text: "◎"
-          color: root.subColor
-          font.pixelSize: Config.fsSmall
-        }
-        Item { Layout.fillWidth: true }
+          ShellText {
+            text: "◎"
+            color: root.subColor
+            font.pixelSize: Config.fsSmall
+          }
+
+          // power menu pill opener
+          Rectangle {
+            width: 40; height: 26; radius: 13
+            color: Config.surface
+            border.color: Qt.rgba(1,1,1,0.10)
+
+            ShellText {
+              anchors.centerIn: parent
+              text: "⏻"
+              color: Config.red
+              font.pixelSize: Config.fsSmall
+            }
+            MouseArea {
+              anchors.fill: parent
+              hoverEnabled: true
+              onEntered: parent.color = Config.surfaceAlt
+              onExited: parent.color = Config.surface
+              onClicked: root.powerClicked()
+            }
+          }
+          Item { Layout.fillWidth: true }
       }
     }
   }
