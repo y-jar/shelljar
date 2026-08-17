@@ -9,14 +9,14 @@ Rectangle {
   id: root
 
   property bool open: false
-  width: config.launcherWidth
-  height: config.launcherHeight
-  radius: config.cornerRadius
-  color: config.bg
+  width: Config.launcherWidth
+  height: Config.launcherHeight
+  radius: Config.cornerRadius
+  color: Config.bg
   border.color: Qt.rgba(1,1,1,0.08)
 
-  property color textColor: config.text
-  property color subColor: config.subtext
+  property color textColor: Config.text
+  property color subColor: Config.subtext
 
   property var allApps: []       // array of [name, exec, icon]
   property string filterText: ""
@@ -61,7 +61,7 @@ Rectangle {
       Layout.fillWidth: true
       implicitHeight: 32
       radius: 8
-      color: config.surface
+      color: Config.surface
       border.color: Qt.rgba(1,1,1,0.06)
 
       RowLayout {
@@ -127,7 +127,7 @@ Rectangle {
           MouseArea {
             anchors.fill: parent
             hoverEnabled: true
-            onEntered: parent.color = config.surface
+            onEntered: parent.color = Config.surface
             onExited: parent.color = "transparent"
             onClicked: {
               launchProc.exec(["sh", "-c", modelData[1]])

@@ -6,8 +6,8 @@ import Quickshell.Io
 ColumnLayout {
   id: root
 
-  property color textColor: config.text
-  property color subColor: config.subtext
+  property color textColor: Config.text
+  property color subColor: Config.subtext
 
   Process { id: sysProc }
 
@@ -30,7 +30,7 @@ ColumnLayout {
 
       delegate: Rectangle {
         width: 52; height: 44; radius: 8
-        color: config.surface
+        color: Config.surface
         border.color: Qt.rgba(1,1,1,0.05)
 
         Text {
@@ -43,8 +43,8 @@ ColumnLayout {
         MouseArea {
           anchors.fill: parent
           hoverEnabled: true
-          onEntered: parent.color = config.surfaceAlt
-          onExited: parent.color = config.surface
+          onEntered: parent.color = Config.surfaceAlt
+          onExited: parent.color = Config.surface
           onClicked: {
             if (modelData === "lock") root.run("loginctl lock-session")
             else if (modelData === "logout") root.run("loginctl terminate-user ${USER}")

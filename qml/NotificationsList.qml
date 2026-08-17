@@ -6,9 +6,9 @@ import Quickshell.Services.Notifications
 ColumnLayout {
   id: root
 
-  property color textColor: config.text
-  property color subColor: config.subtext
-  property color itemBg: config.surface
+  property color textColor: Config.text
+  property color subColor: Config.subtext
+  property color itemBg: Config.surface
 
   // Live from the shell's NotificationServer.
   readonly property var server: null // set by shell.qml
@@ -45,7 +45,7 @@ ColumnLayout {
         anchors.margins: 10
         spacing: 8
 
-        Text { text: "•"; color: config.accent; font.pixelSize: 12 }
+        Text { text: "•"; color: Config.accent; font.pixelSize: 12 }
 
         ColumnLayout {
           Layout.fillWidth: true

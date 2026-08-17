@@ -44,8 +44,8 @@ Item {
     anchor.window: island
     anchor.rect.x: island.width / 2 - width / 2
     anchor.rect.y: island.height + 8
-    width: config.launcherWidth
-    height: config.launcherHeight
+    width: Config.launcherWidth
+    height: Config.launcherHeight
     visible: root.launcherOpen
 
     Launcher {
@@ -58,9 +58,9 @@ Item {
   PopupWindow {
     id: controlsWin
     anchor.window: island
-    anchor.rect.x: island.width - config.controlCenterWidth - 10
+    anchor.rect.x: island.width - Config.controlCenterWidth - 10
     anchor.rect.y: island.height + 8
-    width: config.controlCenterWidth
+    width: Config.controlCenterWidth
     height: 430
     visible: root.controlsOpen
 
@@ -96,7 +96,7 @@ Item {
           width: 348
           height: toastText.implicitHeight + 16
           radius: 10
-          color: config.bg
+          color: Config.bg
           border.color: Qt.rgba(1,1,1,0.08)
 
           RowLayout {
@@ -105,7 +105,7 @@ Item {
             spacing: 8
             Text {
               text: "▣"
-              color: config.accent
+              color: Config.accent
               font.pixelSize: 16
             }
             ColumnLayout {
@@ -113,13 +113,13 @@ Item {
               spacing: 0
               Text {
                 text: modelData.appName || ""
-                color: config.accent
+                color: Config.accent
                 font.pixelSize: 10
               }
               Text {
                 id: toastText
                 text: (modelData.summary || "") + (modelData.body ? "\n" + modelData.body : "")
-                color: config.text
+                color: Config.text
                 font.pixelSize: 11
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
@@ -130,7 +130,7 @@ Item {
               Text {
                 anchors.centerIn: parent
                 text: "✕"
-                color: config.subtext
+                color: Config.subtext
                 font.pixelSize: 10
               }
               MouseArea {

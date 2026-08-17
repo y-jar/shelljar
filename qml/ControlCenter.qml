@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Services.Notifications
 
 // Right-side control center: user, audio, notifications, session.
@@ -7,14 +8,14 @@ Rectangle {
   id: root
 
   property bool open: false
-  width: config.controlCenterWidth
+  width: Config.controlCenterWidth
   height: 420
-  radius: config.cornerRadius
-  color: config.bgAlt
+  radius: Config.cornerRadius
+  color: Config.bgAlt
   border.color: Qt.rgba(1,1,1,0.08)
 
-  property color textColor: config.text
-  property color subColor: config.subtext
+  property color textColor: Config.text
+  property color subColor: Config.subtext
 
   // wired up by shell.qml
   property var notificationServer: null
@@ -35,7 +36,7 @@ Rectangle {
 
         Rectangle {
           width: 42; height: 42; radius: 21
-          color: config.surface
+          color: Config.surface
           border.color: Qt.rgba(1,1,1,0.08)
           Text {
             anchors.centerIn: parent
@@ -95,8 +96,8 @@ Rectangle {
     }
   }
 
-  function user() {
-    const u = config.env("USER")
+function user() {
+    const u = Quickshell.env("USER")
     return u != null && u !== "" ? u : "jar"
   }
 }

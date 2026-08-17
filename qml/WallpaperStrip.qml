@@ -6,12 +6,12 @@ import Quickshell.Io
 RowLayout {
   id: root
 
-  property color textColor: config.text
-  property color subColor: config.subtext
-  property color hoverBg: config.surface
+  property color textColor: Config.text
+  property color subColor: Config.subtext
+  property color hoverBg: Config.surface
 
   function cycle(dir) {
-    wallProc.exec(["sh", "-c", config.wallpaperCmd + " " + dir])
+    wallProc.exec(["sh", "-c", Config.wallpaperCmd + " " + dir])
   }
 
   Rectangle {

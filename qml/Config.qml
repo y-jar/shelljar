@@ -1,9 +1,9 @@
+pragma Singleton
 import QtQuick
 
 // shelljar central config: palette, sizing, tuning knobs.
 // Tweak here first; everything else reads these values.
 Item {
-  id: config
 
   // ---- palette (dark Catppuccin-ish, matches niri theme) ----
   readonly property color bg: "#1e1e2e"

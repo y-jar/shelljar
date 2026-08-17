@@ -6,8 +6,8 @@ import Quickshell.Services.Mpris
 RowLayout {
   id: root
 
-  property color textColor: config.text
-  property color subColor: config.subtext
+  property color textColor: Config.text
+  property color subColor: Config.subtext
   property int iconSize: 14
   spacing: 6
 
@@ -29,7 +29,7 @@ RowLayout {
 
   Rectangle {
     width: 26; height: 26; radius: 6
-    color: config.surface
+    color: Config.surface
     visible: !root.nothingPlaying && player.canTogglePlaying
     MouseArea {
       anchors.fill: parent

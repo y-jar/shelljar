@@ -6,8 +6,8 @@ import Quickshell.Services.Pipewire
 RowLayout {
   id: root
 
-  property color textColor: config.text
-  property color subColor: config.subtext
+  property color textColor: Config.text
+  property color subColor: Config.subtext
   property bool showLabel: true
   readonly property var sink: Pipewire.defaultAudioSink
   readonly property real vol: sink != null && sink.audio != null ? sink.audio.volume : 0
@@ -42,14 +42,14 @@ RowLayout {
     Layout.preferredWidth: 90
     height: 4
     radius: 2
-    color: config.surfaceAlt
+    color: Config.surfaceAlt
     clip: false
 
     Rectangle {
       width: parent.width * root.vol
       height: parent.height
       radius: 2
-      color: root.muted ? config.subtext : config.accent
+      color: root.muted ? Config.subtext : Config.accent
     }
 
     MouseArea {

@@ -5,8 +5,8 @@ import QtQuick.Layouts
 ColumnLayout {
   id: root
 
-  property color textColor: config.text
-  property color dateColor: config.subtext
+  property color textColor: Config.text
+  property color dateColor: Config.subtext
 
   function pad(v) { return ("0" + v).slice(-2) }
 

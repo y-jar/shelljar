@@ -11,7 +11,7 @@ PanelWindow {
 
   anchors.top: true
   width: 640
-  height: (expanded || pinned) ? config.islandHeight : 12
+  height: (expanded || pinned) ? Config.islandHeight : 12
   exclusiveZone: height // reserves this many px from the anchored edge
   layer: 3
   color: "transparent"
@@ -19,8 +19,8 @@ PanelWindow {
   Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
   Behavior on exclusiveZone { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
 
-  property color textColor: config.text
-  property color subColor: config.subtext
+  property color textColor: Config.text
+  property color subColor: Config.subtext
   signal userClicked
 
   function wallpaperCycle(dir) {
@@ -44,8 +44,8 @@ PanelWindow {
     Rectangle {
       id: islandCard
       anchors.fill: parent
-      radius: config.cornerRadius
-      color: config.bg
+      radius: Config.cornerRadius
+      color: Config.bg
       border.color: Qt.rgba(1,1,1,0.08)
       clip: true
 
@@ -53,7 +53,7 @@ PanelWindow {
         id: row
         anchors.fill: parent
         anchors.margins: 6
-        spacing: config.spacing
+        spacing: Config.spacing
         visible: root.expanded
 
         // ---- left: tray + stats ----
@@ -87,7 +87,7 @@ PanelWindow {
           // user / control-center button
           Rectangle {
             width: 34; height: 34; radius: 17
-            color: config.surface
+            color: Config.surface
             border.color: Qt.rgba(1,1,1,0.08)
             Text {
               anchors.centerIn: parent
@@ -97,8 +97,8 @@ PanelWindow {
             MouseArea {
               anchors.fill: parent
               hoverEnabled: true
-              onEntered: parent.color = config.surfaceAlt
-              onExited: parent.color = config.surface
+              onEntered: parent.color = Config.surfaceAlt
+              onExited: parent.color = Config.surface
               onClicked: root.userClicked()
             }
           }

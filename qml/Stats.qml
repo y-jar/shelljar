@@ -7,8 +7,8 @@ import Quickshell.Io
 ColumnLayout {
   id: root
 
-  property color textColor: config.text
-  property color subColor: config.subtext
+  property color textColor: Config.text
+  property color subColor: Config.subtext
 
   readonly property int cpu: stats.cpu
   readonly property int ramUsed: stats.ramUsed
@@ -44,15 +44,15 @@ ColumnLayout {
   // Poll shjstats every interval; StdioCollector receives each run's full output.
   Timer {
     id: pollTimer
-    interval: config.statsIntervalMs
+    interval: Config.statsIntervalMs
     running: true
     repeat: true
-    onTriggered: statProc.exec(["sh", "-c", config.statsCmd])
+    onTriggered: statProc.exec(["sh", "-c", Config.statsCmd])
   }
 
   Process {
     id: statProc
-    command: ["sh", "-c", config.statsCmd]
+    command: ["sh", "-c", Config.statsCmd]
     stdout: StdioCollector {
       onStreamFinished: {
         const line = (text || "").trim()
@@ -80,12 +80,12 @@ ColumnLayout {
       spacing: 6
       Rectangle {
         width: 44; height: 4; radius: 2
-        color: config.surfaceAlt
+        color: Config.surfaceAlt
         Rectangle {
           width: parent.width * (stats.cpu / 100)
           height: parent.height
           radius: 2
-          color: config.accent
+          color: Config.accent
         }
       }
       Text { text: stats.cpu + "%"; color: root.textColor; font.pixelSize: 10 }
@@ -97,12 +97,12 @@ ColumnLayout {
       spacing: 6
       Rectangle {
         width: 44; height: 4; radius: 2
-        color: config.surfaceAlt
+        color: Config.surfaceAlt
         Rectangle {
           width: parent.width * (root.pct(root.ramUsed, root.ramTotal) / 100)
           height: parent.height
           radius: 2
-          color: config.blue
+          color: Config.blue
         }
       }
       Text { text: root.human(root.ramUsed) + "/" + root.human(root.ramTotal); color: root.textColor; font.pixelSize: 10 }
@@ -112,9 +112,9 @@ ColumnLayout {
     RowLayout {
       Layout.fillWidth: true
       spacing: 6
-      Text { text: "↓"; color: config.green; font.pixelSize: 10 }
+      Text { text: "↓"; color: Config.green; font.pixelSize: 10 }
       Text { text: root.human(root.dlBps) + "/s"; color: root.textColor; font.pixelSize: 10 }
-      Text { text: "↑"; color: config.red; font.pixelSize: 10; Layout.leftMargin: 4 }
+      Text { text: "↑"; color: Config.red; font.pixelSize: 10; Layout.leftMargin: 4 }
       Text { text: root.human(root.ulBps) + "/s"; color: root.textColor; font.pixelSize: 10 }
     }
 
@@ -122,7 +122,7 @@ ColumnLayout {
     RowLayout {
       Layout.fillWidth: true
       spacing: 6
-      Text { text: "◧"; color: config.yellow; font.pixelSize: 10 }
+      Text { text: "◧"; color: Config.yellow; font.pixelSize: 10 }
       Text { text: root.human(root.diskUsed) + "/" + root.human(root.diskTotal); color: root.textColor; font.pixelSize: 10 }
     }
   }

@@ -7,7 +7,7 @@ import Quickshell.Services.SystemTray
 RowLayout {
   id: root
 
-  property color hoverBg: config.surface
+  property color hoverBg: Config.surface
   property int iconSize: 18
   spacing: 2
 
