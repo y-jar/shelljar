@@ -21,13 +21,10 @@ Item {
   // ---- theming / scale ----
   readonly property real uiScale: 0.85
 
-  // ---- island geometry ----
-  readonly property real islandWidth: Math.round(680 * uiScale) // expanded island width
-  readonly property real minIslandWidth: Math.round(220 * uiScale) // expanded island floor
-  readonly property real stripPillWidth: Math.round(56 * uiScale)  // collapsed power pill width
-  readonly property real pillHeight: Math.round(26 * uiScale)     // collapsed power pill height
-  readonly property real stripHeight: Math.round(8 * uiScale)   // collapsed hover strip at top center
-  readonly property real islandHeight: Math.round(48 * uiScale) // expanded island thickness
+  // ---- island (strip / dock) ----
+  readonly property real dockWidthRatio: 0.2 // dock/strip width as fraction of screen width
+  readonly property real stripHeight: Math.round(6 * uiScale)  // collapsed strip height
+  readonly property real dockHeight: Math.round(112 * uiScale) // expanded dock height
   readonly property real cornerRadius: 12
   readonly property real spacing: 8
 

@@ -6,36 +6,35 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Notifications
 
-// ---- shelljar root window ----
-// Single full-screen shell surface hosting every surface as an internal item
-// (caelestia-style). Clickthrough is controlled by the `mask` Region so the
-// empty desktop still receives clicks.
-//
-// IPC (target "shelljar"):
-//   quickshell -p qml ipc call shelljar toggleLauncher
-//   quickshell -p qml ipc call shelljar toggleControlCenter
-//   quickshell -p qml ipc call shelljar close
+// ---- per-screen shell surface ----
+// One full-screen window per monitor (caelestia-style). Hosts that screen's
+// island strip/dock plus launcher, control center, session menu, and toasts.
+// The clickthrough `mask` lets the empty desktop receive clicks.
 PanelWindow {
   id: root
+
+  readonly property string ns: screen ? "shelljar-" + screen.name : "shelljar"
+  WlrLayershell.namespace: ns
+  WlrLayershell.exclusionMode: ExclusionMode.Ignore // overlay: no reserved space
+  WlrLayershell.layer: WlrLayer.Top
+  WlrLayershell.keyboardFocus: root.popupOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+  color: "transparent"
 
   anchors.top: true
   anchors.bottom: true
   anchors.left: true
   anchors.right: true
 
-  WlrLayershell.exclusionMode: ExclusionMode.Ignore // overlay: no reserved space
-  WlrLayershell.layer: WlrLayer.Top
-  WlrLayershell.keyboardFocus: root.popupOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-  color: "transparent"
+  // shared from shell.qml
+  property var notificationServer: null
+  property var toastsModel: null
 
   property bool launcherOpen: false
   property bool controlsOpen: false
   property bool sessionOpen: false
-  property bool menuOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || menuOpen
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen
 
-  // clickthrough: full screen while a popup is open (scrim closes it),
-  // otherwise only the island strip + toasts are interactive.
+  // clickthrough: full screen while a popup is open, otherwise only the island
   mask: Region {
     x: root.popupOpen ? 0 : island.x
     y: root.popupOpen ? 0 : island.y
@@ -50,20 +49,6 @@ PanelWindow {
     }
   }
 
-  // notification daemon (implements org.freedesktop.Notifications)
-  NotificationServer {
-    id: notiServer
-    onNotification: n => {
-      n.tracked = true // keep in history for the control center
-      toastsList.insert(0, {
-        appName: n.appName,
-        summary: n.summary,
-        body: n.body,
-      })
-      while (toastsList.count > 4) toastsList.remove(toastsList.count - 1)
-    }
-  }
-
   // ---- dim scrim behind open popups ----
   Rectangle {
     id: scrim
@@ -71,49 +56,21 @@ PanelWindow {
     color: "#00000060"
     visible: root.popupOpen
     opacity: root.popupOpen ? 1 : 0
-
     Behavior on opacity { NumberAnimation { duration: 120 } }
-
-    MouseArea {
-      anchors.fill: parent
-      onClicked: root.closeAll()
-    }
+    MouseArea { anchors.fill: parent; onClicked: root.closeAll() }
   }
 
-  // ---- top-center island pill (main-menu launcher) ----
+  // ---- island strip / dock ----
   Island {
     id: island
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.top: parent.top
-    onMenuClicked: {
-      root.menuOpen = !root.menuOpen
-      root.launcherOpen = false
-      root.controlsOpen = false
-      root.sessionOpen = false
-    }
-  }
-
-  // ---- main menu (right-click on the pill) ----
-  MainMenu {
-    id: mainMenu
-    anchors.horizontalCenter: parent.horizontalCenter
-    anchors.top: island.bottom
-    anchors.topMargin: 8
-    visible: root.menuOpen
-    open: root.menuOpen
-    onOpenPower: {
-      root.menuOpen = false
-      root.sessionOpen = true
-    }
-    onOpenLauncher: {
-      root.menuOpen = false
-      root.launcherOpen = true
-    }
-    onOpenControlCenter: {
-      root.menuOpen = false
-      root.controlsOpen = true
-    }
-    onCloseRequested: root.menuOpen = false
+    onPowerClicked: { root.closeAll(); root.sessionOpen = true }
+    onLauncherClicked: { root.closeAll(); root.launcherOpen = true }
+    onControlClicked: { root.closeAll(); root.controlsOpen = true }
+    onLockRequested: Quickshell.execDetached(["sh", "-c", "loginctl lock-session"])
+    onSuspendRequested: Quickshell.execDetached(["sh", "-c", "systemctl suspend"])
+    onLogoutRequested: Quickshell.execDetached(["sh", "-c", "loginctl terminate-user ${USER}"])
   }
 
   // ---- launcher (grid) ----
@@ -135,7 +92,7 @@ PanelWindow {
     anchors.topMargin: 12
     visible: root.controlsOpen
     open: root.controlsOpen
-    notificationServer: notiServer
+    notificationServer: root.notificationServer
     onOpenSession: {
       root.controlsOpen = false
       root.sessionOpen = true
@@ -159,15 +116,11 @@ PanelWindow {
     anchors.topMargin: 12
     width: 360
     spacing: 6
-    visible: toastsList.count > 0
-
-    ListModel {
-      id: toastsList
-    }
+    visible: root.toastsModel ? root.toastsModel.count > 0 : false
 
     Repeater {
       id: toastRepeater
-      model: toastsList
+      model: root.toastsModel
 
       delegate: Rectangle {
         required property var modelData
@@ -212,18 +165,11 @@ PanelWindow {
               color: Config.subtext
               font.pixelSize: Config.fsTiny
             }
-            MouseArea {
-              anchors.fill: parent
-              onClicked: toastsList.remove(index)
-            }
+            MouseArea { anchors.fill: parent; onClicked: root.toastsModel.remove(index) }
           }
         }
 
-        Timer {
-          interval: 6000
-          running: true
-          onTriggered: toastsList.remove(index)
-        }
+        Timer { interval: 6000; running: true; onTriggered: root.toastsModel.remove(index) }
       }
     }
   }
@@ -232,31 +178,21 @@ PanelWindow {
     root.launcherOpen = false
     root.controlsOpen = false
     root.sessionOpen = false
-    root.menuOpen = false
+    island.dockOpen = false
   }
 
-  // ---- IPC ----
-  IpcHandler {
-    id: ipc
-    target: "shelljar"
+  function toggleLauncher(): void {
+    root.launcherOpen = !root.launcherOpen
+    if (root.launcherOpen && root.controlsOpen) root.controlsOpen = false
+  }
 
-    function close(): void {
-      root.closeAll()
-    }
+  function toggleControlCenter(): void {
+    root.controlsOpen = !root.controlsOpen
+    if (root.controlsOpen && root.launcherOpen) root.launcherOpen = false
+  }
 
-    function toggleLauncher(): void {
-      root.launcherOpen = !root.launcherOpen
-      if (root.launcherOpen && root.controlsOpen) root.controlsOpen = false
-    }
-
-    function toggleControlCenter(): void {
-      root.controlsOpen = !root.controlsOpen
-      if (root.controlsOpen && root.launcherOpen) root.launcherOpen = false
-    }
-
-    function toggleSession(): void {
-      root.closeAll()
-      root.sessionOpen = !root.sessionOpen
-    }
+  function toggleSession(): void {
+    root.closeAll()
+    root.sessionOpen = !root.sessionOpen
   }
 }

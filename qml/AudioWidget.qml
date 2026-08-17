@@ -30,7 +30,7 @@ RowLayout {
 
   // mute toggle button
   Rectangle {
-    width: Math.round(22 * Config.uiScale); height: Math.round(22 * Config.uiScale); radius: 5
+    width: Math.round(24 * Config.uiScale); height: Math.round(24 * Config.uiScale); radius: 6
     color: "transparent"
     MouseArea {
       anchors.fill: parent
@@ -43,25 +43,45 @@ RowLayout {
     }
   }
 
-  // slider
+  // larger slider with a draggable knob
   Rectangle {
-    Layout.preferredWidth: 90
-    height: 4
-    radius: 2
+    id: track
+    Layout.preferredWidth: Math.round(150 * Config.uiScale)
+    Layout.preferredHeight: Math.round(12 * Config.uiScale)
+    radius: height / 2
     color: Config.surfaceAlt
-    clip: false
 
+    // filled portion
     Rectangle {
-      width: parent.width * root.vol
-      height: parent.height
-      radius: 2
+      id: fill
+      width: track.width * root.vol
+      height: track.height
+      radius: height / 2
       color: root.muted ? Config.subtext : Config.accent
     }
 
+    // draggable knob
+    Rectangle {
+      id: knob
+      width: Math.round(18 * Config.uiScale)
+      height: width
+      radius: width / 2
+      x: Math.max(0, Math.min(track.width - width, fill.width - width / 2))
+      y: (track.height - height) / 2
+      color: "#ffffff"
+      border.color: Qt.rgba(0,0,0,0.3)
+      border.width: 1
+    }
+
+    // drag anywhere on the track to seek / fine-tune
     MouseArea {
+      id: dragArea
       anchors.fill: parent
+      hoverEnabled: true
+      cursorShape: Qt.PointingHandCursor
       onPositionChanged: if (pressed) root.setVolume(mouse.x / width)
       onClicked: root.setVolume(mouse.x / width)
+      onWheel: event => root.setVolume(root.vol + (event.angleDelta.y > 0 ? 0.02 : -0.02))
     }
   }
 
@@ -69,5 +89,6 @@ RowLayout {
     text: Math.round(root.vol * 100) + "%"
     color: root.textColor
     font.pixelSize: Config.fsSmall
+    Layout.minimumWidth: Math.round(34 * Config.uiScale)
   }
 }
