@@ -13,6 +13,9 @@ import Quickshell.Services.Notifications
 PanelWindow {
   id: root
 
+  required property var modelData
+  screen: modelData // the screen Variants passes in
+
   readonly property string ns: screen ? "shelljar-" + screen.name : "shelljar"
   WlrLayershell.namespace: ns
   WlrLayershell.exclusionMode: ExclusionMode.Ignore // overlay: no reserved space

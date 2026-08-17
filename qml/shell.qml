@@ -29,15 +29,16 @@ Item {
 
   ListModel { id: toasts }
 
-  // one full-screen shell per monitor
-  Repeater {
+  // one full-screen shell per monitor (Variants so window delegates are allowed)
+  Variants {
     id: screens
     model: Quickshell.screens
-    delegate: PerScreen {
-      required property var modelData
-      screen: modelData
-      notificationServer: notiServer
-      toastsModel: toasts
+    delegate: Component {
+      PerScreen {
+        screen: modelData
+        notificationServer: notiServer
+        toastsModel: toasts
+      }
     }
   }
 
