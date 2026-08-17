@@ -11,7 +11,7 @@ ColumnLayout {
   property color itemBg: Config.surface
 
   // Live from the shell's NotificationServer.
-  readonly property var server: null // set by shell.qml
+  property var server: null // set by shell.qml
 
   Text {
     Layout.fillWidth: true
