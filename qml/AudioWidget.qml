@@ -1,3 +1,4 @@
+import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Pipewire

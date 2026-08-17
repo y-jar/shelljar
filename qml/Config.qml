@@ -19,7 +19,6 @@ Item {
   readonly property color blue: "#89b4fa"
 
   // ---- theming / scale ----
-  readonly property string fontFamily: "Monocraft"
   readonly property real uiScale: 0.85
 
   // ---- island geometry ----
