@@ -39,6 +39,6 @@ nix build .#shelljar   # result/bin/shelljar
 
 ```
 qml/        shell configuration (Config.qml + surfaces + widgets)
-scripts/    shjstats (system stats), shjwall (wallpaper cycling), shjapps (app list)
+scripts/    shjstats (system stats), shjwall (wallpaper cycling)
 resources/  icons / branding
 ```

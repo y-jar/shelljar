@@ -1,10 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import Quickshell.Io
+import Quickshell
 import Quickshell.Widgets
 
-// App launcher shown as a grid. Fed by scripts/shjapps (TSV: Name Exec Icon).
+// App launcher shown as a grid. Apps come from quickshell's DesktopEntries.
 Rectangle {
   id: root
 
@@ -13,43 +13,31 @@ Rectangle {
   height: Config.launcherHeight
   radius: Config.cornerRadius
   color: Config.bg
-  border.color: Qt.rgba(1,1,1,0.08)
+  border.color: Qt.rgba(1, 1, 1, 0.08)
 
   property color textColor: Config.text
   property color subColor: Config.subtext
 
-  property var allApps: []       // array of [name, exec, icon]
+  property var allApps: [] // array of DesktopEntry
   property string filterText: ""
   property var filteredApps: []
 
-  function loadApps() { appProc.exec(["sh", "-c", "shjapps"]) }
-  function applyFilter() {
+  function rebuildFilter() {
     const q = root.filterText.toLowerCase().trim()
     const out = []
-    for (const a of root.allApps) {
-      if (q === "" || a[0].toLowerCase().includes(q)) out.push(a)
+    for (const entry of root.allApps) {
+      if (q === "" || entry.name.toLowerCase().includes(q)
+        || entry.genericName.toLowerCase().includes(q)) out.push(entry)
     }
     root.filteredApps = out
   }
 
-  Component.onCompleted: loadApps()
-
-  Process {
-    id: appProc
-    stdout: StdioCollector {
-      onStreamFinished: {
-        const out = []
-        for (const ln of (text || "").split("\n")) {
-          const p = ln.split("\t")
-          if (p.length >= 2 && p[0] !== "") out.push(p)
-        }
-        root.allApps = out
-        root.applyFilter()
-      }
-    }
+  Component.onCompleted: {
+    const apps = DesktopEntries.applications.values
+      .filter(e => !e.noDisplay)
+    root.allApps = apps
+    root.rebuildFilter()
   }
-
-  Process { id: launchProc }
 
   ColumnLayout {
     anchors.fill: parent
@@ -62,7 +50,7 @@ Rectangle {
       implicitHeight: 32
       radius: 8
       color: Config.surface
-      border.color: Qt.rgba(1,1,1,0.06)
+      border.color: Qt.rgba(1, 1, 1, 0.06)
 
       RowLayout {
         anchors.fill: parent
@@ -78,7 +66,7 @@ Rectangle {
           placeholderTextColor: root.subColor
           background: Item {}
           font.pixelSize: 12
-          onTextChanged: { root.filterText = text; root.applyFilter() }
+          onTextChanged: { root.filterText = text; root.rebuildFilter() }
           Keys.onEscapePressed: root.open = false
         }
       }
@@ -112,10 +100,11 @@ Rectangle {
             IconImage {
               Layout.preferredWidth: 36
               Layout.preferredHeight: 36
-              source: modelData.length >= 3 ? modelData[2] : ""
+              asynchronous: true
+              source: Quickshell.iconPath(modelData.icon, "image-missing")
             }
             Text {
-              text: modelData[0]
+              text: modelData.name
               color: root.textColor
               font.pixelSize: 10
               elide: Text.ElideRight
@@ -130,7 +119,7 @@ Rectangle {
             onEntered: parent.color = Config.surface
             onExited: parent.color = "transparent"
             onClicked: {
-              launchProc.exec(["sh", "-c", modelData[1]])
+              modelData.execute()
               root.open = false
             }
           }

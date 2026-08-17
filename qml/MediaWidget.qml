@@ -12,7 +12,8 @@ RowLayout {
   spacing: 6
 
   // pick the first player that reports a track
-  readonly property var player: Mpris.players.length > 0 ? Mpris.players.get(0) : null
+  readonly property var players: Mpris.players ? Mpris.players.values : []
+  readonly property var player: players.length > 0 ? players[0] : null
   readonly property bool nothingPlaying: player === null || player.trackTitle === ""
 
   // prev / play-pause / next

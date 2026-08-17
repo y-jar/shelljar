@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Wayland
 
 // Top-center island that auto-hides to a thin hover strip while reserving space.
@@ -13,7 +14,7 @@ PanelWindow {
   width: 640
   height: (expanded || pinned) ? Config.islandHeight : 12
   exclusiveZone: height // reserves this many px from the anchored edge
-  layer: 3
+  WlrLayershell.layer: WlrLayer.Overlay // hover strip sits above fullscreen windows
   color: "transparent"
 
   Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }

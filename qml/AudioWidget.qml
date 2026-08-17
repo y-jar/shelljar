@@ -8,18 +8,23 @@ RowLayout {
 
   property color textColor: Config.text
   property color subColor: Config.subtext
-  property bool showLabel: true
   readonly property var sink: Pipewire.defaultAudioSink
-  readonly property real vol: sink != null && sink.audio != null ? sink.audio.volume : 0
-  readonly property bool muted: sink != null && sink.audio != null && sink.audio.muted
+  readonly property bool sinkReady: sink !== null && sink.ready && sink.audio !== null
+  readonly property real vol: sinkReady ? sink.audio.volume : 0
+  readonly property bool muted: sinkReady && sink.audio.muted
+
+  // Keep the default sink bound so volume/mute props are valid.
+  PwObjectTracker {
+    objects: [root.sink]
+  }
 
   // mute / unmute toggle
   function toggleMute() {
-    if (sink != null && sink.audio != null) sink.audio.setMuted(!sink.audio.muted)
+    if (sinkReady) sink.audio.muted = !sink.audio.muted
   }
 
   function setVolume(v) {
-    if (sink != null && sink.audio != null) sink.audio.setVolume(Math.max(0, Math.min(1, v)))
+    if (sinkReady) sink.audio.volume = Math.max(0, Math.min(1, v))
   }
 
   // mute toggle button
