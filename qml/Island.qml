@@ -6,8 +6,8 @@ import QtQuick.Layouts
 Item {
   id: root
 
-  width: 640
-  height: (expanded || pinned) ? Config.islandHeight : 12
+  width: Config.islandWidth
+  height: (expanded || pinned) ? Config.islandHeight : Config.stripHeight
 
   property bool expanded: false
   property bool pinned: false // kept expanded by an open popup
@@ -81,7 +81,7 @@ Item {
           Text {
             anchors.centerIn: parent
             text: "👤"
-            font.pixelSize: 16
+            font.pixelSize: Config.fsMedium
           }
           MouseArea {
             anchors.fill: parent
@@ -95,7 +95,7 @@ Item {
         Text {
           text: "◎"
           color: root.subColor
-          font.pixelSize: 14
+          font.pixelSize: Config.fsSmall
         }
         Item { Layout.fillWidth: true }
       }

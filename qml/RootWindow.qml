@@ -26,6 +26,7 @@ PanelWindow {
   WlrLayershell.layer: WlrLayer.Top
   WlrLayershell.keyboardFocus: root.popupOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
   color: "transparent"
+  font.family: Config.fontFamily
 
   property bool launcherOpen: false
   property bool controlsOpen: false
@@ -143,7 +144,7 @@ PanelWindow {
           Text {
             text: "▣"
             color: Config.accent
-            font.pixelSize: 16
+            font.pixelSize: Config.fsMedium
           }
           ColumnLayout {
             Layout.fillWidth: true
@@ -151,13 +152,13 @@ PanelWindow {
             Text {
               text: modelData.appName || ""
               color: Config.accent
-              font.pixelSize: 10
+              font.pixelSize: Config.fsTiny
             }
             Text {
               id: toastText
               text: (modelData.summary || "") + (modelData.body ? "\n" + modelData.body : "")
               color: Config.text
-              font.pixelSize: 11
+              font.pixelSize: Config.fsSmall
               wrapMode: Text.WordWrap
               Layout.fillWidth: true
             }
@@ -168,7 +169,7 @@ PanelWindow {
               anchors.centerIn: parent
               text: "✕"
               color: Config.subtext
-              font.pixelSize: 10
+              font.pixelSize: Config.fsTiny
             }
             MouseArea {
               anchors.fill: parent

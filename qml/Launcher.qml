@@ -57,7 +57,7 @@ Rectangle {
         anchors.leftMargin: 10
         anchors.rightMargin: 10
         spacing: 8
-        Text { text: "🔍"; color: root.subColor; font.pixelSize: 12 }
+        Text { text: "🔍"; color: root.subColor; font.pixelSize: Config.fsMedium }
         TextField {
           id: searchBox
           Layout.fillWidth: true
@@ -65,7 +65,7 @@ Rectangle {
           placeholderText: "Search apps…"
           placeholderTextColor: root.subColor
           background: Item {}
-          font.pixelSize: 12
+          font.pixelSize: Config.fsMedium
           onTextChanged: { root.filterText = text; root.rebuildFilter() }
           Keys.onEscapePressed: root.open = false
         }
@@ -77,8 +77,8 @@ Rectangle {
       id: grid
       Layout.fillWidth: true
       Layout.fillHeight: true
-      cellWidth: 96
-      cellHeight: 88
+      cellWidth: Math.round(96 * Config.uiScale)
+      cellHeight: Math.round(88 * Config.uiScale)
       clip: true
       model: root.filteredApps
       boundsBehavior: Flickable.StopAtBounds
@@ -98,15 +98,15 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 6
             IconImage {
-              Layout.preferredWidth: 36
-              Layout.preferredHeight: 36
+              Layout.preferredWidth: Math.round(36 * Config.uiScale)
+              Layout.preferredHeight: Math.round(36 * Config.uiScale)
               asynchronous: true
               source: Quickshell.iconPath(modelData.icon, "image-missing")
             }
             Text {
               text: modelData.name
               color: root.textColor
-              font.pixelSize: 10
+              font.pixelSize: Config.fsSmall
               elide: Text.ElideRight
               Layout.preferredWidth: grid.cellWidth - 16
               horizontalAlignment: Text.AlignHCenter

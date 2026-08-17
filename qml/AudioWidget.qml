@@ -29,7 +29,7 @@ RowLayout {
 
   // mute toggle button
   Rectangle {
-    width: 22; height: 22; radius: 5
+    width: Math.round(22 * Config.uiScale); height: Math.round(22 * Config.uiScale); radius: 5
     color: "transparent"
     MouseArea {
       anchors.fill: parent
@@ -37,7 +37,7 @@ RowLayout {
       Text {
         anchors.centerIn: parent
         text: root.muted ? "🔇" : (root.vol === 0 ? "🔈" : (root.vol < 0.5 ? "🔉" : "🔊"))
-        font.pixelSize: 12
+        font.pixelSize: Config.fsMedium
       }
     }
   }
@@ -67,6 +67,6 @@ RowLayout {
   Text {
     text: Math.round(root.vol * 100) + "%"
     color: root.textColor
-    font.pixelSize: 10
+    font.pixelSize: Config.fsSmall
   }
 }

@@ -17,7 +17,7 @@ ColumnLayout {
     Text {
       text: clock.hours
       color: root.textColor
-      font.pixelSize: 20
+      font.pixelSize: Config.fsLarge
       font.weight: Font.DemiBold
     }
 
@@ -25,14 +25,14 @@ ColumnLayout {
       // separator blinks on even seconds
       text: clock.blink ? ":" : " "
       color: root.dateColor
-      font.pixelSize: 20
+      font.pixelSize: Config.fsLarge
       font.weight: Font.DemiBold
     }
 
     Text {
       text: clock.minutes
       color: root.textColor
-      font.pixelSize: 20
+      font.pixelSize: Config.fsLarge
       font.weight: Font.DemiBold
     }
   }
@@ -40,7 +40,7 @@ ColumnLayout {
   Text {
     text: clock.dateStr
     color: root.dateColor
-    font.pixelSize: 11
+    font.pixelSize: Config.fsSmall
     Layout.alignment: Qt.AlignHCenter
   }
 

@@ -8,7 +8,7 @@ RowLayout {
 
   property color textColor: Config.text
   property color subColor: Config.subtext
-  property int iconSize: 14
+  property int iconSize: Math.round(14 * Config.uiScale)
   spacing: 6
 
   // pick the first player that reports a track
@@ -18,7 +18,7 @@ RowLayout {
 
   // prev / play-pause / next
   Rectangle {
-    width: 24; height: 24; radius: 6; color: "transparent"
+    width: Math.round(24 * Config.uiScale); height: Math.round(24 * Config.uiScale); radius: 6; color: "transparent"
     visible: !root.nothingPlaying && player.canGoPrevious
     opacity: 0.9
     MouseArea {
@@ -29,7 +29,7 @@ RowLayout {
   }
 
   Rectangle {
-    width: 26; height: 26; radius: 6
+    width: Math.round(26 * Config.uiScale); height: Math.round(26 * Config.uiScale); radius: 6
     color: Config.surface
     visible: !root.nothingPlaying && player.canTogglePlaying
     MouseArea {
@@ -45,7 +45,7 @@ RowLayout {
   }
 
   Rectangle {
-    width: 24; height: 24; radius: 6; color: "transparent"
+    width: Math.round(24 * Config.uiScale); height: Math.round(24 * Config.uiScale); radius: 6; color: "transparent"
     visible: !root.nothingPlaying && player.canGoNext
     MouseArea {
       anchors.fill: parent
@@ -60,16 +60,16 @@ RowLayout {
     Text {
       text: root.player.trackTitle || ""
       color: root.textColor
-      font.pixelSize: 11
+      font.pixelSize: Config.fsSmall
       elide: Text.ElideRight
-      Layout.preferredWidth: 160
+      Layout.preferredWidth: Math.round(160 * Config.uiScale)
     }
     Text {
       text: root.player.trackArtist || root.player.identity || ""
       color: root.subColor
-      font.pixelSize: 9
+      font.pixelSize: Config.fsTiny
       elide: Text.ElideRight
-      Layout.preferredWidth: 160
+      Layout.preferredWidth: Math.round(160 * Config.uiScale)
     }
   }
 }

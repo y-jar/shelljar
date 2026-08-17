@@ -8,7 +8,7 @@ RowLayout {
   id: root
 
   property color hoverBg: Config.surface
-  property int iconSize: 18
+  property int iconSize: Math.round(18 * Config.uiScale)
   spacing: 2
 
   // Referencing the SystemTray singleton turns on tray tracking.

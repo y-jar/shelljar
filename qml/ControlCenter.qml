@@ -36,13 +36,13 @@ Rectangle {
         spacing: 10
 
         Rectangle {
-          width: 42; height: 42; radius: 21
+          width: Math.round(42 * Config.uiScale); height: Math.round(42 * Config.uiScale); radius: 21
           color: Config.surface
           border.color: Qt.rgba(1,1,1,0.08)
           Text {
             anchors.centerIn: parent
             text: "👤"
-            font.pixelSize: 20
+            font.pixelSize: Config.fsLarge
           }
         }
 
@@ -52,13 +52,13 @@ Rectangle {
             id: userLabel
             text: user()
             color: root.textColor
-            font.pixelSize: 14
+            font.pixelSize: Config.fsMedium
             font.weight: Font.DemiBold
           }
           Text {
             text: "mouse-friendly shell"
             color: root.subColor
-            font.pixelSize: 9
+            font.pixelSize: Config.fsTiny
           }
         }
 
@@ -71,7 +71,7 @@ Rectangle {
         color: Qt.rgba(1,1,1,0.06)
       }
 
-      Text { text: "Audio"; color: root.subColor; font.pixelSize: 10 }
+      Text { text: "Audio"; color: root.subColor; font.pixelSize: Config.fsTiny }
       AudioWidget { }
 
       Rectangle {

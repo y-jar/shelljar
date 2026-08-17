@@ -16,7 +16,7 @@ RowLayout {
 
   Rectangle {
     Layout.fillHeight: true
-    Layout.preferredWidth: 120
+    Layout.preferredWidth: Math.round(120 * Config.uiScale)
     implicitHeight: 34
     radius: 10
     color: root.hoverBg
@@ -29,12 +29,12 @@ RowLayout {
       Text {
         text: "🖼  Wallpapers"
         color: root.textColor
-        font.pixelSize: 11
+        font.pixelSize: Config.fsSmall
       }
       Text {
         text: "scroll to change"
         color: root.subColor
-        font.pixelSize: 8
+        font.pixelSize: Config.fsTiny
       }
     }
 

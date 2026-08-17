@@ -17,7 +17,7 @@ ColumnLayout {
     Layout.fillWidth: true
     text: "Notifications"
     color: root.textColor
-    font.pixelSize: 12
+    font.pixelSize: Config.fsMedium
     font.weight: Font.DemiBold
   }
 
@@ -45,7 +45,7 @@ ColumnLayout {
         anchors.margins: 10
         spacing: 8
 
-        Text { text: "•"; color: Config.accent; font.pixelSize: 12 }
+        Text { text: "•"; color: Config.accent; font.pixelSize: Config.fsMedium }
 
         ColumnLayout {
           Layout.fillWidth: true
@@ -53,13 +53,13 @@ ColumnLayout {
           Text {
             text: modelData.appName || ""
             color: root.subColor
-            font.pixelSize: 9
+            font.pixelSize: Config.fsTiny
           }
           Text {
             id: notifText
             text: (modelData.summary || "") + (modelData.body ? "\n" + modelData.body : "")
             color: root.textColor
-            font.pixelSize: 11
+            font.pixelSize: Config.fsSmall
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
           }
@@ -68,7 +68,7 @@ ColumnLayout {
         Text {
           text: "✕"
           color: root.subColor
-          font.pixelSize: 10
+          font.pixelSize: Config.fsTiny
           MouseArea {
             anchors.fill: parent
             onClicked: modelData.dismiss()

@@ -18,16 +18,27 @@ Item {
   readonly property color yellow: "#f9e2af"
   readonly property color blue: "#89b4fa"
 
+  // ---- theming / scale ----
+  readonly property string fontFamily: "Monocraft"
+  readonly property real uiScale: 0.85
+
   // ---- island geometry ----
-  readonly property real stripHeight: 4       // hovers strip reserved at top center when hidden
-  readonly property real islandHeight: 48     // expanded island thickness
+  readonly property real islandWidth: Math.round(560 * uiScale) // expanded island width
+  readonly property real stripHeight: Math.round(8 * uiScale)   // collapsed hover strip at top center
+  readonly property real islandHeight: Math.round(46 * uiScale) // expanded island thickness
   readonly property real cornerRadius: 12
   readonly property real spacing: 8
 
   // ---- popup geometry ----
-  readonly property int launcherWidth: 720
-  readonly property int launcherHeight: 520
-  readonly property int controlCenterWidth: 360
+  readonly property int launcherWidth: Math.round(660 * uiScale)
+  readonly property int launcherHeight: Math.round(480 * uiScale)
+  readonly property int controlCenterWidth: Math.round(330 * uiScale)
+
+  // ---- font sizes (scaled) ----
+  readonly property int fsTiny: Math.round(9 * uiScale)
+  readonly property int fsSmall: Math.round(11 * uiScale)
+  readonly property int fsMedium: Math.round(13 * uiScale)
+  readonly property int fsLarge: Math.round(18 * uiScale)
 
   // ---- behavior ----
   readonly property int statsIntervalMs: 2000

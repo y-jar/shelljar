@@ -88,7 +88,7 @@ ColumnLayout {
           color: Config.accent
         }
       }
-      Text { text: stats.cpu + "%"; color: root.textColor; font.pixelSize: 10 }
+      Text { text: stats.cpu + "%"; color: root.textColor; font.pixelSize: Config.fsTiny }
     }
 
     // RAM
@@ -105,25 +105,25 @@ ColumnLayout {
           color: Config.blue
         }
       }
-      Text { text: root.human(root.ramUsed) + "/" + root.human(root.ramTotal); color: root.textColor; font.pixelSize: 10 }
+      Text { text: root.human(root.ramUsed) + "/" + root.human(root.ramTotal); color: root.textColor; font.pixelSize: Config.fsTiny }
     }
 
     // NET
     RowLayout {
       Layout.fillWidth: true
       spacing: 6
-      Text { text: "↓"; color: Config.green; font.pixelSize: 10 }
-      Text { text: root.human(root.dlBps) + "/s"; color: root.textColor; font.pixelSize: 10 }
-      Text { text: "↑"; color: Config.red; font.pixelSize: 10; Layout.leftMargin: 4 }
-      Text { text: root.human(root.ulBps) + "/s"; color: root.textColor; font.pixelSize: 10 }
+      Text { text: "↓"; color: Config.green; font.pixelSize: Config.fsTiny }
+      Text { text: root.human(root.dlBps) + "/s"; color: root.textColor; font.pixelSize: Config.fsTiny }
+      Text { text: "↑"; color: Config.red; font.pixelSize: Config.fsTiny; Layout.leftMargin: 4 }
+      Text { text: root.human(root.ulBps) + "/s"; color: root.textColor; font.pixelSize: Config.fsTiny }
     }
 
     // DISK
     RowLayout {
       Layout.fillWidth: true
       spacing: 6
-      Text { text: "◧"; color: Config.yellow; font.pixelSize: 10 }
-      Text { text: root.human(root.diskUsed) + "/" + root.human(root.diskTotal); color: root.textColor; font.pixelSize: 10 }
+      Text { text: "◧"; color: Config.yellow; font.pixelSize: Config.fsTiny }
+      Text { text: root.human(root.diskUsed) + "/" + root.human(root.diskTotal); color: root.textColor; font.pixelSize: Config.fsTiny }
     }
   }
 
