@@ -8,10 +8,15 @@ import Quickshell.Services.Notifications
 import qs.components
 
 // ---- shelljar entry ----
-// Hosts the shared notification daemon + toasts + IPC, and creates one
-// per-screen ShellScreen window (caelestia-style multi-monitor).
-Item {
+// The config root is an invisible FloatingWindow (not an Item) so quickshell
+// does NOT wrap it in a white ProxyFloatingWindow. It hosts the shared
+// notification daemon + toasts + IPC, and creates one full-screen PerScreen
+// window per monitor (caelestia-style multi-monitor).
+FloatingWindow {
   id: root
+
+  visible: false      // this window never maps; only the per-screen windows show
+  color: "transparent"
 
   // notification daemon (implements org.freedesktop.Notifications), shared
   NotificationServer {
@@ -46,14 +51,14 @@ Item {
   IpcHandler {
     target: "shelljar"
 
-    function first() { return screens.itemAt(0) }
+    function first() { return screens.instances && screens.instances.length ? screens.instances[0] : null }
 
-    function close(): void { const s = screens.itemAt(0); if (s) s.closeAll() }
+    function close(): void { const s = first(); if (s) s.closeAll() }
 
-    function toggleLauncher(): void { const s = screens.itemAt(0); if (s) s.toggleLauncher() }
+    function toggleLauncher(): void { const s = first(); if (s) s.toggleLauncher() }
 
-    function toggleControlCenter(): void { const s = screens.itemAt(0); if (s) s.toggleControlCenter() }
+    function toggleControlCenter(): void { const s = first(); if (s) s.toggleControlCenter() }
 
-    function toggleSession(): void { const s = screens.itemAt(0); if (s) s.toggleSession() }
+    function toggleSession(): void { const s = first(); if (s) s.toggleSession() }
   }
 }
