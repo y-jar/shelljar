@@ -94,7 +94,12 @@ PanelWindow {
       wallCarousel.open = false
       wallGrid.open = true
     }
+    onOsdHoverRequested: { osd.showVolume(); osd.hover() }
+    onOsdValueChanged: osd.showVolume()
   }
+
+  // ---- volume/brightness OSD (top-right) ----
+  Osd { id: osd }
 
   // ---- wallpaper preview carousel (pop-out) ----
   WallpaperCarousel {
