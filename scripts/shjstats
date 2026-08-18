@@ -77,4 +77,10 @@ printf "%s %s %s %s %s\n" "$CUR_TOTAL" "$CUR_IDLE" "$CUR_RX" "$CUR_TX" "$CUR_TIM
 read -r RAM_USED RAM_TOTAL <<< "$(read_mem)"
 read -r DISK_USED DISK_TOTAL <<< "$(read_disk)"
 
+# clamp so the QML never sees negative/garbage values
+(( RAM_USED < 0 )) && RAM_USED=0
+(( RAM_TOTAL < 1 )) && RAM_TOTAL=1
+(( DISK_USED < 0 )) && DISK_USED=0
+(( DISK_TOTAL < 1 )) && DISK_TOTAL=1
+
 printf "%d\t%d\t%d\t%d\t%d\t%d\t%d\n" "$CPU" "$RAM_USED" "$RAM_TOTAL" "$DL" "$UL" "$DISK_USED" "$DISK_TOTAL"

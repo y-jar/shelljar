@@ -52,6 +52,7 @@ RowLayout {
   }
   ShellText {
     text: (root.cpu || 0) + "%"
+    Layout.minimumWidth: Math.round(30 * Config.uiScale)
     color: root.textColor
     font.pixelSize: Config.fsTiny
   }
@@ -63,6 +64,7 @@ RowLayout {
   }
   ShellText {
     text: root.human(root.ramUsed) + "/" + root.human(root.ramTotal)
+    Layout.minimumWidth: Math.round(52 * Config.uiScale)
     color: root.textColor
     font.pixelSize: Config.fsTiny
   }
@@ -74,6 +76,7 @@ RowLayout {
   }
   ShellText {
     text: root.human(root.dlBps) + "/s"
+    Layout.minimumWidth: Math.round(34 * Config.uiScale)
     color: root.textColor
     font.pixelSize: Config.fsTiny
   }
@@ -84,6 +87,7 @@ RowLayout {
   }
   ShellText {
     text: root.human(root.ulBps) + "/s"
+    Layout.minimumWidth: Math.round(34 * Config.uiScale)
     color: root.textColor
     font.pixelSize: Config.fsTiny
   }
@@ -95,6 +99,7 @@ RowLayout {
   }
   ShellText {
     text: root.human(root.diskUsed) + "/" + root.human(root.diskTotal)
+    Layout.minimumWidth: Math.round(52 * Config.uiScale)
     color: Config.yellow
     font.pixelSize: Config.fsTiny
   }
@@ -113,16 +118,25 @@ RowLayout {
     command: ["sh", "-c", Config.statsCmd]
     stdout: StdioCollector {
       onStreamFinished: {
-        const line = (text || "").trim()
+        // take the last non-empty line (robust to any accumulated buffer)
+        const lines = (text || "").split(/\r?\n/)
+        let line = ""
+        for (let i = lines.length - 1; i >= 0; i--) {
+          if (lines[i].trim() !== "") { line = lines[i].trim(); break }
+        }
         const f = line.split("\t")
         if (f.length < 7) return
-        stats.cpu = parseInt(f[0]) || 0
-        stats.ramUsed = parseInt(f[1]) || 0
-        stats.ramTotal = parseInt(f[2]) || 1
-        stats.dlBps = parseInt(f[3]) || 0
-        stats.ulBps = parseInt(f[4]) || 0
-        stats.diskUsed = parseInt(f[5]) || 0
-        stats.diskTotal = parseInt(f[6]) || 1
+        function num(x, dflt) {
+          const n = parseInt(x)
+          return (Number.isFinite(n) && n >= 0) ? n : dflt
+        }
+        stats.cpu = num(f[0], 0)
+        stats.ramUsed = num(f[1], 0)
+        stats.ramTotal = Math.max(1, num(f[2], 1))
+        stats.dlBps = num(f[3], 0)
+        stats.ulBps = num(f[4], 0)
+        stats.diskUsed = num(f[5], 0)
+        stats.diskTotal = Math.max(1, num(f[6], 1))
       }
     }
   }

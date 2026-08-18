@@ -23,6 +23,7 @@ Item {
 
   // ---- island (strip / dock) ----
   readonly property real dockWidthRatio: 0.2 // dock/strip width as fraction of screen width
+  readonly property real minDockWidth: Math.round(180 * uiScale) // docked width floor
   readonly property real stripHeight: Math.round(6 * uiScale)  // collapsed strip height
   readonly property real dockHeight: Math.round(112 * uiScale) // expanded dock height
   readonly property real cornerRadius: 12

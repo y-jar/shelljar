@@ -9,7 +9,9 @@ import Quickshell
 Item {
   id: root
 
-  width: Math.max(140, Math.round((parent ? parent.width : 1600) * Config.dockWidthRatio))
+  // collapsed = thin ~20% strip; docked = auto-fit to its content (no cutoff)
+  readonly property real stripWidth: Math.max(140, Math.round((parent ? parent.width : 1600) * Config.dockWidthRatio))
+  width: dockOpen ? Math.max(Config.minDockWidth, (dockLayout ? dockLayout.implicitWidth + 16 : stripWidth)) : stripWidth
   height: dockOpen ? Config.dockHeight : Config.stripHeight
 
   // Only the power + control trigger pills remain; the full-screen power menu
@@ -39,7 +41,6 @@ Item {
     radius: Config.cornerRadius
     color: Config.bg
     border.color: Qt.rgba(1,1,1,0.10)
-    clip: true
 
     // right-click toggles the dock
     MouseArea {
@@ -61,6 +62,7 @@ Item {
 
     // dock content
     ColumnLayout {
+      id: dockLayout
       anchors.fill: parent
       anchors.margins: 8
       spacing: Config.spacing
