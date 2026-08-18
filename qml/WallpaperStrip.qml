@@ -1,7 +1,6 @@
 import qs.components
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 
 // Dock wallpaper button: wheel pops out the wallpaper carousel, click opens the picker.
 RowLayout {
@@ -12,6 +11,7 @@ RowLayout {
   property color hoverBg: Config.surface
 
   signal openRequested(var dir)
+  signal gridRequested
 
   function cycle(dir) { root.openRequested(dir) }
 
@@ -42,7 +42,7 @@ RowLayout {
       anchors.fill: parent
       cursorShape: Qt.PointingHandCursor
       onWheel: event => root.cycle(event.angleDelta.y > 0 ? "prev" : "next")
-      onClicked: Quickshell.execDetached(["sh", "-c", "waypaper"]) // GUI picker
+      onClicked: root.gridRequested()
     }
   }
 }

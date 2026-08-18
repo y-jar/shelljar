@@ -83,14 +83,33 @@ PanelWindow {
       root.launcherOpen = false
       root.controlsOpen = false
       root.sessionOpen = false
+      wallGrid.open = false
       wallCarousel.open = true
       wallCarousel.nudge(dir)
+    }
+    onWallpaperGridRequested: {
+      root.launcherOpen = false
+      root.controlsOpen = false
+      root.sessionOpen = false
+      wallCarousel.open = false
+      wallGrid.open = true
     }
   }
 
   // ---- wallpaper preview carousel (pop-out) ----
   WallpaperCarousel {
     id: wallCarousel
+    anchors.horizontalCenter: island.horizontalCenter
+    anchors.top: island.bottom
+    anchors.topMargin: 8
+    visible: open
+    open: false
+    onCloseRequested: open = false
+  }
+
+  // ---- wallpaper picker grid (pop-out) ----
+  WallpaperGrid {
+    id: wallGrid
     anchors.horizontalCenter: island.horizontalCenter
     anchors.top: island.bottom
     anchors.topMargin: 8

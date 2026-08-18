@@ -26,6 +26,7 @@ Item {
   signal powerClicked
   signal controlClicked
   signal wallpaperOpenRequested(var dir)
+  signal wallpaperGridRequested
 
   Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
@@ -83,6 +84,7 @@ Item {
         spacing: 6
         WallpaperStrip {
           onOpenRequested: dir => root.wallpaperOpenRequested(dir)
+          onGridRequested: root.wallpaperGridRequested()
         }
         Item { Layout.fillWidth: true }
 
