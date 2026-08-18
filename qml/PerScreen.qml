@@ -69,7 +69,7 @@ PanelWindow {
     anchors.fill: parent
     visible: root.dockActive && !root.popupOpen
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: island.dockOpen = false
+    onClicked: { island.dockOpen = false; wallCarousel.open = false; wallGrid.open = false }
   }
 
   // ---- island strip / dock ----
@@ -223,7 +223,11 @@ PanelWindow {
   Item {
     anchors.fill: parent
     focus: root.dockActive && !root.popupOpen
-    Keys.onEscapePressed: { if (island.dockOpen) island.dockOpen = false }
+    Keys.onEscapePressed: {
+      island.dockOpen = false
+      wallCarousel.open = false
+      wallGrid.open = false
+    }
   }
 
   function closeAll() {

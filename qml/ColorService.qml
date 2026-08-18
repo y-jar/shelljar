@@ -23,7 +23,7 @@ Item {
 
   function start() {
     if (!WallpaperService.current) return
-    quantizer.source = WallpaperService.current
+    quantizer.source = Qt.resolvedUrl(WallpaperService.current)
   }
 
   // ---- rgb <-> hsl ----
