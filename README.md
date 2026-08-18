@@ -41,6 +41,6 @@ nix build .#shelljar   # result/bin/shelljar
 
 ```
 qml/        shell configuration (Config.qml + surfaces + widgets)
-scripts/    shjstats (system stats), shjwall (wallpaper cycling)
+scripts/    shjwall (wallpaper cycling) — system stats are read in-QML (SystemStat.qml)
 resources/  icons / branding
 ```
