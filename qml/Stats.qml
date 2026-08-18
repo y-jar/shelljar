@@ -12,10 +12,10 @@ RowLayout {
   spacing: 8
 
   function human(v) {
-    if (v >= 1073741824) return (v / 1073741824).toFixed(1) + "G"
-    if (v >= 1048576) return (v / 1048576).toFixed(1) + "M"
-    if (v >= 1024) return (v / 1024).toFixed(1) + "K"
-    return v.toString()
+    if (v >= 1073741824) return (v / 1073741824).toFixed(2) + "G"
+    if (v >= 1048576) return (v / 1048576).toFixed(2) + "M"
+    if (v >= 1024) return (v / 1024).toFixed(2) + "K"
+    return v.toFixed(2)
   }
 
   // ---- CPU ----

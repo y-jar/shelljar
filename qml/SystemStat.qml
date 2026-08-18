@@ -74,8 +74,8 @@ Item {
     if (root._prevTime > 0) {
       const dsec = (now - root._prevTime) / 1000
       if (dsec > 0) {
-        root.rxBps = Math.max(0, rx - root._prevRx) / dsec
-        root.txBps = Math.max(0, tx - root._prevTx) / dsec
+        root.rxBps = Math.round(Math.max(0, rx - root._prevRx) / dsec)
+        root.txBps = Math.round(Math.max(0, tx - root._prevTx) / dsec)
       }
     }
     root._prevRx = rx
