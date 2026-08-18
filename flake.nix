@@ -17,11 +17,6 @@
         cp -r ${./qml}/* $out/qml/
         cp -r ${./resources}/* $out/resources/
 
-        # helper scripts (stat polling, wallpaper cycling, app listing)
-        for s in ${./scripts}/*; do
-          install -Dm755 "$s" $out/libexec/$(basename "$s")
-        done
-
         # main launcher: `shelljar` runs the shell
         cat > $out/bin/shelljar <<EOF
         #!${pkgs.runtimeShell}

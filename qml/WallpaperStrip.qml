@@ -1,9 +1,9 @@
 import qs.components
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Io
+import Quickshell
 
-// Middle island: scroll to cycle wallpapers, click to open the picker.
+// Dock wallpaper button: wheel pops out the wallpaper carousel, click opens the picker.
 RowLayout {
   id: root
 
@@ -11,19 +11,18 @@ RowLayout {
   property color subColor: Config.subtext
   property color hoverBg: Config.surface
 
-  function cycle(dir) {
-    wallProc.exec(["sh", "-c", Config.wallpaperCmd + " " + dir])
-  }
+  signal openRequested(var dir)
+
+  function cycle(dir) { root.openRequested(dir) }
 
   Rectangle {
     Layout.fillHeight: true
-    Layout.preferredWidth: Math.round(120 * Config.uiScale)
+    Layout.preferredWidth: Math.round(110 * Config.uiScale)
     implicitHeight: 34
     radius: 10
     color: root.hoverBg
     border.color: Qt.rgba(1,1,1,0.05)
 
-    // hover hint
     ColumnLayout {
       anchors.centerIn: parent
       spacing: 0
@@ -33,7 +32,7 @@ RowLayout {
         font.pixelSize: Config.fsSmall
       }
       ShellText {
-        text: "scroll to change"
+        text: "scroll to preview"
         color: root.subColor
         font.pixelSize: Config.fsTiny
       }
@@ -42,13 +41,8 @@ RowLayout {
     MouseArea {
       anchors.fill: parent
       cursorShape: Qt.PointingHandCursor
-      onWheel: event => root.cycle(event.angleDelta.y > 0 ? "next" : "prev")
-      onClicked: wallProc.exec(["sh", "-c", "waypaper"])  // fallback; picker keybind also exists
-      onDoubleClicked: wallProc.exec(["sh", "-c", "waypaper"])
+      onWheel: event => root.cycle(event.angleDelta.y > 0 ? "prev" : "next")
+      onClicked: Quickshell.execDetached(["sh", "-c", "waypaper"]) // GUI picker
     }
-  }
-
-  Process {
-    id: wallProc
   }
 }

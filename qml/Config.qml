@@ -44,8 +44,4 @@ Item {
   readonly property int fsSmall: Math.round(11 * uiScale)
   readonly property int fsMedium: Math.round(13 * uiScale)
   readonly property int fsLarge: Math.round(18 * uiScale)
-
-  // ---- commands (must be on PATH; the package wrapper adds libexec) ----
-  // note: system stats are read in-QML now (SystemStat.qml); no script needed.
-  readonly property string wallpaperCmd: "shjwall"
 }

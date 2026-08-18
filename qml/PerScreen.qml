@@ -70,6 +70,24 @@ PanelWindow {
     anchors.top: parent.top
     onPowerClicked: { root.closeAll(); root.sessionOpen = true }
     onControlClicked: { root.closeAll(); root.controlsOpen = true }
+    onWallpaperOpenRequested: dir => {
+      root.launcherOpen = false
+      root.controlsOpen = false
+      root.sessionOpen = false
+      wallCarousel.open = true
+      wallCarousel.nudge(dir)
+    }
+  }
+
+  // ---- wallpaper preview carousel (pop-out) ----
+  WallpaperCarousel {
+    id: wallCarousel
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.top: island.bottom
+    anchors.topMargin: 8
+    visible: open
+    open: false
+    onCloseRequested: open = false
   }
 
   // ---- launcher (grid) ----

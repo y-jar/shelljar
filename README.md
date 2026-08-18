@@ -41,6 +41,7 @@ nix build .#shelljar   # result/bin/shelljar
 
 ```
 qml/        shell configuration (Config.qml + surfaces + widgets)
-scripts/    shjwall (wallpaper cycling) — system stats are read in-QML (SystemStat.qml)
+qml/        shell configuration (Config.qml + surfaces + widgets) — no external scripts;
+            system stats (SystemStat.qml) and wallpapers (WallpaperService.qml) are self-contained
 resources/  icons / branding
 ```

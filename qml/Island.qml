@@ -25,6 +25,7 @@ Item {
   property bool pinned: false // unused; kept for future
   signal powerClicked
   signal controlClicked
+  signal wallpaperOpenRequested(var dir)
 
   Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
@@ -80,7 +81,9 @@ Item {
       RowLayout {
         Layout.fillWidth: true
         spacing: 6
-        WallpaperStrip { }
+        WallpaperStrip {
+          onOpenRequested: dir => root.wallpaperOpenRequested(dir)
+        }
         Item { Layout.fillWidth: true }
 
         Repeater {
