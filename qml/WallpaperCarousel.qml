@@ -10,7 +10,7 @@ Rectangle {
   id: root
 
   property bool open: false
-  property real thumbW: Math.round(120 * Config.uiScale)
+  property real thumbW: Math.round(WallpaperService.thumbWidth * Config.uiScale)
   property real thumbH: Math.round(thumbW / 16 * 9)
   signal closeRequested
 
@@ -92,7 +92,7 @@ Rectangle {
   // when the user stops scrolling for a beat, apply the centered wallpaper + close
   Timer {
     id: settle
-    interval: 600
+    interval: WallpaperService.settleMs
     onTriggered: {
       WallpaperService.applyByIndex(view.currentIndex)
       root.closeRequested()

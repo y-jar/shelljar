@@ -4,18 +4,36 @@ import Quickshell
 import Quickshell.Io
 
 // ---- wallpaper list + apply (caelestia-style service, applies via awww) ----
-// Reads the wallpaper dir from ~/.config/shelljar/config.kdl (`wallpaper-dir "…";`)
-// and scans it once; apply() sets the wallpaper through the awww daemon.
+// Reads settings from ~/.config/shelljar/config.kdl:
+//   wallpaper-dir "…";          # wallpaper folder
+//   wallpaper-thumb-width 150;  # carousel thumbnail width
+//   wallpaper-settle-ms 800;    # ms of no-scroll before applying
+// Scans the dir once; apply() sets the wallpaper through the awww daemon.
 Item {
   id: root
 
   property var wallpapers: []
   property string current: ""
-  readonly property string fallbackDir: (Quickshell.env("HOME") || "/home/user") + "/resjar/wall-jar/wall-bin"
+  property int thumbWidth: 150
+  property int settleMs: 800
 
-  function dirFromConfig(text) {
-    const m = (text || "").match(/wallpaper-dir\s*"([^"]+)"\s*;/)
-    return m ? m[1] : ""
+  readonly property string home: Quickshell.env("HOME") || "/home/user"
+  readonly property string fallbackDir: home + "/resjar/wall-jar/wall-bin"
+
+  function expand(path) {
+    if (!path) return path
+    if (path.startsWith("~/")) return home + path.substring(1)
+    return path.replace(/^\$HOME/, home).replace(/^\$\{HOME\}/, home)
+  }
+
+  function parseConfig(text) {
+    const t = text || ""
+    const dir = t.match(/wallpaper-dir\s*"([^"]+)"\s*;/)
+    if (dir) root._dir = root.expand(dir[1])
+    const tw = t.match(/wallpaper-thumb-width\s*(\d+)\s*;/)
+    if (tw) root.thumbWidth = parseInt(tw[1]) || 150
+    const ms = t.match(/wallpaper-settle-ms\s*(\d+)\s*;/)
+    if (ms) root.settleMs = parseInt(ms[1]) || 800
   }
 
   function scan() {
@@ -33,18 +51,14 @@ Item {
     if (index >= 0 && index < root.wallpapers.length) root.apply(root.wallpapers[index])
   }
 
-  // dir resolved from config.kdl (fallback: default dir)
   property string _dir: fallbackDir
 
   FileView {
     id: confFile
     path: (Quickshell.env("HOME") || "/home/user") + "/.config/shelljar/config.kdl"
     printErrors: false
-    onLoaded: {
-      const d = root.dirFromConfig(confFile.text())
-      if (d !== "") { root._dir = d }
-    }
-    onLoadFailed: { root._dir = root.fallbackDir }
+    onLoaded: root.parseConfig(confFile.text())
+    onLoadFailed: root._dir = root.fallbackDir
   }
 
   Process {

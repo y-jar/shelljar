@@ -20,7 +20,7 @@ PanelWindow {
   WlrLayershell.namespace: ns
   WlrLayershell.exclusionMode: ExclusionMode.Ignore // overlay: no reserved space
   WlrLayershell.layer: WlrLayer.Top
-  WlrLayershell.keyboardFocus: root.popupOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+  WlrLayershell.keyboardFocus: (root.popupOpen || root.dockActive) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
   color: "transparent"
 
   anchors.top: true
@@ -36,13 +36,14 @@ PanelWindow {
   property bool controlsOpen: false
   property bool sessionOpen: false
   readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen
+  readonly property bool dockActive: island.dockOpen
 
-  // clickthrough: full screen while a popup is open, otherwise only the island
+  // clickthrough: full screen while a popup or the dock is open, otherwise only the island
   mask: Region {
-    x: root.popupOpen ? 0 : island.x
-    y: root.popupOpen ? 0 : island.y
-    width: root.popupOpen ? root.width : island.width
-    height: root.popupOpen ? root.height : island.height
+    x: (root.popupOpen || root.dockActive) ? 0 : island.x
+    y: (root.popupOpen || root.dockActive) ? 0 : island.y
+    width: (root.popupOpen || root.dockActive) ? root.width : island.width
+    height: (root.popupOpen || root.dockActive) ? root.height : island.height
 
     Region {
       x: toasts.x
@@ -61,6 +62,14 @@ PanelWindow {
     opacity: root.popupOpen ? 1 : 0
     Behavior on opacity { NumberAnimation { duration: 120 } }
     MouseArea { anchors.fill: parent; onClicked: root.closeAll() }
+  }
+
+  // ---- transparent click-catcher: clicking away from the open dock closes it ----
+  MouseArea {
+    anchors.fill: parent
+    visible: root.dockActive && !root.popupOpen
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    onClicked: island.dockOpen = false
   }
 
   // ---- island strip / dock ----
@@ -82,7 +91,7 @@ PanelWindow {
   // ---- wallpaper preview carousel (pop-out) ----
   WallpaperCarousel {
     id: wallCarousel
-    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.horizontalCenter: island.horizontalCenter
     anchors.top: island.bottom
     anchors.topMargin: 8
     visible: open
@@ -189,6 +198,13 @@ PanelWindow {
         Timer { interval: 6000; running: true; onTriggered: root.toastsModel.remove(index) }
       }
     }
+  }
+
+  // ESC closes the open dock (focus granted while the dock is active)
+  Item {
+    anchors.fill: parent
+    focus: root.dockActive && !root.popupOpen
+    Keys.onEscapePressed: { if (island.dockOpen) island.dockOpen = false }
   }
 
   function closeAll() {
