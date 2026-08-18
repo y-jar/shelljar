@@ -34,6 +34,9 @@ FloatingWindow {
 
   ListModel { id: toasts }
 
+  // activate the singleton so it reads config + re-themes on wallpaper change
+  Component.onCompleted: ColorService.reload()
+
   // one full-screen shell per monitor (Variants so window delegates are allowed)
   Variants {
     id: screens

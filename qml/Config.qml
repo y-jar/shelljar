@@ -5,14 +5,15 @@ import QtQuick
 // Tweak here first; everything else reads these values.
 Item {
 
-  // ---- palette (dark Catppuccin-ish, matches niri theme) ----
-  readonly property color bg: "#1e1e2e"
-  readonly property color bgAlt: "#181825"
-  readonly property color surface: "#313244"
-  readonly property color surfaceAlt: "#45475a"
-  readonly property color text: "#cdd6f4"
-  readonly property color subtext: "#a6adc8"
-  readonly property color accent: "#5F7CB8"
+  // ---- palette (mutable: ColorService re-derives these from the wallpaper) ----
+  property color bg: "#1e1e2e"
+  property color bgAlt: "#181825"
+  property color surface: "#313244"
+  property color surfaceAlt: "#45475a"
+  property color text: "#cdd6f4"
+  property color subtext: "#a6adc8"
+  property color accent: "#5F7CB8"
+  // functional / fixed accents
   readonly property color red: "#f38ba8"
   readonly property color green: "#a6e3a1"
   readonly property color yellow: "#f9e2af"
