@@ -33,9 +33,10 @@ Rectangle {
     cacheItemCount: 6
 
     path: Path {
-      startX: (view.width - root.thumbW) / 2
+      startX: 0
       startY: view.height / 2
-      PathLine { x: (view.width - root.thumbW) / 2 + 4 * (root.thumbW + 8); y: view.height / 2 }
+      PathLine { x: view.width / 2; relativeY: 0 }
+      PathLine { x: view.width; relativeY: 0 }
     }
 
     delegate: Item {
