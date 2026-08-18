@@ -69,7 +69,7 @@ PanelWindow {
     anchors.fill: parent
     visible: root.dockActive && !root.popupOpen
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: { island.dockOpen = false; wallCarousel.open = false; wallGrid.open = false }
+    onClicked: { island.dockOpen = false; wallCarousel.open = false; wallGrid.open = false; batteryPanel.open = false }
   }
 
   // ---- island strip / dock ----
@@ -96,10 +96,29 @@ PanelWindow {
     }
     onOsdHoverRequested: { osd.showVolume(); osd.hover() }
     onOsdValueChanged: osd.showVolume()
+    onBatteryPanelRequested: {
+      root.launcherOpen = false
+      root.controlsOpen = false
+      root.sessionOpen = false
+      wallCarousel.open = false
+      wallGrid.open = false
+      batteryPanel.open = true
+    }
   }
 
   // ---- volume/brightness OSD (top-right) ----
   Osd { id: osd }
+
+  // ---- battery panel (pop-out) ----
+  BatteryPanel {
+    id: batteryPanel
+    anchors.horizontalCenter: island.horizontalCenter
+    anchors.top: island.bottom
+    anchors.topMargin: 8
+    visible: open
+    open: false
+    onCloseRequested: open = false
+  }
 
   // ---- wallpaper preview carousel (pop-out) ----
   WallpaperCarousel {
@@ -232,6 +251,7 @@ PanelWindow {
       island.dockOpen = false
       wallCarousel.open = false
       wallGrid.open = false
+      batteryPanel.open = false
     }
   }
 

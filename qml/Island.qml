@@ -29,6 +29,7 @@ Item {
   signal wallpaperGridRequested
   signal osdHoverRequested
   signal osdValueChanged
+  signal batteryPanelRequested
 
   Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
@@ -77,6 +78,9 @@ Item {
         spacing: 10
         Stats { }
         Item { Layout.fillWidth: true }
+        BatteryWidget {
+          onBatteryClicked: root.batteryPanelRequested()
+        }
         VolumeWidget {
           onHoverRequested: root.osdHoverRequested()
           onValueChanged: root.osdValueChanged()
