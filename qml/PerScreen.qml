@@ -69,11 +69,7 @@ PanelWindow {
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.top: parent.top
     onPowerClicked: { root.closeAll(); root.sessionOpen = true }
-    onLauncherClicked: { root.closeAll(); root.launcherOpen = true }
     onControlClicked: { root.closeAll(); root.controlsOpen = true }
-    onLockRequested: Quickshell.execDetached(["sh", "-c", "loginctl lock-session"])
-    onSuspendRequested: Quickshell.execDetached(["sh", "-c", "systemctl suspend"])
-    onLogoutRequested: Quickshell.execDetached(["sh", "-c", "loginctl terminate-user ${USER}"])
   }
 
   // ---- launcher (grid) ----

@@ -46,11 +46,21 @@ RowLayout {
 
   // ---- compact single-line readout ----
   ShellText {
+    text: "CPU"
+    color: root.subColor
+    font.pixelSize: Config.fsTiny
+  }
+  ShellText {
     text: (root.cpu || 0) + "%"
     color: root.textColor
     font.pixelSize: Config.fsTiny
   }
 
+  ShellText {
+    text: "RAM"
+    color: root.subColor
+    font.pixelSize: Config.fsTiny
+  }
   ShellText {
     text: root.human(root.ramUsed) + "/" + root.human(root.ramTotal)
     color: root.textColor
@@ -58,18 +68,33 @@ RowLayout {
   }
 
   ShellText {
-    text: "↓" + root.human(root.dlBps) + "/s"
+    text: "↓"
     color: Config.green
     font.pixelSize: Config.fsTiny
   }
   ShellText {
-    text: "↑" + root.human(root.ulBps) + "/s"
+    text: root.human(root.dlBps) + "/s"
+    color: root.textColor
+    font.pixelSize: Config.fsTiny
+  }
+  ShellText {
+    text: "↑"
     color: Config.red
+    font.pixelSize: Config.fsTiny
+  }
+  ShellText {
+    text: root.human(root.ulBps) + "/s"
+    color: root.textColor
     font.pixelSize: Config.fsTiny
   }
 
   ShellText {
-    text: "◧" + root.human(root.diskUsed) + "/" + root.human(root.diskTotal)
+    text: "DISK"
+    color: root.subColor
+    font.pixelSize: Config.fsTiny
+  }
+  ShellText {
+    text: root.human(root.diskUsed) + "/" + root.human(root.diskTotal)
     color: Config.yellow
     font.pixelSize: Config.fsTiny
   }

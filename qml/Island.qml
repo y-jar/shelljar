@@ -12,34 +12,25 @@ Item {
   width: Math.max(140, Math.round((parent ? parent.width : 1600) * Config.dockWidthRatio))
   height: dockOpen ? Config.dockHeight : Config.stripHeight
 
+  // Only the power + control trigger pills remain; the full-screen power menu
+  // (opened by the power pill) already contains lock/suspend/logout/etc.
   readonly property var actions: [
     { key: "power", glyph: "⚡" },
-    { key: "launcher", glyph: "▦" },
     { key: "control", glyph: "☰" },
-    { key: "lock", glyph: "🔒" },
-    { key: "suspend", glyph: "⏾" },
-    { key: "logout", glyph: "↪" },
   ]
 
   property bool dockOpen: false
   property bool pinned: false // unused; kept for future
   signal powerClicked
-  signal launcherClicked
   signal controlClicked
-  signal lockRequested
-  signal suspendRequested
-  signal logoutRequested
 
   Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
 
   function runAction(key) {
-    if (key === "power") { dockOpen = false; powerClicked() }
-    else if (key === "launcher") { dockOpen = false; launcherClicked() }
-    else if (key === "control") { dockOpen = false; controlClicked() }
-    else if (key === "lock") { dockOpen = false; lockRequested() }
-    else if (key === "suspend") { dockOpen = false; suspendRequested() }
-    else if (key === "logout") { dockOpen = false; logoutRequested() }
+    dockOpen = false
+    if (key === "power") powerClicked()
+    else if (key === "control") controlClicked()
   }
 
   Rectangle {

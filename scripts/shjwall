@@ -1,14 +1,28 @@
 #!/usr/bin/env bash
 # shjwall — cycle wallpapers in the wallpaper dir and apply via awww.
 # Usage: shjwall next | prev | random | set <path>
-# Applies through the existing awww-daemon (same backend niri uses).
+#
+# The wallpaper directory comes from (first match wins):
+#   $SHJ_WALL_DIR env var
+#   ~/.config/shelljar/config.kdl  ->  wallpaper-dir "...";
+#   ${HOME}/resjar/wall-jar/wall-bin (default)
 
 set -u
 
-DIR="${SHJ_WALL_DIR:-$HOME/resjar/wall-jar/wall-bin}"
+CONF="${SHJ_CONF:-$HOME/.config/shelljar/config.kdl}"
+
+# wallpaper dir
+DIR="${SHJ_WALL_DIR:-}"
+if [[ -z "$DIR" && -r "$CONF" ]]; then
+  DIR="$(sed -n 's/^[[:space:]]*wallpaper-dir[[:space:]]*"\([^"]*\)"[[:space:]]*;.*/\1/p' "$CONF" | head -1)"
+fi
+[[ -z "$DIR" ]] && DIR="${HOME}/resjar/wall-jar/wall-bin"
+
 STATE="${TMPDIR:-/tmp}/shjwall-${USER:-user}.idx"
 
-apply() { awww-daemon set-wallpaper "$1" 2>/dev/null; }
+apply() {
+  awww img "$1" --transition-type fade --transition-duration 1 2>/dev/null
+}
 
 shopt -s nullglob
 mapfile -t WALLS < <(find "$DIR" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \) | sort)
@@ -22,7 +36,7 @@ case "${1:-next}" in
   next) IDX=$(( (IDX + 1) % N ));;
   prev) IDX=$(( (IDX + N - 1) % N ));;
   random) IDX=$(( RANDOM % N ));;
-  set) apply "${2:-${WALLS[IDX]}}"; exit 0;;
+  set) apply "${2:-${WALLS[IDX]}}"; exit $?;;
   *) echo "shjwall: unknown action '$1' (next|prev|random|set)" >&2; exit 1;;
 esac
 

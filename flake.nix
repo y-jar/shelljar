@@ -39,6 +39,30 @@
         EOF
         chmod +x $out/bin/shjctl
 
+        # seed a user-editable config on first run (~/.config/shelljar/config.kdl)
+        cat > $out/bin/shelljar-core <<EOF
+        #!${pkgs.runtimeShell}
+        CONF_DIR="\$HOME/.config/shelljar"
+        if [ ! -f "\$CONF_DIR/config.kdl" ]; then
+          mkdir -p "\$CONF_DIR"
+          cat > "\$CONF_DIR/config.kdl" <<KDL
+        // shelljar config (KDL) - user editable
+        wallpaper-dir "\$HOME/resjar/wall-jar/wall-bin";
+        KDL
+        fi
+        EOF
+        chmod +x $out/bin/shelljar-core
+
+        # main launcher bundles the config seed + the shell
+        cat > $out/bin/shelljar <<EOF
+        #!${pkgs.runtimeShell}
+        $out/bin/shelljar-core
+        export SHJ_ROOT=$out
+        export PATH=$out/libexec:\$PATH
+        exec ${pkgs.quickshell}/bin/quickshell -p $out/qml "\$@"
+        EOF
+        chmod +x $out/bin/shelljar
+
         # dev launcher: run straight from the source tree
         cat > $out/bin/shelljar-dev <<EOF
         #!${pkgs.runtimeShell}
