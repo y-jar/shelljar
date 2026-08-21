@@ -11,7 +11,7 @@ Rectangle {
 
   property bool open: false
   width: Config.controlCenterWidth
-  height: 420
+  height: Math.round(250 * Config.uiScale)
   radius: Config.cornerRadius
   color: Config.bgAlt
   border.color: Qt.rgba(1,1,1,0.08)
@@ -20,7 +20,6 @@ Rectangle {
   property color subColor: Config.subtext
 
   // wired up by shell.qml
-  property var notificationServer: null
   signal openSession
 
   ScrollView {
@@ -75,19 +74,6 @@ Rectangle {
 
       ShellText { text: "Audio"; color: root.subColor; font.pixelSize: Config.fsTiny }
       AudioWidget { }
-
-      Rectangle {
-        Layout.fillWidth: true
-        height: 1
-        color: Qt.rgba(1,1,1,0.06)
-      }
-
-      NotificationsList {
-        id: notifList
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        server: root.notificationServer
-      }
 
       Rectangle {
         Layout.fillWidth: true

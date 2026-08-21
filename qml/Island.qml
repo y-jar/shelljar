@@ -23,8 +23,11 @@ Item {
 
   property bool dockOpen: false
   property bool pinned: false // unused; kept for future
+  // wired by PerScreen for the notifications button badge count
+  property var notificationServer: null
   signal powerClicked
   signal controlClicked
+  signal notificationsRequested
   signal wallpaperOpenRequested(var dir)
   signal wallpaperGridRequested
   signal osdHoverRequested
@@ -93,10 +96,52 @@ Item {
       RowLayout {
         Layout.fillWidth: true
         spacing: 6
+
+        // notifications button (left, where wallpapers used to be)
+        Rectangle {
+          id: notifBtn
+          Layout.preferredWidth: Math.round(44 * Config.uiScale)
+          implicitHeight: 34
+          radius: 10
+          color: notifHover.containsMouse ? Config.surfaceAlt : Config.surface
+          border.color: Qt.rgba(1,1,1,0.08)
+
+          ShellText {
+            anchors.centerIn: parent
+            text: "🔔"
+            font.pixelSize: Config.fsSmall
+          }
+          Rectangle {
+            visible: root.notificationServer && root.notificationServer.trackedNotifications.count > 0
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: 4
+            width: 14; height: 14; radius: 7
+            color: Config.red
+            ShellText {
+              anchors.centerIn: parent
+              text: String(root.notificationServer ? root.notificationServer.trackedNotifications.count : 0)
+              color: "#ffffff"
+              font.pixelSize: Config.fsTiny
+              font.weight: Font.DemiBold
+            }
+          }
+          MouseArea {
+            id: notifHover
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.notificationsRequested()
+          }
+        }
+
+        Item { Layout.fillWidth: true }
+
         WallpaperStrip {
           onOpenRequested: dir => root.wallpaperOpenRequested(dir)
           onGridRequested: root.wallpaperGridRequested()
         }
+
         Item { Layout.fillWidth: true }
 
         Repeater {

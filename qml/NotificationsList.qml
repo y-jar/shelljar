@@ -12,15 +12,7 @@ ColumnLayout {
   property color itemBg: Config.surface
 
   // Live from the shell's NotificationServer.
-  property var server: null // set by shell.qml
-
-  ShellText {
-    Layout.fillWidth: true
-    text: "Notifications"
-    color: root.textColor
-    font.pixelSize: Config.fsMedium
-    font.weight: Font.DemiBold
-  }
+  property var server: null // set by shell.qml / NotificationsPanel
 
   Repeater {
     id: notifRepeater

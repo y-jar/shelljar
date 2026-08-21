@@ -43,7 +43,7 @@
           cat > "\$CONF_DIR/config.kdl" <<KDL
         // shelljar config (KDL) - user editable
         wallpaper-dir "\$HOME/resjar/wall-jar/wall-bin";
-        wallpaper-thumb-width 150;
+        wallpaper-thumb-width 300;
         wallpaper-settle-ms 800;
         color-scheme "tonal-spot";
         KDL

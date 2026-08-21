@@ -6,7 +6,8 @@ import Quickshell
 // ---- pop-out wallpaper carousel (caelestia-style) ----
 // Slides wallpaper previews; when the user stops scrolling it applies the
 // centered wallpaper via awww and closes. Click a thumbnail to pick it now.
-Rectangle {
+// No background panel — the previews float directly on the desktop.
+Item {
   id: root
 
   property bool open: false
@@ -14,16 +15,12 @@ Rectangle {
   property real thumbH: Math.round(thumbW / 16 * 9)
   signal closeRequested
 
-  width: 5 * (thumbW + 8) + 16
-  implicitHeight: thumbH + 24
-  radius: Config.cornerRadius
-  color: Config.bgAlt
-  border.color: Qt.rgba(1,1,1,0.10)
+  width: 5 * (thumbW + 8)
+  implicitHeight: thumbH
 
   PathView {
     id: view
     anchors.fill: parent
-    anchors.margins: 8
     model: WallpaperService.wallpapers
     snapMode: PathView.SnapToItem
     preferredHighlightBegin: 0.5

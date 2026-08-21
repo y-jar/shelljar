@@ -35,6 +35,7 @@ PanelWindow {
   property bool launcherOpen: false
   property bool controlsOpen: false
   property bool sessionOpen: false
+  property bool notificationsOpen: false
   readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen
   readonly property bool dockActive: island.dockOpen
 
@@ -69,7 +70,7 @@ PanelWindow {
     anchors.fill: parent
     visible: root.dockActive && !root.popupOpen
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: { island.dockOpen = false; wallCarousel.open = false; wallGrid.open = false; batteryPanel.open = false }
+    onClicked: { island.dockOpen = false; wallCarousel.open = false; wallGrid.open = false; batteryPanel.open = false; notificationsPanel.open = false }
   }
 
   // ---- island strip / dock ----
@@ -77,8 +78,18 @@ PanelWindow {
     id: island
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.top: parent.top
+    notificationServer: root.notificationServer
     onPowerClicked: { root.closeAll(); root.sessionOpen = true }
     onControlClicked: { root.closeAll(); root.controlsOpen = true }
+    onNotificationsRequested: {
+      root.launcherOpen = false
+      root.controlsOpen = false
+      root.sessionOpen = false
+      wallCarousel.open = false
+      wallGrid.open = false
+      batteryPanel.open = false
+      notificationsPanel.open = !notificationsPanel.open
+    }
     onWallpaperOpenRequested: dir => {
       root.launcherOpen = false
       root.controlsOpen = false
@@ -117,6 +128,19 @@ PanelWindow {
     anchors.topMargin: 8
     visible: open
     open: false
+    onCloseRequested: open = false
+  }
+
+  // ---- notifications panel (pop-out) ----
+  NotificationsPanel {
+    id: notificationsPanel
+    anchors.right: parent.right
+    anchors.rightMargin: 12
+    anchors.top: island.bottom
+    anchors.topMargin: 8
+    visible: open
+    open: false
+    notificationServer: root.notificationServer
     onCloseRequested: open = false
   }
 
@@ -161,7 +185,6 @@ PanelWindow {
     anchors.topMargin: 12
     visible: root.controlsOpen
     open: root.controlsOpen
-    notificationServer: root.notificationServer
     onOpenSession: {
       root.controlsOpen = false
       root.sessionOpen = true
@@ -252,6 +275,7 @@ PanelWindow {
       wallCarousel.open = false
       wallGrid.open = false
       batteryPanel.open = false
+      notificationsPanel.open = false
     }
   }
 
@@ -259,6 +283,7 @@ PanelWindow {
     root.launcherOpen = false
     root.controlsOpen = false
     root.sessionOpen = false
+    root.notificationsOpen = false
     island.dockOpen = false
   }
 
