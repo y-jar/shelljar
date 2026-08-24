@@ -70,7 +70,7 @@ PanelWindow {
     anchors.fill: parent
     visible: root.dockActive && !root.popupOpen
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: { island.dockOpen = false; wallCarousel.open = false; wallGrid.open = false; batteryPanel.open = false; notificationsPanel.open = false }
+    onClicked: { island.dockOpen = false; wallCarousel.open = false; wallGrid.open = false; batteryPanel.open = false; brightnessPanel.open = false; notificationsPanel.open = false }
   }
 
   // ---- island strip / dock ----
@@ -88,6 +88,7 @@ PanelWindow {
       wallCarousel.open = false
       wallGrid.open = false
       batteryPanel.open = false
+      brightnessPanel.open = false
       notificationsPanel.open = !notificationsPanel.open
     }
     onWallpaperOpenRequested: dir => {
@@ -107,13 +108,27 @@ PanelWindow {
     }
     onOsdHoverRequested: { osd.showVolume(); osd.hover() }
     onOsdValueChanged: osd.showVolume()
+    onOsdBrightnessHoverRequested: { osd.showBrightness(BrightnessService.value); osd.hover() }
+    onOsdBrightnessValueChanged: osd.showBrightness(BrightnessService.value)
     onBatteryPanelRequested: {
       root.launcherOpen = false
       root.controlsOpen = false
       root.sessionOpen = false
       wallCarousel.open = false
       wallGrid.open = false
+      brightnessPanel.open = false
+      notificationsPanel.open = false
       batteryPanel.open = true
+    }
+    onBrightnessPanelRequested: {
+      root.launcherOpen = false
+      root.controlsOpen = false
+      root.sessionOpen = false
+      wallCarousel.open = false
+      wallGrid.open = false
+      batteryPanel.open = false
+      notificationsPanel.open = false
+      brightnessPanel.open = true
     }
   }
 
@@ -123,6 +138,17 @@ PanelWindow {
   // ---- battery panel (pop-out) ----
   BatteryPanel {
     id: batteryPanel
+    anchors.horizontalCenter: island.horizontalCenter
+    anchors.top: island.bottom
+    anchors.topMargin: 8
+    visible: open
+    open: false
+    onCloseRequested: open = false
+  }
+
+  // ---- brightness panel (pop-out) ----
+  BrightnessPanel {
+    id: brightnessPanel
     anchors.horizontalCenter: island.horizontalCenter
     anchors.top: island.bottom
     anchors.topMargin: 8
@@ -275,6 +301,7 @@ PanelWindow {
       wallCarousel.open = false
       wallGrid.open = false
       batteryPanel.open = false
+      brightnessPanel.open = false
       notificationsPanel.open = false
     }
   }

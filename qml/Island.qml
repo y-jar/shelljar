@@ -32,7 +32,10 @@ Item {
   signal wallpaperGridRequested
   signal osdHoverRequested
   signal osdValueChanged
+  signal osdBrightnessHoverRequested
+  signal osdBrightnessValueChanged
   signal batteryPanelRequested
+  signal brightnessPanelRequested
 
   Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
@@ -87,6 +90,11 @@ Item {
         VolumeWidget {
           onHoverRequested: root.osdHoverRequested()
           onValueChanged: root.osdValueChanged()
+        }
+        BrightnessWidget {
+          onHoverRequested: root.osdBrightnessHoverRequested()
+          onValueChanged: root.osdBrightnessValueChanged()
+          onBrightnessPanelRequested: root.brightnessPanelRequested()
         }
         MediaWidget { }
         Tray { }
