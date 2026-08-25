@@ -15,15 +15,12 @@ Item {
   property real value: 0
   readonly property bool available: device !== ""
 
-  signal valueChanged
-
   function setValue(v) {
     v = Math.max(0, Math.min(1, v))
     if (!available) return
     const pct = Math.round(v * 100)
     setProc.exec(["brightnessctl", "-d", root.device, "s", pct + "%"])
     root.value = v
-    root.valueChanged()
   }
 
   function step(delta) {
@@ -58,7 +55,7 @@ Item {
     onLoaded: root.maxBrightness = parseInt(text()) || 1
   }
 
-  onBrightnessChanged: { root.value = maxBrightness > 0 ? brightness / maxBrightness : 0; root.valueChanged() }
+  onBrightnessChanged: { root.value = maxBrightness > 0 ? brightness / maxBrightness : 0 }
 
   Component.onCompleted: {
     findProc.exec(["sh", "-c", "for d in /sys/class/backlight/*; do [ -d \"$d\" ] && { echo \"${d##*/}\"; break; }; done"])

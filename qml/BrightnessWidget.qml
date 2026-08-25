@@ -14,9 +14,6 @@ RowLayout {
   readonly property real value: BrightnessService.value
   readonly property bool available: BrightnessService.available
 
-  onValueChanged: valueChanged()
-  signal valueChanged
-
   function icon() {
     if (!available) return "☀"
     if (value <= 0.001) return "☀"
