@@ -88,6 +88,26 @@ Item {
     if (p !== "" && p !== root.current) {
       root.current = p
     }
+    if (root.current !== "") seedRetry.stop()
+  }
+
+  // First-boot catch-up: random-wall writes the sidecar a moment AFTER the shell
+  // starts. If FileView doesn't report a brand-new file (creation vs. change),
+  // re-read it a few times so a cold start still themes the live wallpaper.
+  // Stops as soon as a wallpaper is known (or after ~10s).
+  Timer {
+    id: seedRetry
+    interval: 500
+    repeat: true
+    property int tries: 0
+    onTriggered: {
+      tries++
+      if (root.current === "" && tries <= 20) {
+        currentFile.reload()
+      } else {
+        seedRetry.stop()
+      }
+    }
   }
 
   Process {
@@ -103,5 +123,6 @@ Item {
   Component.onCompleted: {
     confFile.reload()
     root.scan()
+    seedRetry.start()
   }
 }
