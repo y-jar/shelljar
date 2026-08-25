@@ -44,7 +44,16 @@ Item {
 
   function apply(path) {
     root.current = path
+    root.persistCurrent(path)
     Quickshell.execDetached(["awww", "img", path, "--transition-type", "fade", "--transition-duration", "1"])
+  }
+
+  // Record the applied wallpaper so a later shell restart can re-theme off it.
+  // Kept in ~/.cache/shelljar/current-wall (also written by random-wall / jwall).
+  function persistCurrent(path) {
+    Quickshell.execDetached(["sh", "-c",
+      "mkdir -p \"$HOME/.cache/shelljar\" && printf '%s\\n' \"$1\" > \"$HOME/.cache/shelljar/current-wall\"",
+      "shelljar-wall", path])
   }
 
   function applyByIndex(index) {
@@ -71,7 +80,7 @@ Item {
     printErrors: false
     onLoaded: root.onExternalCurrent(currentFile.text())
     onLoadFailed: {}
-    onFileChanged: onLoaded()
+    onFileChanged: root.onExternalCurrent(currentFile.text())
   }
 
   function onExternalCurrent(text) {

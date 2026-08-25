@@ -10,6 +10,11 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
+      # Qt image-format plugins (webp, …) that quickshell doesn't ship by default.
+      # Added to QT_PLUGIN_PATH so carousel/grid thumbnails and ColorQuantizer can
+      # decode webp wallpapers.
+      qtimageformats = pkgs.qt6.qtimageformats;
+
       # Bundles QML, resources, and helper scripts, then wraps quickshell.
       shelljar = pkgs.runCommand "shelljar" { } ''
         mkdir -p $out/qml $out/resources $out/bin $out/libexec
@@ -57,6 +62,7 @@
         $out/bin/shelljar-core
         export SHJ_ROOT=$out
         export PATH=$out/libexec:\$PATH
+        export QT_PLUGIN_PATH="${qtimageformats}/lib/qt-6/plugins:\$QT_PLUGIN_PATH"
         exec ${pkgs.quickshell}/bin/quickshell -p $out/qml "\$@"
         EOF
         chmod +x $out/bin/shelljar
@@ -66,6 +72,7 @@
         #!${pkgs.runtimeShell}
         export SHJ_ROOT=\$(pwd)
         export PATH=\$(pwd)/scripts:\$PATH
+        export QT_PLUGIN_PATH="${qtimageformats}/lib/qt-6/plugins:\$QT_PLUGIN_PATH"
         exec ${pkgs.quickshell}/bin/quickshell -p ${./qml} "\$@"
         EOF
         chmod +x $out/bin/shelljar-dev
