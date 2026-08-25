@@ -79,12 +79,12 @@ Item {
       onWheel: e => {
         if (e.angleDelta.y > 0) view.decrementCurrentIndex()
         else view.incrementCurrentIndex()
-        root.settle.restart()
+        root.beginSettle()
       }
     }
 
-    onMovementEnded: root.settle.restart()
-    onCurrentIndexChanged: root.settle.restart()
+    onMovementEnded: root.beginSettle()
+    onCurrentIndexChanged: root.beginSettle()
   }
 
   // when the user stops scrolling for a beat, apply the centered wallpaper + close
@@ -101,15 +101,22 @@ Item {
     if (root.open) {
       const idx = WallpaperService.wallpapers.indexOf(WallpaperService.current)
       view.currentIndex = idx >= 0 ? idx : 0
-      settle.stop()
+      root.endSettle()
     } else {
-      settle.stop()
+      root.endSettle()
     }
+  }
+
+  function beginSettle() {
+    if (settle) settle.restart()
+  }
+  function endSettle() {
+    if (settle) settle.stop()
   }
 
   function nudge(dir) {
     if (dir === "prev") view.decrementCurrentIndex()
     else view.incrementCurrentIndex()
-    settle.restart()
+    root.beginSettle()
   }
 }

@@ -44,12 +44,18 @@ Item {
   }
 
   function pickSeed(colors) {
-    // prefer a saturated, mid-brightness color among the top few
-    for (const c of colors.slice(0, 8)) {
+    // Vivid, mid-lightness color makes each wallpaper's theme distinct. Scan the
+    // whole palette for the most saturated hue (avoid pure black/white edges).
+    let best = null
+    let bestSat = 0
+    for (const c of colors) {
       const hsl = root.rgbToHsl(c)
-      if (hsl.s > 0.15 && hsl.l > 0.15 && hsl.l < 0.9) return c
+      if (hsl.l > 0.12 && hsl.l < 0.9 && hsl.s > bestSat) {
+        bestSat = hsl.s
+        best = c
+      }
     }
-    return colors[0] || root._seed
+    return best || colors[0] || root._seed
   }
 
   function applyTonalSpot(seed) {

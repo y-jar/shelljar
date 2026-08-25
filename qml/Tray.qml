@@ -37,11 +37,23 @@ RowLayout {
         height: root.iconSize
       }
 
-      onClicked: {
+      onClicked: mouse => {
         if (!modelData) return
-        if (containsMouse && modelData.hasMenu) modelData.display(itm, 0, itm.height)
-        else modelData.activate()
+        // Anchor the StatusNotifier menu relative to the enclosing bar window.
+        const win = itm.Window.window
+        const pos = win ? itm.mapToItem(win, 0, 0) : { x: 0, y: 0 }
+        const x = Math.round(pos.x)
+        const y = Math.round(pos.y + itm.height)
+        if (modelData.hasMenu) {
+          modelData.display(win, x, y)
+        } else if (mouse.button === Qt.LeftButton) {
+          modelData.activate()
+        } else {
+          modelData.secondaryActivate()
+        }
       }
+
+      acceptedButtons: Qt.LeftButton | Qt.RightButton
 
       onWheel: event => { if (modelData) modelData.scroll(event.angleDelta.y > 0 ? 1 : -1, false) }
     }
