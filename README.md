@@ -1,16 +1,19 @@
 # shelljar
 
 My custom **Quickshell** desktop shell for niri (and other layer-shell compositors).
-An auto-hiding *island* at the top-center of the screen with clock, stats, tray,
-audio, wallpapers, a grid launcher, and a control center — no noctalia needed.
+An auto-hiding *bar* at the top-center of the screen with two rows of widgets:
+profile/power, clock, notifications, volume; below that walls, tray, system
+stats, battery, brightness, media — plus a grid launcher and a control center.
+No noctalia needed.
 
 ## Surfaces
 
 | Surface | Description |
 |---|---|
-| **Island** (top-center `PanelWindow`) | Auto-hides to a thin hover strip, reserves its space. Clock + wallpaper scroller in the middle, tray + stats on the left, user button on the right. |
+| **Bar** (top-center `PanelWindow`) | Auto-hides to a thin hover strip, expands on right-click. Row 1: profile hamburger + power on the left, centered clock, notifications + volume on the right. Row 2: wallpaper, system tray, system stats, battery, brightness, media. |
 | **Launcher** | Grid of installed apps with search. toggled via `shjctl toggleLauncher` (bound to `Mod+D` in niri). |
-| **Control center** | User menu: volume/mute, notification history, power/session buttons. `shjctl toggleControlCenter`. |
+| **Control center** | Profile frame that opens just below the bar: user identity, audio, power/session menu trigger. `shjctl toggleControlCenter`. |
+| **Volume panel** | Small frame under the volume pill with a large slider, mute and %. |
 | **Toasts** | Top-right notification popups (shell hosts an `org.freedesktop.Notifications` daemon). |
 | **Power menu** | Full-screen session menu (Power Off, Reboot, Logout, Suspend, Lock); Power Off/Reboot use a countdown ring to confirm. `shjctl toggleSession` / control-center button. |
 

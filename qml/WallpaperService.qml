@@ -52,6 +52,7 @@ Item {
   }
 
   property string _dir: fallbackDir
+  readonly property string currentWallFile: (Quickshell.env("HOME") || "/home/user") + "/.cache/shelljar/current-wall"
 
   FileView {
     id: confFile
@@ -59,6 +60,25 @@ Item {
     printErrors: false
     onLoaded: root.parseConfig(confFile.text())
     onLoadFailed: root._dir = root.fallbackDir
+  }
+
+  // Track the externally-applied wallpaper (written by random-wall / jwall) so
+  // the shell themes off the live wallpaper at startup and on external changes.
+  FileView {
+    id: currentFile
+    path: root.currentWallFile
+    watchChanges: true
+    printErrors: false
+    onLoaded: root.onExternalCurrent(currentFile.text())
+    onLoadFailed: {}
+    onFileChanged: onLoaded()
+  }
+
+  function onExternalCurrent(text) {
+    const p = (text || "").trim()
+    if (p !== "" && p !== root.current) {
+      root.current = p
+    }
   }
 
   Process {

@@ -11,6 +11,7 @@ RowLayout {
   property color subColor: Config.subtext
   signal hoverRequested
   signal valueChanged
+  signal toggleRequested
 
   readonly property var sink: Pipewire.defaultAudioSink
   readonly property bool sinkReady: sink !== null && sink.ready && sink.audio !== null
@@ -52,7 +53,9 @@ RowLayout {
       id: hoverArea
       anchors.fill: parent
       hoverEnabled: true
+      cursorShape: Qt.PointingHandCursor
       onEntered: root.hoverRequested()
+      onClicked: root.toggleRequested()
       onWheel: event => root.setVolume(root.vol + (event.angleDelta.y > 0 ? 0.05 : -0.05))
     }
   }

@@ -8,7 +8,7 @@ import Quickshell.Services.Notifications
 
 // ---- per-screen shell surface ----
 // One full-screen window per monitor (caelestia-style). Hosts that screen's
-// island strip/dock plus launcher, control center, session menu, and toasts.
+// bar plus launcher, control center, session menu, and toasts.
 // The clickthrough `mask` lets the empty desktop receive clicks.
 PanelWindow {
   id: root
@@ -20,7 +20,7 @@ PanelWindow {
   WlrLayershell.namespace: ns
   WlrLayershell.exclusionMode: ExclusionMode.Ignore // overlay: no reserved space
   WlrLayershell.layer: WlrLayer.Top
-  WlrLayershell.keyboardFocus: (root.popupOpen || root.dockActive) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+  WlrLayershell.keyboardFocus: (root.popupOpen || root.barActive) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
   color: "transparent"
 
   anchors.top: true
@@ -35,16 +35,15 @@ PanelWindow {
   property bool launcherOpen: false
   property bool controlsOpen: false
   property bool sessionOpen: false
-  property bool notificationsOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen
-  readonly property bool dockActive: island.dockOpen
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || notificationsPanel.open || volumePanel.open
+  readonly property bool barActive: bar.barOpen
 
-  // clickthrough: full screen while a popup or the dock is open, otherwise only the island
+  // clickthrough: full screen while a popup or the bar is open, otherwise only the bar
   mask: Region {
-    x: (root.popupOpen || root.dockActive) ? 0 : island.x
-    y: (root.popupOpen || root.dockActive) ? 0 : island.y
-    width: (root.popupOpen || root.dockActive) ? root.width : island.width
-    height: (root.popupOpen || root.dockActive) ? root.height : island.height
+    x: (root.popupOpen || root.barActive) ? 0 : bar.x
+    y: (root.popupOpen || root.barActive) ? 0 : bar.y
+    width: (root.popupOpen || root.barActive) ? root.width : bar.width
+    height: (root.popupOpen || root.barActive) ? root.height : bar.height
 
     Region {
       x: toasts.x
@@ -65,17 +64,17 @@ PanelWindow {
     MouseArea { anchors.fill: parent; onClicked: root.closeAll() }
   }
 
-  // ---- transparent click-catcher: clicking away from the open dock closes it ----
+  // ---- transparent click-catcher: clicking away from the open bar closes it ----
   MouseArea {
     anchors.fill: parent
-    visible: root.dockActive && !root.popupOpen
+    visible: root.barActive && !root.popupOpen
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: { island.dockOpen = false; wallCarousel.open = false; wallGrid.open = false; batteryPanel.open = false; brightnessPanel.open = false; notificationsPanel.open = false }
+    onClicked: { bar.barOpen = false; wallCarousel.open = false; wallGrid.open = false; batteryPanel.open = false; brightnessPanel.open = false; notificationsPanel.open = false; volumePanel.open = false }
   }
 
-  // ---- island strip / dock ----
-  Island {
-    id: island
+  // ---- bar (top strip / expanded two rows) ----
+  Bar {
+    id: bar
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.top: parent.top
     notificationServer: root.notificationServer
@@ -89,6 +88,7 @@ PanelWindow {
       wallGrid.open = false
       batteryPanel.open = false
       brightnessPanel.open = false
+      volumePanel.open = false
       notificationsPanel.open = !notificationsPanel.open
     }
     onWallpaperOpenRequested: dir => {
@@ -110,6 +110,17 @@ PanelWindow {
     onOsdValueChanged: osd.showVolume()
     onOsdBrightnessHoverRequested: { osd.showBrightness(BrightnessService.value); osd.hover() }
     onOsdBrightnessValueChanged: osd.showBrightness(BrightnessService.value)
+    onVolumePanelRequested: {
+      root.launcherOpen = false
+      root.controlsOpen = false
+      root.sessionOpen = false
+      wallCarousel.open = false
+      wallGrid.open = false
+      batteryPanel.open = false
+      brightnessPanel.open = false
+      notificationsPanel.open = false
+      volumePanel.open = !volumePanel.open
+    }
     onBatteryPanelRequested: {
       root.launcherOpen = false
       root.controlsOpen = false
@@ -118,6 +129,7 @@ PanelWindow {
       wallGrid.open = false
       brightnessPanel.open = false
       notificationsPanel.open = false
+      volumePanel.open = false
       batteryPanel.open = true
     }
     onBrightnessPanelRequested: {
@@ -128,6 +140,7 @@ PanelWindow {
       wallGrid.open = false
       batteryPanel.open = false
       notificationsPanel.open = false
+      volumePanel.open = false
       brightnessPanel.open = true
     }
   }
@@ -135,11 +148,23 @@ PanelWindow {
   // ---- volume/brightness OSD (top-right) ----
   Osd { id: osd }
 
+  // ---- volume panel (pop-out, under the bar's volume pill) ----
+  VolumePanel {
+    id: volumePanel
+    anchors.right: bar.right
+    anchors.rightMargin: 8
+    anchors.top: bar.bottom
+    anchors.topMargin: 8
+    visible: open
+    open: false
+    onCloseRequested: open = false
+  }
+
   // ---- battery panel (pop-out) ----
   BatteryPanel {
     id: batteryPanel
-    anchors.horizontalCenter: island.horizontalCenter
-    anchors.top: island.bottom
+    anchors.horizontalCenter: bar.horizontalCenter
+    anchors.top: bar.bottom
     anchors.topMargin: 8
     visible: open
     open: false
@@ -149,8 +174,8 @@ PanelWindow {
   // ---- brightness panel (pop-out) ----
   BrightnessPanel {
     id: brightnessPanel
-    anchors.horizontalCenter: island.horizontalCenter
-    anchors.top: island.bottom
+    anchors.horizontalCenter: bar.horizontalCenter
+    anchors.top: bar.bottom
     anchors.topMargin: 8
     visible: open
     open: false
@@ -162,7 +187,7 @@ PanelWindow {
     id: notificationsPanel
     anchors.right: parent.right
     anchors.rightMargin: 12
-    anchors.top: island.bottom
+    anchors.top: bar.bottom
     anchors.topMargin: 8
     visible: open
     open: false
@@ -173,8 +198,8 @@ PanelWindow {
   // ---- wallpaper preview carousel (pop-out) ----
   WallpaperCarousel {
     id: wallCarousel
-    anchors.horizontalCenter: island.horizontalCenter
-    anchors.top: island.bottom
+    anchors.horizontalCenter: bar.horizontalCenter
+    anchors.top: bar.bottom
     anchors.topMargin: 8
     visible: open
     open: false
@@ -184,8 +209,8 @@ PanelWindow {
   // ---- wallpaper picker grid (pop-out) ----
   WallpaperGrid {
     id: wallGrid
-    anchors.horizontalCenter: island.horizontalCenter
-    anchors.top: island.bottom
+    anchors.horizontalCenter: bar.horizontalCenter
+    anchors.top: bar.bottom
     anchors.topMargin: 8
     visible: open
     open: false
@@ -196,18 +221,18 @@ PanelWindow {
   Launcher {
     id: launcher
     anchors.horizontalCenter: parent.horizontalCenter
-    anchors.top: island.bottom
+    anchors.top: bar.bottom
     anchors.topMargin: 12
     visible: root.launcherOpen
     open: root.launcherOpen
   }
 
-  // ---- control center ----
+  // ---- control center (profile frame) — opens just below the bar ----
   ControlCenter {
     id: controls
-    anchors.right: parent.right
-    anchors.rightMargin: 12
-    anchors.top: island.bottom
+    anchors.left: bar.left
+    anchors.leftMargin: 8
+    anchors.top: bar.bottom
     anchors.topMargin: 12
     visible: root.controlsOpen
     open: root.controlsOpen
@@ -230,7 +255,7 @@ PanelWindow {
     id: toasts
     anchors.right: parent.right
     anchors.rightMargin: 12
-    anchors.top: island.bottom
+    anchors.top: bar.bottom
     anchors.topMargin: 12
     width: 360
     spacing: 6
@@ -292,17 +317,18 @@ PanelWindow {
     }
   }
 
-  // ESC closes the open dock (focus granted while the dock is active)
+  // ESC closes the open bar (focus granted while the bar is active)
   Item {
     anchors.fill: parent
-    focus: root.dockActive && !root.popupOpen
+    focus: root.barActive && !root.popupOpen
     Keys.onEscapePressed: {
-      island.dockOpen = false
+      bar.barOpen = false
       wallCarousel.open = false
       wallGrid.open = false
       batteryPanel.open = false
       brightnessPanel.open = false
       notificationsPanel.open = false
+      volumePanel.open = false
     }
   }
 
@@ -310,8 +336,7 @@ PanelWindow {
     root.launcherOpen = false
     root.controlsOpen = false
     root.sessionOpen = false
-    root.notificationsOpen = false
-    island.dockOpen = false
+    bar.barOpen = false
   }
 
   function toggleLauncher(): void {
