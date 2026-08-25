@@ -80,7 +80,7 @@ Item {
     printErrors: false
     onLoaded: root.onExternalCurrent(currentFile.text())
     onLoadFailed: {}
-    onFileChanged: root.onExternalCurrent(currentFile.text())
+    onFileChanged: currentFile.reload()
   }
 
   function onExternalCurrent(text) {
