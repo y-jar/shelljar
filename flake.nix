@@ -63,7 +63,7 @@
         export SHJ_ROOT=$out
         export PATH=$out/libexec:\$PATH
         export QT_PLUGIN_PATH="${qtimageformats}/lib/qt-6/plugins:\$QT_PLUGIN_PATH"
-        exec ${pkgs.quickshell}/bin/quickshell -p $out/qml "\$@"
+        exec ${pkgs.quickshell}/bin/quickshell -n -p $out/qml "\$@"
         EOF
         chmod +x $out/bin/shelljar
 
@@ -73,7 +73,7 @@
         export SHJ_ROOT=\$(pwd)
         export PATH=\$(pwd)/scripts:\$PATH
         export QT_PLUGIN_PATH="${qtimageformats}/lib/qt-6/plugins:\$QT_PLUGIN_PATH"
-        exec ${pkgs.quickshell}/bin/quickshell -p ${./qml} "\$@"
+        exec ${pkgs.quickshell}/bin/quickshell -n -p ${./qml} "\$@"
         EOF
         chmod +x $out/bin/shelljar-dev
       '';

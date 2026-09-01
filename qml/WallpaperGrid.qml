@@ -59,6 +59,8 @@ Rectangle {
             Image {
               anchors.fill: parent
               source: modelData
+              sourceSize.width: Math.round(400 * Config.uiScale)
+              sourceSize.height: Math.round(256 * Config.uiScale)
               fillMode: Image.PreserveAspectCrop
               asynchronous: true
             }

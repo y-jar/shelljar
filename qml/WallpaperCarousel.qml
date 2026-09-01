@@ -54,6 +54,8 @@ Item {
         Image {
           anchors.fill: parent
           source: modelData
+          sourceSize.width: Math.round(root.thumbW)
+          sourceSize.height: Math.round(root.thumbH)
           fillMode: Image.PreserveAspectCrop
           asynchronous: true
         }
