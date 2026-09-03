@@ -35,7 +35,8 @@ PanelWindow {
   property bool launcherOpen: false
   property bool controlsOpen: false
   property bool sessionOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || notificationsPanel.open || volumePanel.open
+  property bool pickerOpen: false
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || notificationsPanel.open || volumePanel.open
   readonly property bool barActive: bar.barOpen
 
   // clickthrough: full screen while a popup or the bar is open, otherwise only the bar
@@ -69,7 +70,7 @@ PanelWindow {
     anchors.fill: parent
     visible: root.barActive && !root.popupOpen
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: { bar.barOpen = false; wallCarousel.open = false; wallGrid.open = false; batteryPanel.open = false; brightnessPanel.open = false; notificationsPanel.open = false; volumePanel.open = false }
+    onClicked: { bar.barOpen = false; wallCarousel.open = false; wallGrid.open = false; wallPicker.open = false; batteryPanel.open = false; brightnessPanel.open = false; notificationsPanel.open = false; volumePanel.open = false }
   }
 
   // ---- bar (top strip / expanded two rows) ----
@@ -106,6 +107,7 @@ PanelWindow {
       wallCarousel.open = false
       wallGrid.open = true
     }
+    onWallpaperPickerRequested: root.openWallPicker()
     onOsdHoverRequested: { osd.showVolume(); osd.hover() }
     onOsdValueChanged: osd.showVolume()
     onOsdBrightnessHoverRequested: { osd.showBrightness(BrightnessService.value); osd.hover() }
@@ -217,6 +219,15 @@ PanelWindow {
     onCloseRequested: open = false
   }
 
+  // ---- full-screen calm wallpaper picker (super+w / right-click) ----
+  WallpaperPicker {
+    id: wallPicker
+    anchors.fill: parent
+    visible: root.pickerOpen
+    open: root.pickerOpen
+    onCloseRequested: root.pickerOpen = false
+  }
+
   // ---- launcher (grid) ----
   Launcher {
     id: launcher
@@ -325,6 +336,7 @@ PanelWindow {
       bar.barOpen = false
       wallCarousel.open = false
       wallGrid.open = false
+      wallPicker.open = false
       batteryPanel.open = false
       brightnessPanel.open = false
       notificationsPanel.open = false
@@ -336,6 +348,7 @@ PanelWindow {
     root.launcherOpen = false
     root.controlsOpen = false
     root.sessionOpen = false
+    root.pickerOpen = false
     bar.barOpen = false
   }
 
@@ -352,5 +365,21 @@ PanelWindow {
   function toggleSession(): void {
     root.closeAll()
     root.sessionOpen = !root.sessionOpen
+  }
+
+  // open the full-screen picker alone (right-click on the Walls button)
+  function openWallPicker(): void {
+    root.launcherOpen = false
+    root.controlsOpen = false
+    root.sessionOpen = false
+    wallCarousel.open = false
+    wallGrid.open = false
+    root.pickerOpen = true
+  }
+
+  // keybind-driven cycle: open the full-screen picker and slide one step
+  function wallpaperCycle(dir): void {
+    root.openWallPicker()
+    wallPicker.nudge(dir)
   }
 }

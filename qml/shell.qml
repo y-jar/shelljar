@@ -63,5 +63,7 @@ FloatingWindow {
     function toggleControlCenter(): void { const s = first(); if (s) s.toggleControlCenter() }
 
     function toggleSession(): void { const s = first(); if (s) s.toggleSession() }
+
+    function wallpaperCycle(dir): void { const s = first(); if (s) s.wallpaperCycle(dir) }
   }
 }

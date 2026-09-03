@@ -24,6 +24,7 @@ Item {
   signal notificationsRequested
   signal wallpaperOpenRequested(var dir)
   signal wallpaperGridRequested
+  signal wallpaperPickerRequested
   signal osdHoverRequested
   signal osdValueChanged
   signal osdBrightnessHoverRequested
@@ -179,6 +180,7 @@ Item {
         WallpaperStrip {
           onOpenRequested: dir => root.wallpaperOpenRequested(dir)
           onGridRequested: root.wallpaperGridRequested()
+          onPickerRequested: root.wallpaperPickerRequested()
         }
         Tray { }
         Stats { }

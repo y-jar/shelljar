@@ -12,6 +12,7 @@ RowLayout {
 
   signal openRequested(var dir)
   signal gridRequested
+  signal pickerRequested
 
   function cycle(dir) { root.openRequested(dir) }
 
@@ -41,8 +42,12 @@ RowLayout {
     MouseArea {
       anchors.fill: parent
       cursorShape: Qt.PointingHandCursor
+      acceptedButtons: Qt.LeftButton | Qt.RightButton
       onWheel: event => root.cycle(event.angleDelta.y > 0 ? "prev" : "next")
-      onClicked: root.gridRequested()
+      onClicked: event => {
+        if (event.button === Qt.RightButton) root.pickerRequested()
+        else root.gridRequested()
+      }
     }
   }
 }
