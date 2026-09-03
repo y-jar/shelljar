@@ -64,6 +64,7 @@ FloatingWindow {
 
     function toggleSession(): void { const s = first(); if (s) s.toggleSession() }
 
-    function wallpaperCycle(dir): void { const s = first(); if (s) s.wallpaperCycle(dir) }
+    function wallpaperNext(): void { const s = first(); if (s) s.wallpaperCycle("next") }
+    function wallpaperPrev(): void { const s = first(); if (s) s.wallpaperCycle("prev") }
   }
 }

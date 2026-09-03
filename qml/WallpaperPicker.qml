@@ -49,9 +49,9 @@ Item {
       clip: true
 
       interactive: true
-      flickDeceleration: 2500
+      flickDeceleration: 1600
       boundsBehavior: Flickable.StopAtBounds
-      cacheBuffer: 800
+      cacheBuffer: 1600
 
       snapMode: ListView.SnapToItem
       highlightFollowsCurrentItem: true
@@ -104,12 +104,14 @@ Item {
           Image {
             anchors.fill: parent
             source: modelData
-            // decode at 2x the rendered size (freed once the picker closes)
+            // decode at 2x the rendered size; Qt's shared pixmap cache (cache:true)
+            // keeps decoded tiles resident across delegate recycling so scrolling
+            // back doesn't blank/re-decode them.
             sourceSize.width: Math.round(tile.width * 2)
             sourceSize.height: Math.round(tile.height * 2)
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
-            cache: false
+            cache: true
             smooth: true
           }
 
@@ -184,7 +186,7 @@ Item {
       anchors.fill: parent
       acceptedButtons: Qt.NoButton
       onWheel: e => {
-        view.flick(-e.angleDelta.y * 8, 0)
+        view.flick(-e.angleDelta.y * 24, 0)
         e.accepted = true
       }
     }
