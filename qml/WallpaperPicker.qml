@@ -24,6 +24,8 @@ Item {
   readonly property int visibleCount: 5
   readonly property real edgeScale: 0.8
   readonly property real marginY: Math.round(24 * Config.uiScale)
+  // fraction of tileW kept as path overhang on each side -- smaller = tiles sit closer
+  readonly property real overhangRatio: 0.25
 
   readonly property real tileW: width / root.visibleCount
   readonly property real tileH: Math.round(root.height * 0.62)
@@ -45,9 +47,9 @@ Item {
     model: WallpaperService.wallpapers
 
     path: Path {
-      startX: -root.tileW / 2
+      startX: -root.tileW * root.overhangRatio
       startY: view.height / 2
-      PathLine { x: view.width + root.tileW / 2; relativeY: 0 }
+      PathLine { x: view.width + root.tileW * root.overhangRatio; relativeY: 0 }
     }
 
     pathItemCount: root.visibleCount
@@ -79,7 +81,7 @@ Item {
       Rectangle {
         id: tile
         anchors.centerIn: parent
-        width: root.tileW * (PathView.isCurrentItem ? 0.96 : 0.9)
+        width: root.tileW * (PathView.isCurrentItem ? 0.96 : 0.93)
         height: root.tileH * 0.92
         radius: Config.cornerRadius
         color: Config.surface
