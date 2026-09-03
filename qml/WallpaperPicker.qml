@@ -58,7 +58,6 @@ Item {
     preferredHighlightEnd: 0.5
     highlightRangeMode: PathView.StrictlyEnforceRange
     highlightMoveDuration: 220
-    highlightMoveSpeed: 600
 
     focus: root.open && root.visible
 
