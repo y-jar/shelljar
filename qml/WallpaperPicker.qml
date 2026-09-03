@@ -21,10 +21,10 @@ Item {
   readonly property real edgeScale: 0.78
   readonly property real marginY: Math.round(24 * Config.uiScale)
 
-  // dim + click-away scrim behind the carousel
+  // invisible click-away catcher (no dark backdrop — the desktop shows through)
   Rectangle {
     anchors.fill: parent
-    color: "#a0000000"
+    color: "transparent"
 
     MouseArea {
       anchors.fill: parent
@@ -91,6 +91,7 @@ Item {
         z: Math.round(scaleFactor * 100)
 
         Rectangle {
+          id: tile
           anchors.centerIn: parent
           width: parent.width * 0.96
           height: parent.height * Math.min(1, delegateItem.scaleFactor) * 0.92
@@ -103,8 +104,9 @@ Item {
           Image {
             anchors.fill: parent
             source: modelData
-            sourceSize.width: Math.round(view.cellW * root.maxScale)
-            sourceSize.height: Math.round(view.cellW * root.maxScale / 16 * 9)
+            // decode at 2x the rendered size (freed once the picker closes)
+            sourceSize.width: Math.round(tile.width * 2)
+            sourceSize.height: Math.round(tile.height * 2)
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
             cache: false
@@ -173,6 +175,18 @@ Item {
 
       onCountChanged:
         root.syncToCurrent()
+    }
+
+    // passthrough wheel catcher: horizontal ListView ignores the vertical wheel,
+    // so hand it over to the carousel as a flick (hyprquickpaper trick).
+    // Qt.NoButton keeps drag/clicks on the tiles working.
+    MouseArea {
+      anchors.fill: parent
+      acceptedButtons: Qt.NoButton
+      onWheel: e => {
+        view.flick(-e.angleDelta.y * 8, 0)
+        e.accepted = true
+      }
     }
   }
 

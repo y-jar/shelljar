@@ -45,7 +45,8 @@ Item {
   function apply(path) {
     root.current = path
     root.persistCurrent(path)
-    Quickshell.execDetached(["awww", "img", path, "--transition-type", "fade", "--transition-duration", "1"])
+    // Transition type is sourced from the dotfile env (AWWW_TRANSITION=random), no CLI override.
+    Quickshell.execDetached(["awww", "img", path])
   }
 
   // Record the applied wallpaper so a later shell restart can re-theme off it.
