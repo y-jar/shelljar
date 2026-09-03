@@ -3,25 +3,32 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 
-// ---- full-screen wallpaper picker (calm, hyprquickpaper-style) ----
-// A large screen-spanning carousel meant for a relaxed browsing session.
-// Browse by drag + scroll; the centered tile is the active candidate.
-// Apply with space / enter / w, exit with esc (or click a tile to apply it).
-// Unlike the quick carousel there is NO settle-delay auto-apply: selection is
-// always deliberate.
+// ---- full-screen wallpaper picker (calm, PathView) ----
+// Uses a PathView (like WallpaperCarousel + dotfiles hyprquickpaper) so the
+// current/selected tile is ALWAYS the one centered in the viewport -- and the
+// centered tile is the largest (isCurrentItem scale 1.0). Unlike a ListView,
+// selection never lags: space/enter/w apply view.currentIndex immediately,
+// no need to wait for a flick to settle.
+//
+// The wheel moves selection by small step-wise increments (not big flings), so
+// the snap animation is short and currentIndex is up to date the moment you
+// press a key. Browse by drag + scroll + hover; apply with space/enter/w; exit
+// with esc (or click a tile to apply it). Deliberate -- no auto-apply.
 Item {
   id: root
 
   property bool open: false
   signal closeRequested
 
-  // how many slots to lay out across the screen
-  readonly property int visibleCount: 7
-  readonly property real maxScale: 1.0
-  readonly property real edgeScale: 0.78
+  // how many tiles to lay out across the screen
+  readonly property int visibleCount: 5
+  readonly property real edgeScale: 0.8
   readonly property real marginY: Math.round(24 * Config.uiScale)
 
-  // invisible click-away catcher (no dark backdrop — the desktop shows through)
+  readonly property real tileW: width / root.visibleCount
+  readonly property real tileH: Math.round(root.height * 0.62)
+
+  // invisible click-away catcher (no dark backdrop -- desktop shows through)
   Rectangle {
     anchors.fill: parent
     color: "transparent"
@@ -32,163 +39,146 @@ Item {
     }
   }
 
-  // centered browsing band
-  Item {
-    id: band
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.verticalCenter: parent.verticalCenter
-    height: Math.round(parent.height * 0.66)
+  PathView {
+    id: view
+    anchors.fill: parent
+    model: WallpaperService.wallpapers
 
-    ListView {
-      id: view
-      anchors.fill: parent
-      model: WallpaperService.wallpapers
-      orientation: Qt.Horizontal
-      spacing: 12
-      clip: true
-
-      interactive: true
-      flickDeceleration: 1600
-      boundsBehavior: Flickable.StopAtBounds
-      cacheBuffer: 1600
-
-      snapMode: ListView.SnapToItem
-      highlightFollowsCurrentItem: true
-      highlightRangeMode: ListView.StrictlyEnforceRange
-      preferredHighlightBegin: 0.5
-      preferredHighlightEnd: 0.5
-
-      focus: root.open && root.visible
-
-      // center the first/last tile in the viewport
-      leftMargin: Math.max(0, (width - view.cellW) / 2)
-      rightMargin: leftMargin
-
-      readonly property real cellW: width / root.visibleCount
-      readonly property real viewportCenterX: width / 2
-
-      delegate: Item {
-        id: delegateItem
-        required property int index
-        required property var modelData
-
-        readonly property real baseWidth: view.cellW
-
-        // dock-style magnification peaking at the viewport center
-        property real scaleFactor: {
-          const centerX = x - view.contentX + baseWidth / 2
-          const frac = Math.min(
-            1,
-            Math.abs(centerX - view.viewportCenterX) / view.viewportCenterX
-          )
-          const t = 1 - frac * frac * (3 - 2 * frac)
-          return root.edgeScale + (root.maxScale - root.edgeScale) * t
-        }
-
-        width: baseWidth * scaleFactor
-        height: view.height
-        z: Math.round(scaleFactor * 100)
-
-        Rectangle {
-          id: tile
-          anchors.centerIn: parent
-          width: parent.width * 0.96
-          height: parent.height * Math.min(1, delegateItem.scaleFactor) * 0.92
-          radius: Config.cornerRadius
-          color: Config.surface
-          border.color: ListView.isCurrentItem ? Config.accent : Qt.rgba(1, 1, 1, 0.10)
-          border.width: ListView.isCurrentItem ? 2 : 0
-          clip: true
-
-          Image {
-            anchors.fill: parent
-            source: modelData
-            // decode at 2x the rendered size; Qt's shared pixmap cache (cache:true)
-            // keeps decoded tiles resident across delegate recycling so scrolling
-            // back doesn't blank/re-decode them.
-            sourceSize.width: Math.round(tile.width * 2)
-            sourceSize.height: Math.round(tile.height * 2)
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            cache: true
-            smooth: true
-          }
-
-          Rectangle {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            height: 22
-            color: Qt.rgba(0, 0, 0, 0.55)
-            visible: ListView.isCurrentItem
-
-            ShellText {
-              anchors.centerIn: parent
-              text: modelData.split("/").pop()
-              color: Config.text
-              font.pixelSize: Config.fsSmall
-              elide: Text.ElideMiddle
-              width: parent.width - 16
-              horizontalAlignment: Text.AlignHCenter
-            }
-          }
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          cursorShape: Qt.PointingHandCursor
-          onClicked: {
-            WallpaperService.applyByIndex(index)
-            root.closeRequested()
-          }
-        }
-      }
-
-      // keyboard: space/enter/w = apply current, esc/backspace = close,
-      // arrows = slide
-      Keys.onPressed: function(event) {
-        switch (event.key) {
-        case Qt.Key_Space:
-        case Qt.Key_Return:
-        case Qt.Key_Enter:
-        case Qt.Key_W:
-          event.accepted = true
-          WallpaperService.applyByIndex(view.currentIndex)
-          root.closeRequested()
-          break
-        case Qt.Key_Escape:
-        case Qt.Key_Backspace:
-          event.accepted = true
-          root.closeRequested()
-          break
-        case Qt.Key_Left:
-          event.accepted = true
-          view.decrementCurrentIndex()
-          break
-        case Qt.Key_Right:
-          event.accepted = true
-          view.incrementCurrentIndex()
-          break
-        default:
-          break
-        }
-      }
-
-      onCountChanged:
-        root.syncToCurrent()
+    path: Path {
+      startX: -root.tileW / 2
+      startY: view.height / 2
+      PathLine { x: view.width + root.tileW / 2; relativeY: 0 }
     }
 
-    // passthrough wheel catcher: horizontal ListView ignores the vertical wheel,
-    // so hand it over to the carousel as a flick (hyprquickpaper trick).
-    // Qt.NoButton keeps drag/clicks on the tiles working.
-    MouseArea {
-      anchors.fill: parent
-      acceptedButtons: Qt.NoButton
-      onWheel: e => {
-        view.flick(-e.angleDelta.y * 24, 0)
-        e.accepted = true
+    pathItemCount: root.visibleCount
+    cacheItemCount: 6
+
+    snapMode: PathView.SnapToItem
+    preferredHighlightBegin: 0.5
+    preferredHighlightEnd: 0.5
+    highlightRangeMode: PathView.StrictlyEnforceRange
+    highlightMoveDuration: 220
+    highlightMoveSpeed: 600
+
+    focus: root.open && root.visible
+
+    delegate: Item {
+      id: delegateItem
+      required property int index
+      required property var modelData
+
+      width: root.tileW
+      height: root.tileH
+
+      // dock-style magnification: centered tile is the largest
+      scale: PathView.isCurrentItem ? 1.0 : root.edgeScale
+      opacity: PathView.onPath ? 1 : 0
+      z: PathView.isCurrentItem ? 10 : 1
+
+      Behavior on scale { NumberAnimation { duration: 140; easing.type: Easing.OutQuad } }
+
+      Rectangle {
+        id: tile
+        anchors.centerIn: parent
+        width: root.tileW * (PathView.isCurrentItem ? 0.96 : 0.9)
+        height: root.tileH * 0.92
+        radius: Config.cornerRadius
+        color: Config.surface
+        border.color: PathView.isCurrentItem ? Config.accent : Qt.rgba(1, 1, 1, 0.10)
+        border.width: PathView.isCurrentItem ? 2 : 0
+        clip: true
+
+        Image {
+          anchors.fill: parent
+          source: modelData
+          // fixed decode size -> stable cache key, no per-motion re-decode
+          sourceSize.width: Math.round(root.tileW * 2)
+          sourceSize.height: Math.round(root.tileH * 2)
+          fillMode: Image.PreserveAspectCrop
+          asynchronous: true
+          cache: true
+          smooth: false
+        }
+
+        Rectangle {
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.bottom: parent.bottom
+          height: 22
+          color: Qt.rgba(0, 0, 0, 0.55)
+          visible: PathView.isCurrentItem
+
+          ShellText {
+            anchors.centerIn: parent
+            text: modelData.split("/").pop()
+            color: Config.text
+            font.pixelSize: Config.fsSmall
+            elide: Text.ElideMiddle
+            width: parent.width - 16
+            horizontalAlignment: Text.AlignHCenter
+          }
+        }
       }
+
+      MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+          WallpaperService.applyByIndex(index)
+          root.closeRequested()
+        }
+      }
+    }
+
+    // keyboard: space/enter/w = apply the CENTERED tile, esc/backspace = close,
+    // arrows/jk/hl = slide
+    Keys.onPressed: function(event) {
+      switch (event.key) {
+      case Qt.Key_Space:
+      case Qt.Key_Return:
+      case Qt.Key_Enter:
+      case Qt.Key_W:
+        event.accepted = true
+        WallpaperService.applyByIndex(view.currentIndex)
+        root.closeRequested()
+        break
+      case Qt.Key_Escape:
+      case Qt.Key_Backspace:
+        event.accepted = true
+        root.closeRequested()
+        break
+      case Qt.Key_Left:
+      case Qt.Key_H:
+        event.accepted = true
+        view.decrementCurrentIndex()
+        break
+      case Qt.Key_Right:
+      case Qt.Key_L:
+        event.accepted = true
+        view.incrementCurrentIndex()
+        break
+      default:
+        break
+      }
+    }
+
+    onCountChanged:
+      root.syncToCurrent()
+  }
+
+  // passthrough wheel catcher: step-wise selection moves (updates currentIndex
+  // immediately, short snap), instead of a big fling that makes you wait.
+  MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.NoButton
+    onWheel: e => {
+      const steps = Math.max(1, Math.ceil(Math.abs(e.angleDelta.y) / 120))
+      for (let i = 0; i < steps; i++) {
+        if (e.angleDelta.y > 0) view.decrementCurrentIndex()
+        else view.incrementCurrentIndex()
+      }
+      view.forceActiveFocus()
+      e.accepted = true
     }
   }
 
@@ -197,7 +187,7 @@ Item {
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom
     anchors.bottomMargin: root.marginY
-    text: "drag / scroll to browse — space / enter / w to apply — esc to close"
+    text: "scroll to move — space / enter / w to apply — esc to close"
     color: Config.subtext
     font.pixelSize: Config.fsSmall
     opacity: 0.9
@@ -206,20 +196,19 @@ Item {
   function syncToCurrent() {
     const idx = WallpaperService.wallpapers.indexOf(WallpaperService.current)
     if (idx >= 0 && view.currentIndex !== idx) view.currentIndex = idx
-    view.positionViewAtIndex(Math.max(0, view.currentIndex), ListView.Center)
   }
 
+  // keybind-driven cycle: open + slide one step (currently only uses next/prev)
   function nudge(dir) {
     if (dir === "prev") view.decrementCurrentIndex()
     else view.incrementCurrentIndex()
-    view.positionViewAtIndex(view.currentIndex, ListView.Contain)
+    view.forceActiveFocus()
   }
 
-  // "nudge" for the full-screen picker keeps it open (no settle-apply)
   onOpenChanged: {
     if (root.open && WallpaperService.wallpapers.length > 0) {
       root.syncToCurrent()
-      view.forceActiveFocus()
+      Qt.callLater(() => view.forceActiveFocus())
     }
   }
 }
