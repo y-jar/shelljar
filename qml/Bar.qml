@@ -32,6 +32,7 @@ Item {
   signal batteryPanelRequested
   signal brightnessPanelRequested
   signal volumePanelRequested
+  signal networkPanelRequested
 
   Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
@@ -117,6 +118,11 @@ Item {
             cursorShape: Qt.PointingHandCursor
             onClicked: root.powerClicked()
           }
+        }
+
+        // network pill (right of the power button): click opens the network panel
+        NetworkWidget {
+          onNetworkClicked: root.networkPanelRequested()
         }
 
         // springs keep the clock centered

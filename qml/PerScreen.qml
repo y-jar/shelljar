@@ -36,7 +36,7 @@ PanelWindow {
   property bool controlsOpen: false
   property bool sessionOpen: false
   property bool pickerOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || notificationsPanel.open || volumePanel.open
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || notificationsPanel.open || volumePanel.open || networkPanel.open
   readonly property bool barActive: bar.barOpen
 
   // clickthrough: full screen while a popup or the bar is open, otherwise only the bar
@@ -70,7 +70,7 @@ PanelWindow {
     anchors.fill: parent
     visible: root.barActive && !root.popupOpen
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: { bar.barOpen = false; wallCarousel.open = false; wallGrid.open = false; wallPicker.open = false; batteryPanel.open = false; brightnessPanel.open = false; notificationsPanel.open = false; volumePanel.open = false }
+    onClicked: { bar.barOpen = false; wallCarousel.open = false; wallGrid.open = false; wallPicker.open = false; batteryPanel.open = false; brightnessPanel.open = false; notificationsPanel.open = false; volumePanel.open = false; networkPanel.open = false }
   }
 
   // ---- bar (top strip / expanded two rows) ----
@@ -122,6 +122,18 @@ PanelWindow {
       brightnessPanel.open = false
       notificationsPanel.open = false
       volumePanel.open = !volumePanel.open
+    }
+    onNetworkPanelRequested: {
+      root.launcherOpen = false
+      root.controlsOpen = false
+      root.sessionOpen = false
+      wallCarousel.open = false
+      wallGrid.open = false
+      batteryPanel.open = false
+      brightnessPanel.open = false
+      notificationsPanel.open = false
+      volumePanel.open = false
+      networkPanel.open = !networkPanel.open
     }
     onBatteryPanelRequested: {
       root.launcherOpen = false
@@ -176,6 +188,17 @@ PanelWindow {
   // ---- brightness panel (pop-out) ----
   BrightnessPanel {
     id: brightnessPanel
+    anchors.horizontalCenter: bar.horizontalCenter
+    anchors.top: bar.bottom
+    anchors.topMargin: 8
+    visible: open
+    open: false
+    onCloseRequested: open = false
+  }
+
+  // ---- network panel (pop-out) ----
+  NetworkPanel {
+    id: networkPanel
     anchors.horizontalCenter: bar.horizontalCenter
     anchors.top: bar.bottom
     anchors.topMargin: 8
@@ -341,6 +364,7 @@ PanelWindow {
       brightnessPanel.open = false
       notificationsPanel.open = false
       volumePanel.open = false
+      networkPanel.open = false
     }
   }
 
@@ -349,6 +373,7 @@ PanelWindow {
     root.controlsOpen = false
     root.sessionOpen = false
     root.pickerOpen = false
+    networkPanel.open = false
     bar.barOpen = false
   }
 
