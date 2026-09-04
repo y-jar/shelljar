@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.SystemTray
 
@@ -41,10 +42,11 @@ RowLayout {
         if (!modelData) return
         if (mouse.button === Qt.RightButton) {
           if (modelData.hasMenu) {
-            // Anchor the StatusNotifier menu below the icon, relative to the bar
-            // window. mapToItem must target an Item (contentItem), not the window.
-            const win = itm.Window.window
-            const pos = win ? itm.mapToItem(win.contentItem, 0, 0) : { x: 0, y: 0 }
+            // QsWindow is quickshell's attached window (a real NativeWindow).
+            // itemPosition() gives this icon's coordinates relative to it, so the
+            // StatusNotifier menu anchors just below the icon.
+            const win = QsWindow.window
+            const pos = win ? win.itemPosition(itm) : { x: 0, y: 0 }
             modelData.display(win, Math.round(pos.x), Math.round(pos.y + itm.height))
           } else {
             modelData.secondaryActivate()
