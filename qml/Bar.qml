@@ -20,19 +20,13 @@ Item {
   // wired by PerScreen for the notifications button badge count
   property var notificationServer: null
   signal controlClicked
-  signal powerClicked
   signal notificationsRequested
   signal wallpaperOpenRequested(var dir)
   signal wallpaperGridRequested
   signal wallpaperPickerRequested
   signal osdHoverRequested
   signal osdValueChanged
-  signal osdBrightnessHoverRequested
-  signal osdBrightnessValueChanged
-  signal batteryPanelRequested
-  signal brightnessPanelRequested
   signal volumePanelRequested
-  signal networkPanelRequested
 
   Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
@@ -70,117 +64,99 @@ Item {
       spacing: Config.spacing
       visible: root.barOpen
 
-      // ==== row 1 ====
-      RowLayout {
+      // ==== row 1 (clock dead-centered; clusters anchor to the edges) ====
+      Item {
         Layout.fillWidth: true
-        spacing: 8
+        Layout.fillHeight: true
 
-        // left action cluster: profile hamburger + power
-        Rectangle {
-          Layout.preferredWidth: Math.round(30 * Config.uiScale)
-          Layout.preferredHeight: width
-          radius: width / 2
-          color: root.hovered(hamb) ? Config.surfaceAlt : Config.surface
-          border.color: Qt.rgba(1,1,1,0.08)
-
-          ShellText {
-            anchors.centerIn: parent
-            text: "☰"
-            color: Config.text
-            font.pixelSize: Config.fsSmall
-          }
-          MouseArea {
-            id: hamb
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: root.controlClicked()
-          }
+        Clock {
+          id: clock
+          anchors.horizontalCenter: parent.horizontalCenter
+          anchors.verticalCenter: parent.verticalCenter
+          z: 1
         }
 
-        Rectangle {
-          Layout.preferredWidth: Math.round(30 * Config.uiScale)
-          Layout.preferredHeight: width
-          radius: width / 2
-          color: root.hovered(pwr) ? Config.surfaceAlt : Config.surface
-          border.color: Qt.rgba(1,1,1,0.08)
-
-          ShellText {
-            anchors.centerIn: parent
-            text: "⚡"
-            color: Config.red
-            font.pixelSize: Config.fsSmall
-          }
-          MouseArea {
-            id: pwr
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: root.powerClicked()
-          }
-        }
-
-        // network pill (right of the power button): click opens the network panel
-        NetworkWidget {
-          onNetworkClicked: root.networkPanelRequested()
-        }
-
-        // springs keep the clock centered
-        Item { Layout.fillWidth: true }
-
-        Clock { }
-
-        Item { Layout.fillWidth: true }
-
-        // notifications button
-        Rectangle {
-          id: notifBtn
-          Layout.preferredWidth: Math.round(30 * Config.uiScale)
-          Layout.preferredHeight: width
-          radius: width / 2
-          color: root.hovered(notifHover) ? Config.surfaceAlt : Config.surface
-          border.color: Qt.rgba(1,1,1,0.08)
-
-          ShellText {
-            anchors.centerIn: parent
-            text: "🔔"
-            font.pixelSize: Config.fsSmall
-          }
+        // left cluster: profile hamburger (opens control center)
+        RowLayout {
+          anchors.left: parent.left
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: 0
           Rectangle {
-            visible: root.notificationServer && root.notificationServer.trackedNotifications.count > 0
-            anchors.top: parent.top
-            anchors.right: parent.right
-            anchors.margins: 1
-            width: 12; height: 12; radius: 6
-            color: Config.red
+            Layout.preferredWidth: Math.round(30 * Config.uiScale)
+            Layout.preferredHeight: width
+            radius: width / 2
+            color: root.hovered(hamb) ? Config.surfaceAlt : Config.surface
+            border.color: Qt.rgba(1,1,1,0.08)
             ShellText {
               anchors.centerIn: parent
-              text: String(root.notificationServer ? root.notificationServer.trackedNotifications.count : 0)
-              color: "#ffffff"
-              font.pixelSize: Config.fsTiny
-              font.weight: Font.DemiBold
+              text: "☰"
+              color: Config.text
+              font.pixelSize: Config.fsSmall
             }
-          }
-          MouseArea {
-            id: notifHover
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: root.notificationsRequested()
+            MouseArea {
+              id: hamb
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: root.controlClicked()
+            }
           }
         }
 
-        // volume pill: click opens the slider frame
-        VolumeWidget {
-          onToggleRequested: root.volumePanelRequested()
-          onHoverRequested: root.osdHoverRequested()
-          onValueChanged: root.osdValueChanged()
+        // right cluster: notifications + sound
+        RowLayout {
+          anchors.right: parent.right
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: 8
+
+          Rectangle {
+            id: notifBtn
+            Layout.preferredWidth: Math.round(30 * Config.uiScale)
+            Layout.preferredHeight: width
+            radius: width / 2
+            color: root.hovered(notifHover) ? Config.surfaceAlt : Config.surface
+            border.color: Qt.rgba(1,1,1,0.08)
+            ShellText {
+              anchors.centerIn: parent
+              text: "🔔"
+              font.pixelSize: Config.fsSmall
+            }
+            Rectangle {
+              visible: root.notificationServer && root.notificationServer.trackedNotifications.count > 0
+              anchors.top: parent.top
+              anchors.right: parent.right
+              anchors.margins: 1
+              width: 12; height: 12; radius: 6
+              color: Config.red
+              ShellText {
+                anchors.centerIn: parent
+                text: String(root.notificationServer ? root.notificationServer.trackedNotifications.count : 0)
+                color: "#ffffff"
+                font.pixelSize: Config.fsTiny
+                font.weight: Font.DemiBold
+              }
+            }
+            MouseArea {
+              id: notifHover
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: root.notificationsRequested()
+            }
+          }
+
+          VolumeWidget {
+            onToggleRequested: root.volumePanelRequested()
+            onHoverRequested: root.osdHoverRequested()
+            onValueChanged: root.osdValueChanged()
+          }
         }
       }
 
       // ==== row 2 ====
       RowLayout {
         Layout.fillWidth: true
+        Layout.fillHeight: true
         spacing: 6
 
         WallpaperStrip {
@@ -188,18 +164,8 @@ Item {
           onGridRequested: root.wallpaperGridRequested()
           onPickerRequested: root.wallpaperPickerRequested()
         }
-        Tray { }
         Stats { }
         Item { Layout.fillWidth: true }
-        BatteryWidget {
-          onBatteryClicked: root.batteryPanelRequested()
-        }
-        BrightnessWidget {
-          onHoverRequested: root.osdBrightnessHoverRequested()
-          onValueChanged: root.osdBrightnessValueChanged()
-          onBrightnessPanelRequested: root.brightnessPanelRequested()
-        }
-        MediaWidget { }
       }
     }
   }

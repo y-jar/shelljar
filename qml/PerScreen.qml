@@ -20,7 +20,7 @@ PanelWindow {
   WlrLayershell.namespace: ns
   WlrLayershell.exclusionMode: ExclusionMode.Ignore // overlay: no reserved space
   WlrLayershell.layer: WlrLayer.Top
-  WlrLayershell.keyboardFocus: (root.popupOpen || root.barActive) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+  WlrLayershell.keyboardFocus: (root.popupOpen || root.islandActive) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
   color: "transparent"
 
   anchors.top: true
@@ -36,16 +36,32 @@ PanelWindow {
   property bool controlsOpen: false
   property bool sessionOpen: false
   property bool pickerOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || notificationsPanel.open || volumePanel.open || networkPanel.open
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || notificationsPanel.open || volumePanel.open || batteryPanel.open || brightnessPanel.open || networkPanel.open
   readonly property bool barActive: bar.barOpen
+  readonly property bool leftActive: leftIsland.open
+  readonly property bool rightActive: rightIsland.open
+  readonly property bool islandActive: barActive || leftActive || rightActive
 
-  // clickthrough: full screen while a popup or the bar is open, otherwise only the bar
+  // clickthrough: full screen while a popup or any island is open, otherwise
+  // only the three islands' rects pass clicks.
   mask: Region {
-    x: (root.popupOpen || root.barActive) ? 0 : bar.x
-    y: (root.popupOpen || root.barActive) ? 0 : bar.y
-    width: (root.popupOpen || root.barActive) ? root.width : bar.width
-    height: (root.popupOpen || root.barActive) ? root.height : bar.height
+    x: (root.popupOpen || root.islandActive) ? 0 : bar.x
+    y: (root.popupOpen || root.islandActive) ? 0 : bar.y
+    width: (root.popupOpen || root.islandActive) ? root.width : bar.width
+    height: (root.popupOpen || root.islandActive) ? root.height : bar.height
 
+    Region {
+      x: leftIsland.x
+      y: leftIsland.y
+      width: (!root.popupOpen && !root.islandActive) ? leftIsland.width : 0
+      height: (!root.popupOpen && !root.islandActive) ? leftIsland.height : 0
+    }
+    Region {
+      x: rightIsland.x
+      y: rightIsland.y
+      width: (!root.popupOpen && !root.islandActive) ? rightIsland.width : 0
+      height: (!root.popupOpen && !root.islandActive) ? rightIsland.height : 0
+    }
     Region {
       x: toasts.x
       y: toasts.y
@@ -65,21 +81,25 @@ PanelWindow {
     MouseArea { anchors.fill: parent; onClicked: root.closeAll() }
   }
 
-  // ---- transparent click-catcher: clicking away from the open bar closes it ----
+  // ---- transparent click-catcher: clicking away from the open islands closes them ----
   MouseArea {
     anchors.fill: parent
-    visible: root.barActive && !root.popupOpen
+    visible: root.islandActive && !root.popupOpen
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    onClicked: { bar.barOpen = false; wallCarousel.open = false; wallGrid.open = false; wallPicker.open = false; batteryPanel.open = false; brightnessPanel.open = false; notificationsPanel.open = false; volumePanel.open = false; networkPanel.open = false }
+    onClicked: {
+      bar.barOpen = false; leftIsland.open = false; rightIsland.open = false
+      wallCarousel.open = false; wallGrid.open = false; wallPicker.open = false
+      batteryPanel.open = false; brightnessPanel.open = false
+      notificationsPanel.open = false; volumePanel.open = false; networkPanel.open = false
+    }
   }
 
-  // ---- bar (top strip / expanded two rows) ----
+  // ---- middle island (profile / centered clock / notifications + sound) ----
   Bar {
     id: bar
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.top: parent.top
     notificationServer: root.notificationServer
-    onPowerClicked: { root.closeAll(); root.sessionOpen = true }
     onControlClicked: { root.closeAll(); root.controlsOpen = true }
     onNotificationsRequested: {
       root.launcherOpen = false
@@ -110,8 +130,6 @@ PanelWindow {
     onWallpaperPickerRequested: root.openWallPicker()
     onOsdHoverRequested: { osd.showVolume(); osd.hover() }
     onOsdValueChanged: osd.showVolume()
-    onOsdBrightnessHoverRequested: { osd.showBrightness(BrightnessService.value); osd.hover() }
-    onOsdBrightnessValueChanged: osd.showBrightness(BrightnessService.value)
     onVolumePanelRequested: {
       root.launcherOpen = false
       root.controlsOpen = false
@@ -123,7 +141,16 @@ PanelWindow {
       notificationsPanel.open = false
       volumePanel.open = !volumePanel.open
     }
-    onNetworkPanelRequested: {
+  }
+
+  // ---- left island (network / power / tray / media), top-left edge ----
+  LeftIsland {
+    id: leftIsland
+    anchors.left: parent.left
+    anchors.leftMargin: 8
+    anchors.top: parent.top
+    anchors.topMargin: 8
+    onNetworkClicked: {
       root.launcherOpen = false
       root.controlsOpen = false
       root.sessionOpen = false
@@ -135,6 +162,16 @@ PanelWindow {
       volumePanel.open = false
       networkPanel.open = !networkPanel.open
     }
+    onPowerClicked: { root.closeAll(); root.sessionOpen = true }
+  }
+
+  // ---- right island (battery / brightness), top-right edge ----
+  RightIsland {
+    id: rightIsland
+    anchors.right: parent.right
+    anchors.rightMargin: 8
+    anchors.top: parent.top
+    anchors.topMargin: 8
     onBatteryPanelRequested: {
       root.launcherOpen = false
       root.controlsOpen = false
@@ -157,6 +194,8 @@ PanelWindow {
       volumePanel.open = false
       brightnessPanel.open = true
     }
+    onOsdBrightnessHoverRequested: { osd.showBrightness(BrightnessService.value); osd.hover() }
+    onOsdBrightnessValueChanged: osd.showBrightness(BrightnessService.value)
   }
 
   // ---- volume/brightness OSD (top-right) ----
@@ -174,34 +213,35 @@ PanelWindow {
     onCloseRequested: open = false
   }
 
-  // ---- battery panel (pop-out) ----
+  // ---- battery panel (pop-out, beside the right island) ----
   BatteryPanel {
     id: batteryPanel
-    anchors.horizontalCenter: bar.horizontalCenter
-    anchors.top: bar.bottom
-    anchors.topMargin: 8
+    anchors.right: rightIsland.left
+    anchors.rightMargin: 8
+    anchors.top: rightIsland.top
     visible: open
     open: false
     onCloseRequested: open = false
   }
 
-  // ---- brightness panel (pop-out) ----
+  // ---- brightness panel (pop-out, beside the right island) ----
   BrightnessPanel {
     id: brightnessPanel
-    anchors.horizontalCenter: bar.horizontalCenter
-    anchors.top: bar.bottom
-    anchors.topMargin: 8
+    anchors.right: rightIsland.left
+    anchors.rightMargin: 8
+    anchors.top: rightIsland.top
+    anchors.topMargin: 44
     visible: open
     open: false
     onCloseRequested: open = false
   }
 
-  // ---- network panel (pop-out) ----
+  // ---- network panel (pop-out, beside the left island) ----
   NetworkPanel {
     id: networkPanel
-    anchors.horizontalCenter: bar.horizontalCenter
-    anchors.top: bar.bottom
-    anchors.topMargin: 8
+    anchors.left: leftIsland.right
+    anchors.leftMargin: 8
+    anchors.top: leftIsland.top
     visible: open
     open: false
     onCloseRequested: open = false
@@ -351,12 +391,14 @@ PanelWindow {
     }
   }
 
-  // ESC closes the open bar (focus granted while the bar is active)
+  // ESC closes the open islands (focus granted while an island is active)
   Item {
     anchors.fill: parent
-    focus: root.barActive && !root.popupOpen
+    focus: root.islandActive && !root.popupOpen
     Keys.onEscapePressed: {
       bar.barOpen = false
+      leftIsland.open = false
+      rightIsland.open = false
       wallCarousel.open = false
       wallGrid.open = false
       wallPicker.open = false
@@ -373,8 +415,14 @@ PanelWindow {
     root.controlsOpen = false
     root.sessionOpen = false
     root.pickerOpen = false
-    networkPanel.open = false
     bar.barOpen = false
+    leftIsland.open = false
+    rightIsland.open = false
+    batteryPanel.open = false
+    brightnessPanel.open = false
+    volumePanel.open = false
+    notificationsPanel.open = false
+    networkPanel.open = false
   }
 
   function toggleLauncher(): void {

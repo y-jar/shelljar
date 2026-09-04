@@ -6,6 +6,7 @@ Item {
   id: root
 
   property int level: 0
+  property bool slash: false
   property color color: Config.text
   property color dimColor: Qt.rgba(1, 1, 1, 0.28)
 
@@ -43,10 +44,21 @@ Item {
         ctx.strokeStyle = n >= i + 2 ? root.color : root.dimColor
         ctx.stroke()
       }
+
+      // not-connected slash
+      if (root.slash) {
+        ctx.beginPath()
+        ctx.moveTo(width * 0.18, height * 0.12)
+        ctx.lineTo(width * 0.82, height * 0.88)
+        ctx.lineWidth = lw
+        ctx.strokeStyle = root.color
+        ctx.stroke()
+      }
     }
   }
 
   onLevelChanged: canvas.requestPaint()
+  onSlashChanged: canvas.requestPaint()
   onColorChanged: canvas.requestPaint()
   onDimColorChanged: canvas.requestPaint()
 }

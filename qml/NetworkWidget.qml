@@ -3,22 +3,19 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Networking
 
-// Dock network pill: a Wi-Fi signal-level icon (or ethernet glyph) + connected
-// name. Left-click opens the network popdown panel.
+// Dock network icon (left island). Shows:
+//   - wired: ep = ethernet glyph only
+//   - wifi connected: wireless glyph at live signal level
+//   - wifi on but not connected: wireless glyph + "not connected" slash (dim)
+//   - wifi off: dim wireless glyph
+// Icon only (no label) so it stays compact and symmetric.
 RowLayout {
   id: root
 
   signal networkClicked
 
-  property color textColor: Config.text
-  property color subColor: Config.subtext
-
   readonly property var devices: Networking.devices || []
-
-  function findDevice(t) {
-    for (const d of root.devices) { if (d && d.type === t) return d }
-    return null
-  }
+  function findDevice(t) { for (const d of root.devices) { if (d && d.type === t) return d } return null }
   readonly property var wifiDevice: findDevice(DeviceType.Wifi)
   readonly property var wiredDevice: findDevice(DeviceType.Wired)
 
@@ -29,47 +26,37 @@ RowLayout {
   }
   readonly property var activeWifi: activeNetwork(root.wifiDevice)
   readonly property bool wiredUp: root.wiredDevice !== null && root.wiredDevice.connected
-
+  readonly property bool wifiEnabled: Networking.wifiEnabled
+  readonly property bool wifiConnected: root.activeWifi !== null
   readonly property int wifiLevel: activeWifi
     ? Math.min(4, Math.max(0, Math.ceil(activeWifi.signalStrength / 25))) : 0
-  readonly property bool wifiEnabled: Networking.wifiEnabled
-  readonly property bool online: root.activeWifi !== null || root.wiredUp
 
   Rectangle {
-    Layout.preferredWidth: Math.round(100 * Config.uiScale)
-    implicitHeight: 28
-    radius: 14
+    Layout.preferredWidth: Math.round(32 * Config.uiScale)
+    implicitHeight: 30
+    radius: 8
     color: hover.containsMouse ? Config.surfaceAlt : Config.surface
     border.color: Qt.rgba(1, 1, 1, 0.10)
 
-    RowLayout {
+    Item {
       anchors.centerIn: parent
-      spacing: 6
+      width: Math.round(18 * Config.uiScale)
+      height: width
 
-      Item {
-        width: Math.round(18 * Config.uiScale)
-        height: width
-        // Wi-Fi level icon (primary). Ethernet-active shows the level icon at full,
-        // tinted accent; otherwise it reflects the live wifi level (or 0 when off).
-        WifiIcon {
-          anchors.fill: parent
-          level: root.activeWifi ? root.wifiLevel : (root.wifiEnabled ? 0 : 0)
-          color: root.online ? Config.accent : Config.text
-        }
+      // ethernet active -> ethernet icon only
+      EthernetIcon {
+        anchors.fill: parent
+        visible: root.wiredUp
+        color: Config.accent
       }
 
-      ShellText {
-        Layout.preferredWidth: Math.round(58 * Config.uiScale)
-        text: {
-          if (root.activeWifi) return root.activeWifi.name
-          if (root.wiredUp) return "Ethernet"
-          if (root.wifiEnabled) return "Wi-Fi"
-          return "Off"
-        }
-        color: root.online ? root.textColor : root.subColor
-        font.pixelSize: Config.fsTiny
-        elide: Text.ElideRight
-        horizontalAlignment: Text.AlignLeft
+      // otherwise -> wireless icon
+      WifiIcon {
+        anchors.fill: parent
+        visible: !root.wiredUp
+        level: root.wifiConnected ? root.wifiLevel : 0
+        slash: root.wifiEnabled && !root.wifiConnected
+        color: root.wifiConnected ? Config.accent : Config.text
       }
     }
 
