@@ -15,6 +15,8 @@ Item {
   property bool open: false
   signal batteryPanelRequested
   signal brightnessPanelRequested
+  signal osdBrightnessHoverRequested
+  signal osdBrightnessValueChanged
 
   Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
