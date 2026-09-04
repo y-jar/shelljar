@@ -149,7 +149,7 @@ PanelWindow {
     anchors.left: parent.left
     anchors.leftMargin: 8
     anchors.top: parent.top
-    anchors.topMargin: 8
+    anchors.topMargin: 0
     onNetworkClicked: {
       root.launcherOpen = false
       root.controlsOpen = false
@@ -171,7 +171,7 @@ PanelWindow {
     anchors.right: parent.right
     anchors.rightMargin: 8
     anchors.top: parent.top
-    anchors.topMargin: 8
+    anchors.topMargin: 0
     onBatteryPanelRequested: {
       root.launcherOpen = false
       root.controlsOpen = false
