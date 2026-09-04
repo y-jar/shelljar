@@ -52,7 +52,18 @@ Item {
       spacing: 6
       visible: root.open
 
+      // When no battery (e.g. a desktop PC) show a friendly tag instead.
+      // BatteryWidget hides itself when it has no battery, so mirror its state.
+      ShellText {
+        visible: batteryWidget.hasBattery === false
+        text: "<Jar> I am a Desktop!"
+        color: Config.subtext
+        font.pixelSize: Config.fsSmall
+        elide: Text.ElideRight
+      }
+
       BatteryWidget {
+        id: batteryWidget
         onBatteryClicked: root.batteryPanelRequested()
       }
       BrightnessWidget {

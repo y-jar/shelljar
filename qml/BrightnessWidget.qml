@@ -27,19 +27,20 @@ RowLayout {
     radius: 13
     color: hoverArea.containsMouse ? Config.surfaceAlt : Config.surface
     border.color: Qt.rgba(1,1,1,0.10)
-    visible: available
+    // Always render; when no backlight/DDC is available, grey it out and disable.
+    opacity: root.available ? 1 : 0.4
 
     RowLayout {
       anchors.centerIn: parent
       spacing: 5
       ShellText {
         text: root.icon()
-        color: root.textColor
+        color: (root.available ? root.textColor : Config.subtext)
         font.pixelSize: Config.fsSmall
       }
       ShellText {
         text: Math.round(root.value * 100) + "%"
-        color: root.textColor
+        color: (root.available ? root.textColor : Config.subtext)
         font.pixelSize: Config.fsTiny
       }
     }
@@ -47,7 +48,8 @@ RowLayout {
     MouseArea {
       id: hoverArea
       anchors.fill: parent
-      hoverEnabled: true
+      enabled: root.available
+      hoverEnabled: root.available
       onEntered: root.hoverRequested()
       onWheel: event => BrightnessService.step(event.angleDelta.y > 0 ? 0.05 : -0.05)
       onClicked: root.brightnessPanelRequested()
