@@ -27,10 +27,11 @@ Rectangle {
   property int detailWifiIndex: -1
   property int detailEthIndex: -1
 
-  readonly property var devices: Networking.devices || []
+  readonly property var devices: (Networking.devices && Networking.devices.values) || []
   function findDevice(t) { for (const d of root.devices) { if (d && d.type === t) return d } return null }
   readonly property var wifiDevice: findDevice(DeviceType.Wifi)
   readonly property var wired: findDevice(DeviceType.Wired)
+  readonly property var wifiNetworks: (root.wifiDevice && root.wifiDevice.networks && root.wifiDevice.networks.values) || []
   readonly property bool hasWired: root.wired !== null
   readonly property bool hasWifi: root.wifiDevice !== null
   readonly property bool wifiEnabled: Networking.wifiEnabled
@@ -170,7 +171,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
           }
           ShellText {
-            visible: root.wifiEnabled && (!root.wifiDevice || !root.wifiDevice.networks || root.wifiDevice.networks.length === 0)
+            visible: root.wifiEnabled && root.wifiNetworks.length === 0
             Layout.fillWidth: true
             text: "Scanning…"
             color: Config.subtext
@@ -179,7 +180,7 @@ Rectangle {
           }
 
           Repeater {
-            model: root.wifiEnabled && root.wifiDevice && root.wifiDevice.networks ? root.wifiDevice.networks : []
+            model: root.wifiEnabled ? root.wifiNetworks : []
 
             delegate: ColumnLayout {
               required property var modelData
@@ -241,10 +242,10 @@ Rectangle {
                   cursorShape: Qt.PointingHandCursor
                   onClicked: {
                     const n = modelData
-                    if (n.connected) {
-                      root.detailWifiIndex = root.isDetail() ? -1 : index
-                      root.pskTarget = null
-                    } else if (n.known || !root.secured(n)) {
+if (n.connected) {
+                        root.detailWifiIndex = isDetail() ? -1 : index
+                        root.pskTarget = null
+                      } else if (n.known || !root.secured(n)) {
                       n.connect()
                     } else {
                       root.pskTarget = n
@@ -296,7 +297,7 @@ Rectangle {
 
               // wifi details
               ColumnLayout {
-                visible: root.isDetail() && modelData.connected
+                visible: isDetail() && modelData.connected
                 Layout.fillWidth: true
                 spacing: 4
 
@@ -408,14 +409,14 @@ Rectangle {
                   anchors.fill: parent
                   cursorShape: Qt.PointingHandCursor
                   onClicked: {
-                    root.detailEthIndex = root.isDetail() ? -1 : 0
+                    root.detailEthIndex = isDetail() ? -1 : 0
                     if (root.detailEthIndex === 0) root.runNm(modelData.name)
                   }
                 }
               }
 
               ColumnLayout {
-                visible: root.isDetail()
+                visible: isDetail()
                 Layout.fillWidth: true
                 spacing: 4
 

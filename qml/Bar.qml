@@ -37,6 +37,7 @@ Item {
     radius: Config.cornerRadius
     color: Config.bg
     border.color: Qt.rgba(1,1,1,0.10)
+    clip: true
 
     // right-click toggles the expanded bar
     MouseArea {
@@ -67,7 +68,10 @@ Item {
       // ==== row 1 (clock dead-centered; clusters anchor to the edges) ====
       Item {
         Layout.fillWidth: true
-        Layout.fillHeight: true
+        implicitWidth: Math.round(230 * Config.uiScale)
+        implicitHeight: Math.round(30 * Config.uiScale)
+        Layout.alignment: Qt.AlignVCenter
+        clip: false
 
         Clock {
           id: clock
@@ -156,7 +160,8 @@ Item {
       // ==== row 2 ====
       RowLayout {
         Layout.fillWidth: true
-        Layout.fillHeight: true
+        implicitHeight: Math.round(34 * Config.uiScale)
+        Layout.alignment: Qt.AlignVCenter
         spacing: 6
 
         WallpaperStrip {

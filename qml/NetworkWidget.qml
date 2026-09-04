@@ -14,14 +14,15 @@ RowLayout {
 
   signal networkClicked
 
-  readonly property var devices: Networking.devices || []
+  readonly property var devices: (Networking.devices && Networking.devices.values) || []
   function findDevice(t) { for (const d of root.devices) { if (d && d.type === t) return d } return null }
   readonly property var wifiDevice: findDevice(DeviceType.Wifi)
   readonly property var wiredDevice: findDevice(DeviceType.Wired)
 
   function activeNetwork(dev) {
     if (!dev || !dev.networks) return null
-    for (const n of dev.networks) { if (n.connected) return n }
+    const nets = dev.networks.values || dev.networks
+    for (const n of nets) { if (n.connected) return n }
     return null
   }
   readonly property var activeWifi: activeNetwork(root.wifiDevice)

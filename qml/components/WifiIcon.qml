@@ -1,3 +1,4 @@
+import qs.components
 import QtQuick
 
 // Drawn Wi-Fi glyph whose arcs light up with `level` (0-4).

@@ -1,3 +1,4 @@
+import qs.components
 import QtQuick
 
 // Drawn Ethernet (cable/RJ45) glyph, tintable via `color`.
