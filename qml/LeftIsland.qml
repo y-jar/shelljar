@@ -4,14 +4,14 @@ import QtQuick.Layouts
 import Quickshell
 
 // Left auto-hiding island: [network | power | system tray | media manager].
-// Collapsed = a slim horizontal handle on the left edge; right-click expands into
-// a single-row card. Mirrors the main Bar's collapse/expand mechanics.
+// Collapsed = a slim horizontal bar (like the middle island); right-click expands
+// into a single-row card. Mirrors the main Bar's collapse/expand mechanics.
 Item {
   id: root
 
-  readonly property real stripW: Math.max(48, Math.round(60 * Config.uiScale))
+  readonly property real stripW: Math.max(120, Math.round(150 * Config.uiScale))
   width: open ? Math.max(Config.minDockWidth, (content ? content.implicitWidth + 16 : stripW))
-              : (Config.stripHeight)
+              : stripW
   height: open ? Config.dockHeight : Config.stripHeight
 
   property bool open: false
@@ -27,6 +27,7 @@ Item {
     radius: Config.cornerRadius
     color: Config.bg
     border.color: Qt.rgba(1, 1, 1, 0.10)
+    clip: true
 
     // right-click toggles the expanded island
     MouseArea {
@@ -40,8 +41,8 @@ Item {
     Rectangle {
       anchors.centerIn: parent
       visible: !root.open
-      width: 4
-      height: Math.round(parent.width * 0.4)
+      width: Math.round(parent.width * 0.5)
+      height: 4
       radius: 2
       color: Config.surfaceAlt
     }
