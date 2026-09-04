@@ -39,17 +39,18 @@ RowLayout {
 
       onClicked: mouse => {
         if (!modelData) return
-        // Anchor the StatusNotifier menu relative to the enclosing bar window.
-        const win = itm.Window.window
-        const pos = win ? itm.mapToItem(win, 0, 0) : { x: 0, y: 0 }
-        const x = Math.round(pos.x)
-        const y = Math.round(pos.y + itm.height)
-        if (modelData.hasMenu) {
-          modelData.display(win, x, y)
+        if (mouse.button === Qt.RightButton) {
+          if (modelData.hasMenu) {
+            // Anchor the StatusNotifier menu below the icon, relative to the bar
+            // window. mapToItem must target an Item (contentItem), not the window.
+            const win = itm.Window.window
+            const pos = win ? itm.mapToItem(win.contentItem, 0, 0) : { x: 0, y: 0 }
+            modelData.display(win, Math.round(pos.x), Math.round(pos.y + itm.height))
+          } else {
+            modelData.secondaryActivate()
+          }
         } else if (mouse.button === Qt.LeftButton) {
-          modelData.activate()
-        } else {
-          modelData.secondaryActivate()
+          if (!modelData.onlyMenu) modelData.activate()
         }
       }
 
