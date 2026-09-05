@@ -15,7 +15,7 @@ import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-ColumnLayout {
+Item {
   id: root
 
   property color textColor: Config.text
@@ -24,46 +24,51 @@ ColumnLayout {
 
   function pad(v) { return ("0" + v).slice(-2) }
 
-  RowLayout {
-    Layout.alignment: Qt.AlignHCenter
-    spacing: 2
+  ColumnLayout {
+    anchors.fill: parent
+    spacing: 0
 
-    ShellText {
-      text: clock.hours
-      color: root.textColor
-      font.pixelSize: Config.fsLarge
-      font.weight: Font.DemiBold
+    RowLayout {
+      Layout.alignment: Qt.AlignHCenter
+      spacing: 2
+
+      ShellText {
+        text: clock.hours
+        color: root.textColor
+        font.pixelSize: Config.fsLarge
+        font.weight: Font.DemiBold
+      }
+
+      // fixed width so the whole row stays centered whichever state the blink is in
+      ShellText {
+        Layout.preferredWidth: Math.round(9 * Config.uiScale)
+        horizontalAlignment: Text.AlignHCenter
+        text: clock.blink ? ":" : ""
+        color: root.dateColor
+        font.pixelSize: Config.fsLarge
+        font.weight: Font.DemiBold
+      }
+
+      ShellText {
+        text: clock.minutes
+        color: root.textColor
+        font.pixelSize: Config.fsLarge
+        font.weight: Font.DemiBold
+      }
     }
 
-    // fixed width so the whole row stays centered whichever state the blink is in
     ShellText {
-      Layout.preferredWidth: Math.round(9 * Config.uiScale)
-      horizontalAlignment: Text.AlignHCenter
-      text: clock.blink ? ":" : ""
+      text: clock.dateStr
       color: root.dateColor
-      font.pixelSize: Config.fsLarge
-      font.weight: Font.DemiBold
-    }
-
-    ShellText {
-      text: clock.minutes
-      color: root.textColor
-      font.pixelSize: Config.fsLarge
-      font.weight: Font.DemiBold
+      font.pixelSize: Config.fsSmall
+      Layout.alignment: Qt.AlignHCenter
     }
   }
 
-  ShellText {
-    text: clock.dateStr
-    color: root.dateColor
-    font.pixelSize: Config.fsSmall
-    Layout.alignment: Qt.AlignHCenter
-  }
-
-  // click opens the calendar panel
+  // overlay click area so the whole clock opens the calendar
   MouseArea {
-    Layout.fillWidth: true
-    Layout.fillHeight: true
+    anchors.fill: parent
+    z: 10
     cursorShape: Qt.PointingHandCursor
     onClicked: root.clicked()
   }
