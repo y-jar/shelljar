@@ -1,12 +1,21 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   WallpaperCarousel
+ *
+ *   A popout row of wallpaper previews that slides as you scroll. When the view
+ *   settles on a wallpaper it applies that file through the awww daemon and
+ *   closes. Clicking a preview applies it right away instead.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 
-// ---- pop-out wallpaper carousel (caelestia-style) ----
-// Slides wallpaper previews; when the user stops scrolling it applies the
-// centered wallpaper via awww and closes. Click a thumbnail to pick it now.
-// No background panel — the previews float directly on the desktop.
 Item {
   id: root
 
@@ -70,7 +79,11 @@ Item {
 
       MouseArea {
         anchors.fill: parent
-        onClicked: { WallpaperService.applyByIndex(PathView.index); root.closeRequested() }
+        onClicked: {
+          root.endSettle()
+          WallpaperService.applyByIndex(PathView.index)
+          root.closeRequested()
+        }
       }
     }
 
@@ -87,6 +100,15 @@ Item {
 
     onMovementEnded: root.beginSettle()
     onCurrentIndexChanged: root.beginSettle()
+  }
+
+  // empty state when there are no wallpapers yet
+  ShellText {
+    anchors.centerIn: parent
+    visible: WallpaperService.wallpapers.length === 0
+    text: "No wallpapers found"
+    color: Config.subtext
+    font.pixelSize: Config.fsSmall
   }
 
   // when the user stops scrolling for a beat, apply the centered wallpaper + close

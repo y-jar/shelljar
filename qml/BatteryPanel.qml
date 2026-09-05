@@ -1,20 +1,33 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   BatteryPanel
+ *
+ *   A popout frame opened from the right island battery pill. It lists each
+ *   laptop battery with its percent, remaining time, a fill bar and the charge
+ *   health, and it lets the user choose a power profile. A close button
+ *   dismisses it on demand.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.UPower
 
-// Pop-out battery panel: per-battery %/time/health + power profile selector.
 Rectangle {
   id: root
 
   property bool open: false
   signal closeRequested
 
-  width: Math.round(300 * Config.uiScale)
+  width: Config.popupWidth
   height: Math.round(300 * Config.uiScale)
   radius: Config.cornerRadius
   color: Config.bgAlt
-  border.color: Qt.rgba(1,1,1,0.10)
+  border.color: Config.borderStrong
 
   function fmtTime(seconds) {
     if (seconds <= 0) return ""
@@ -29,17 +42,31 @@ Rectangle {
     anchors.margins: 12
     spacing: 8
 
-    ShellText {
-      text: "Battery"
-      color: Config.text
-      font.pixelSize: Config.fsMedium
-      font.weight: Font.DemiBold
+    RowLayout {
+      Layout.fillWidth: true
+      ShellText {
+        text: "Battery"
+        color: Config.text
+        font.pixelSize: Config.fsMedium
+        font.weight: Font.DemiBold
+      }
+      Item { Layout.fillWidth: true }
+      ShellText {
+        text: "✕"
+        color: Config.subtext
+        font.pixelSize: Config.fsSmall
+        MouseArea {
+          anchors.fill: parent
+          cursorShape: Qt.PointingHandCursor
+          onClicked: root.closeRequested()
+        }
+      }
     }
 
     Rectangle {
       Layout.fillWidth: true
       height: 1
-      color: Qt.rgba(1,1,1,0.06)
+      color: Config.borderSoft
     }
 
     // batteries
@@ -59,7 +86,7 @@ Rectangle {
           RowLayout {
             Layout.fillWidth: true
             ShellText {
-              text: modelData.isLaptopBattery ? "Battery" : modelData.name || "Device"
+              text: (modelData.name && modelData.name !== "") ? modelData.name : "Battery"
               color: Config.subtext
               font.pixelSize: Config.fsTiny
             }
@@ -91,7 +118,7 @@ Rectangle {
               height: parent.height
               radius: 3
               color: (modelData.state === UPowerDeviceState.Charging || modelData.state === UPowerDeviceState.FullyCharged)
-                ? Config.green : (modelData.percentage <= 10 ? Config.red : Config.accent)
+                ? Config.green : (modelData.percentage <= Config.batteryCritical ? Config.red : Config.accent)
             }
           }
         }
@@ -101,7 +128,7 @@ Rectangle {
     Rectangle {
       Layout.fillWidth: true
       height: 1
-      color: Qt.rgba(1,1,1,0.06)
+      color: Config.borderSoft
     }
 
     // power profile
@@ -124,7 +151,7 @@ Rectangle {
           implicitHeight: 30
           radius: 8
           color: active() ? Config.accent : Config.surface
-          border.color: Qt.rgba(1,1,1,0.10)
+          border.color: Config.borderStrong
 
           function active() {
             return (modelData === "powersaver" && PowerProfiles.profile === PowerProfile.PowerSaver)
@@ -140,7 +167,7 @@ Rectangle {
           ShellText {
             anchors.centerIn: parent
             text: modelData === "powersaver" ? "🌿" : modelData === "balanced" ? "⚖️" : "🚀"
-            color: parent.active() ? "#ffffff" : Config.text
+            color: parent.active() ? Config.white : Config.text
             font.pixelSize: Config.fsSmall
           }
           MouseArea {

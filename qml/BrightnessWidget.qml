@@ -1,13 +1,24 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   BrightnessWidget
+ *
+ *   A compact dock pill for screen brightness. The wheel steps it, hovering
+ *   pulses the OSD and a click opens the panel. When no backlight or display
+ *   can be adjusted it renders greyed out and does nothing.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-// Dock brightness pill: icon + %, wheel changes, hover shows OSD, click opens panel.
 RowLayout {
   id: root
 
   property color textColor: Config.text
-  property color subColor: Config.subtext
   signal hoverRequested
   signal brightnessPanelRequested
 
@@ -16,18 +27,17 @@ RowLayout {
 
   function icon() {
     if (!available) return "☀"
-    if (value <= 0.001) return "☀"
+    if (value <= Config.brightnessEpsilon) return "☀"
     if (value <= 0.5) return "🔅"
     return "🔆"
   }
 
   Rectangle {
-    Layout.preferredWidth: Math.round(64 * Config.uiScale)
-    implicitHeight: 26
-    radius: 13
+    Layout.preferredWidth: Config.pillWidth
+    Layout.preferredHeight: Config.pillHeight
+    radius: Config.pillHeight / 2
     color: hoverArea.containsMouse ? Config.surfaceAlt : Config.surface
-    border.color: Qt.rgba(1,1,1,0.10)
-    // Always render; when no backlight/DDC is available, grey it out and disable.
+    border.color: Config.borderStrong
     opacity: root.available ? 1 : 0.4
 
     RowLayout {
@@ -51,7 +61,7 @@ RowLayout {
       enabled: root.available
       hoverEnabled: root.available
       onEntered: root.hoverRequested()
-      onWheel: event => BrightnessService.step(event.angleDelta.y > 0 ? 0.05 : -0.05)
+      onWheel: event => BrightnessService.step(event.angleDelta.y > 0 ? Config.brightnessStep : -Config.brightnessStep)
       onClicked: root.brightnessPanelRequested()
     }
   }

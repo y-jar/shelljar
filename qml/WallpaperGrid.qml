@@ -1,11 +1,22 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   WallpaperGrid
+ *
+ *   A popout grid of wallpaper thumbnails for quick picking. Clicking one
+ *   applies it through the awww daemon and closes. The currently active
+ *   wallpaper is highlighted so you can see what is on screen.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
 
-// ---- pop-out wallpaper picker grid (noctalia-style) ----
-// A grid of wallpaper thumbnails; click one to apply it via awww and close.
 Rectangle {
   id: root
 
@@ -16,7 +27,7 @@ Rectangle {
   height: Math.round(430 * Config.uiScale)
   radius: Config.cornerRadius
   color: Config.bgAlt
-  border.color: Qt.rgba(1,1,1,0.10)
+  border.color: Config.borderStrong
 
   readonly property int columns: (screen && screen.width > 1920) ? 5 : 4
 
@@ -87,6 +98,19 @@ Rectangle {
             root.closeRequested()
           }
         }
+      }
+    }
+
+    // empty state when there are no wallpapers yet
+    header: Item {
+      width: grid.width
+      height: grid.count === 0 ? grid.height : 0
+      visible: grid.count === 0
+      ShellText {
+        anchors.centerIn: parent
+        text: "No wallpapers found"
+        color: Config.subtext
+        font.pixelSize: Config.fsSmall
       }
     }
   }

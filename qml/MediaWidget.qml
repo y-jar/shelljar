@@ -1,9 +1,21 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   MediaWidget
+ *
+ *   Compact music controls for the left island. It picks the player that is
+ *   actually playing rather than just the first one, so the prev, play and
+ *   next buttons always follow the song you hear.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Mpris
 
-// MPRIS media controls: shows the first active player's track.
 RowLayout {
   id: root
 
@@ -12,9 +24,15 @@ RowLayout {
   property int iconSize: Math.round(14 * Config.uiScale)
   spacing: 6
 
-  // pick the first player that reports a track
   readonly property var players: Mpris.players ? Mpris.players.values : []
-  readonly property var player: players.length > 0 ? players[0] : null
+
+  // prefer the player that is genuinely playing, fall back to the first active one
+  function pickPlayer() {
+    for (const p of root.players) { if (p && p.isPlaying) return p }
+    for (const p of root.players) { if (p && p.trackTitle !== "") return p }
+    return root.players.length > 0 ? root.players[0] : null
+  }
+  readonly property var player: root.pickPlayer()
   readonly property bool nothingPlaying: player === null || player.trackTitle === ""
 
   // prev / play-pause / next
@@ -38,7 +56,7 @@ RowLayout {
       onClicked: root.player.togglePlaying()
       ShellText {
         anchors.centerIn: parent
-        text: root.player.isPlaying ? "⏸" : "▶"
+        text: root.player && root.player.isPlaying ? "⏸" : "▶"
         font.pixelSize: root.iconSize + 2
         color: root.textColor
       }
@@ -59,14 +77,14 @@ RowLayout {
     spacing: 0
     visible: !root.nothingPlaying
     ShellText {
-      text: root.player.trackTitle || ""
+      text: root.player ? root.player.trackTitle || "" : ""
       color: root.textColor
       font.pixelSize: Config.fsSmall
       elide: Text.ElideRight
       Layout.preferredWidth: Math.round(160 * Config.uiScale)
     }
     ShellText {
-      text: root.player.trackArtist || root.player.identity || ""
+      text: root.player ? (root.player.trackArtist || root.player.identity || "") : ""
       color: root.subColor
       font.pixelSize: Config.fsTiny
       elide: Text.ElideRight

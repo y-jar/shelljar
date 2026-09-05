@@ -1,14 +1,25 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   VolumeWidget
+ *
+ *   A compact dock pill for audio. It shows an icon and the current percentage,
+ *   hovering it pulses the OSD, the wheel steps the volume and a click asks the
+ *   bar to open the volume panel. It talks to the default pipewire sink.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Pipewire
 
-// Dock volume pill: icon + %, hover shows the OSD, wheel changes volume.
 RowLayout {
   id: root
 
   property color textColor: Config.text
-  property color subColor: Config.subtext
   signal hoverRequested
   signal valueChanged
   signal toggleRequested
@@ -28,11 +39,11 @@ RowLayout {
   }
 
   Rectangle {
-    Layout.preferredWidth: Math.round(64 * Config.uiScale)
-    implicitHeight: 26
-    radius: 13
+    Layout.preferredWidth: Config.pillWidth
+    Layout.preferredHeight: Config.pillHeight
+    radius: Config.pillHeight / 2
     color: hoverArea.containsMouse ? Config.surfaceAlt : Config.surface
-    border.color: Qt.rgba(1,1,1,0.10)
+    border.color: Config.borderStrong
 
     RowLayout {
       anchors.centerIn: parent
@@ -56,7 +67,7 @@ RowLayout {
       cursorShape: Qt.PointingHandCursor
       onEntered: root.hoverRequested()
       onClicked: root.toggleRequested()
-      onWheel: event => root.setVolume(root.vol + (event.angleDelta.y > 0 ? 0.05 : -0.05))
+      onWheel: event => root.setVolume(root.vol + (event.angleDelta.y > 0 ? Config.volStep : -Config.volStep))
     }
   }
 }

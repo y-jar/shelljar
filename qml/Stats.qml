@@ -1,9 +1,20 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   Stats
+ *
+ *   A compact single row readout of CPU, memory, network and disk usage that
+ *   draws on the SystemStat singleton. Each field has its own color so the row
+ *   stays easy to scan, and long values elide instead of squeezing the layout.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-// Compact single-row system stats, fed by the self-contained
-// SystemStat singleton (reads /proc directly — no external script).
 RowLayout {
   id: root
 
@@ -25,6 +36,7 @@ RowLayout {
     color: root.textColor
     font.pixelSize: Config.fsTiny
     Layout.minimumWidth: Math.round(30 * Config.uiScale)
+    elide: Text.ElideRight
   }
 
   // ---- RAM ----
@@ -34,6 +46,7 @@ RowLayout {
     color: root.textColor
     font.pixelSize: Config.fsTiny
     Layout.minimumWidth: Math.round(52 * Config.uiScale)
+    elide: Text.ElideRight
   }
 
   // ---- NET ----
@@ -43,6 +56,7 @@ RowLayout {
     color: root.textColor
     font.pixelSize: Config.fsTiny
     Layout.minimumWidth: Math.round(34 * Config.uiScale)
+    elide: Text.ElideRight
   }
   ShellText { text: "↑"; color: Config.red; font.pixelSize: Config.fsTiny }
   ShellText {
@@ -50,6 +64,7 @@ RowLayout {
     color: root.textColor
     font.pixelSize: Config.fsTiny
     Layout.minimumWidth: Math.round(34 * Config.uiScale)
+    elide: Text.ElideRight
   }
 
   // ---- DISK ----
@@ -59,5 +74,6 @@ RowLayout {
     color: Config.yellow
     font.pixelSize: Config.fsTiny
     Layout.minimumWidth: Math.round(52 * Config.uiScale)
+    elide: Text.ElideRight
   }
 }

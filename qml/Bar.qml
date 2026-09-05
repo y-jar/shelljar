@@ -1,22 +1,31 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   Bar
+ *
+ *   The top center island per screen. Collapsed it is a thin strip and a right
+ *   click expands it into two rows. Row one holds the profile hamburger and the
+ *   centered clock with notifications and volume on the right. Row two holds
+ *   the walls button and the system stats.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 
-// Top-center bar per screen (was "island"). Collapsed = a thin, long strip
-// (~20% screen). Right-click expands to the two rows:
-//   Row 1: [☰ hamburger profile] [⚡ power]  |  clock (centered)  |  [🔔 notif] [volume]
-//   Row 2: [walls] [system tray] [stats] [battery] [brightness] [media]
 Item {
   id: root
 
   // collapsed = thin ~20% strip; expanded = auto-fit to its content (no cutoff)
   readonly property real stripWidth: Math.max(140, Math.round((parent ? parent.width : 1600) * Config.dockWidthRatio))
-  width: barOpen ? Math.max(Config.minDockWidth, (barLayout ? barLayout.implicitWidth + 16 : stripWidth)) : stripWidth
+  width: barOpen ? Math.max(Config.minDockWidth, barLayout.implicitWidth + 16) : stripWidth
   height: barOpen ? Config.dockHeight : Config.stripHeight
 
   property bool barOpen: false
-  property bool pinned: false // unused; kept for future
   // wired by PerScreen for the notifications button badge count
   property var notificationServer: null
   signal controlClicked
@@ -27,6 +36,7 @@ Item {
   signal osdHoverRequested
   signal osdValueChanged
   signal volumePanelRequested
+  signal clockClicked
 
   Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
   Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
@@ -36,7 +46,7 @@ Item {
     anchors.fill: parent
     radius: Config.cornerRadius
     color: Config.bg
-    border.color: Qt.rgba(1,1,1,0.10)
+    border.color: Config.borderStrong
     clip: true
 
     // right-click toggles the expanded bar
@@ -78,6 +88,7 @@ Item {
           anchors.horizontalCenter: parent.horizontalCenter
           anchors.verticalCenter: parent.verticalCenter
           z: 1
+          onClicked: root.clockClicked()
         }
 
         // left cluster: profile hamburger (opens control center)
@@ -86,11 +97,11 @@ Item {
           anchors.verticalCenter: parent.verticalCenter
           spacing: 0
           Rectangle {
-            Layout.preferredWidth: Math.round(30 * Config.uiScale)
+            Layout.preferredWidth: Config.iconButtonSize
             Layout.preferredHeight: width
             radius: width / 2
             color: root.hovered(hamb) ? Config.surfaceAlt : Config.surface
-            border.color: Qt.rgba(1,1,1,0.08)
+            border.color: Config.borderMid
             ShellText {
               anchors.centerIn: parent
               text: "☰"
@@ -115,11 +126,11 @@ Item {
 
           Rectangle {
             id: notifBtn
-            Layout.preferredWidth: Math.round(30 * Config.uiScale)
+            Layout.preferredWidth: Config.iconButtonSize
             Layout.preferredHeight: width
             radius: width / 2
             color: root.hovered(notifHover) ? Config.surfaceAlt : Config.surface
-            border.color: Qt.rgba(1,1,1,0.08)
+            border.color: Config.borderMid
             ShellText {
               anchors.centerIn: parent
               text: "🔔"
@@ -130,12 +141,12 @@ Item {
               anchors.top: parent.top
               anchors.right: parent.right
               anchors.margins: 1
-              width: 12; height: 12; radius: 6
+              width: Config.eventBadgeSize; height: Config.eventBadgeSize; radius: Config.eventBadgeSize / 2
               color: Config.red
               ShellText {
                 anchors.centerIn: parent
                 text: String(root.notificationServer ? root.notificationServer.trackedNotifications.count : 0)
-                color: "#ffffff"
+                color: Config.white
                 font.pixelSize: Config.fsTiny
                 font.weight: Font.DemiBold
               }

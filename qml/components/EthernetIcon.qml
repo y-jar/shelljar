@@ -1,12 +1,24 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   EthernetIcon
+ *
+ *   A small cable jack glyph drawn on a canvas that can be tinted any color.
+ *   It is used inside the network pill to show a wired connection instead of
+ *   the wireless arcs. The color property drives the whole shape.
+ ***/
+import ".."
 import qs.components
 import QtQuick
 
-// Drawn Ethernet (cable/RJ45) glyph, tintable via `color`.
 Item {
   id: root
 
   property color color: Config.text
-  property color dimColor: Qt.rgba(1, 1, 1, 0.28)
 
   implicitWidth: Math.round(18 * Config.uiScale)
   implicitHeight: Math.round(18 * Config.uiScale)
@@ -45,5 +57,4 @@ Item {
   }
 
   onColorChanged: canvas.requestPaint()
-  onDimColorChanged: canvas.requestPaint()
 }

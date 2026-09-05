@@ -1,10 +1,21 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   SystemStat
+ *
+ *   A self contained service that reads the proc filesystem directly with
+ *   FileView and timers to report cpu, memory, network and disk usage. Every
+ *   value is a real number so large byte counts can never overflow an integer,
+ *   and each meter refreshes on its own gentle interval in Config.
+ ***/
 pragma Singleton
 import QtQuick
 import Quickshell.Io
 
-// ---- self-contained system stats (noctalia-style) ----
-// Reads /proc directly via Quickshell.Io.FileView + Timers; disk via `df`.
-// All values are `real` (never QML `int`) so large byte counts can't overflow.
 Item {
   id: root
 
@@ -120,25 +131,25 @@ Item {
   }
 
   Timer {
-    interval: 1000
+    interval: Config.statsCpuMs
     running: true
     repeat: true
     onTriggered: cpuStatFile.reload()
   }
   Timer {
-    interval: 3000
+    interval: Config.statsNetMs
     running: true
     repeat: true
     onTriggered: netDevFile.reload()
   }
   Timer {
-    interval: 5000
+    interval: Config.statsMemMs
     running: true
     repeat: true
     onTriggered: memInfoFile.reload()
   }
   Timer {
-    interval: 30000
+    interval: Config.statsDiskMs
     running: true
     repeat: true
     onTriggered: dfProc.exec(["df", "-P", "/"])

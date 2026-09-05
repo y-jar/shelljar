@@ -1,9 +1,21 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   RightIsland
+ *
+ *   The auto hiding island on the right edge of the screen. Collapsed it is a
+ *   slim bar and a right click expands it into one row holding the battery pill
+ *   and the brightness pill. When the machine has no battery it shows a small
+ *   tag from Config instead.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-// Right auto-hiding island: [battery | brightness]. Collapsed = a slim horizontal
-// bar (like the middle island); right-click expands into a single-row card.
 Item {
   id: root
 
@@ -26,7 +38,7 @@ Item {
     anchors.fill: parent
     radius: Config.cornerRadius
     color: Config.bg
-    border.color: Qt.rgba(1, 1, 1, 0.10)
+    border.color: Config.borderStrong
     clip: true
 
     MouseArea {
@@ -52,11 +64,11 @@ Item {
       spacing: 6
       visible: root.open
 
-      // When no battery (e.g. a desktop PC) show a friendly tag instead.
+      // When no battery (e.g. a desktop PC) show a small tag instead.
       // BatteryWidget hides itself when it has no battery, so mirror its state.
       ShellText {
         visible: batteryWidget.hasBattery === false
-        text: "<Jar> I am a Desktop!"
+        text: Config.desktopTag
         color: Config.subtext
         font.pixelSize: Config.fsSmall
         elide: Text.ElideRight

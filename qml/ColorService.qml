@@ -1,17 +1,30 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   ColorService
+ *
+ *   Derives the shell palette from the live wallpaper. It reads the color
+ *   scheme from the config file and, unless the scheme is off, pulls the
+ *   dominant colors out of the current wallpaper with a color quantizer and
+ *   rewrites the mutable palette in Config. A scheme of off simply keeps the
+ *   fixed stock colors.
+ ***/
 pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// ---- wallpaper-derived theme colors (noctalia-style, self-contained) ----
-// Reads `color-scheme "tonal-spot";` from ~/.config/shelljar/config.kdl
-// ("off" keeps the fixed palette). When a wallpaper is applied, extracts its
-// dominant colors via Quickshell.ColorQuantizer and re-derives Config's palette.
 Item {
   id: root
 
   property string scheme: "tonal-spot"
-  property color _seed: "#5F7CB8"
+  property color _seed: Config.accent
+
+  readonly property string configPath: (Quickshell.env("HOME") || "/home/user") + "/.config/shelljar/config.kdl"
 
   function readConfig(text) {
     const m = (text || "").match(/color-scheme\s*"([^"]+)"\s*;/)
@@ -19,7 +32,7 @@ Item {
     if (root.scheme !== "off") root.start()
   }
 
-  function reload(): void { confFile.reload() }
+  function reload() { confFile.reload() }
 
   function start() {
     if (!WallpaperService.current) return
@@ -88,12 +101,12 @@ Item {
   // ---- config file ----
   FileView {
     id: confFile
-    path: (Quickshell.env("HOME") || "/home/user") + "/.config/shelljar/config.kdl"
+    path: root.configPath
     watchChanges: true
     printErrors: false
     onFileChanged: reload()
     onLoaded: root.readConfig(confFile.text())
-    onLoadFailed: root.scheme = "tonal-spot"
+    onLoadFailed: { root.scheme = "tonal-spot"; root.start() }
   }
 
   // wallpaper changed -> re-extract colors
@@ -102,9 +115,5 @@ Item {
     function onCurrentChanged() {
       if (root.scheme !== "off") root.start()
     }
-  }
-
-  Component.onCompleted: {
-    confFile.reload()
   }
 }

@@ -1,13 +1,26 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   Clock
+ *
+ *   The big digital clock and date shown in the middle island. It keeps a
+ *   fixed width for the blinking separator so the row never shifts sideways
+ *   every second, and it refreshes on a one second timer.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-// Big digital clock + date for the island center.
 ColumnLayout {
   id: root
 
   property color textColor: Config.text
   property color dateColor: Config.subtext
+  signal clicked
 
   function pad(v) { return ("0" + v).slice(-2) }
 
@@ -22,9 +35,11 @@ ColumnLayout {
       font.weight: Font.DemiBold
     }
 
+    // fixed width so the whole row stays centered whichever state the blink is in
     ShellText {
-      // separator blinks on even seconds
-      text: clock.blink ? ":" : " "
+      Layout.preferredWidth: Math.round(9 * Config.uiScale)
+      horizontalAlignment: Text.AlignHCenter
+      text: clock.blink ? ":" : ""
       color: root.dateColor
       font.pixelSize: Config.fsLarge
       font.weight: Font.DemiBold
@@ -43,6 +58,14 @@ ColumnLayout {
     color: root.dateColor
     font.pixelSize: Config.fsSmall
     Layout.alignment: Qt.AlignHCenter
+  }
+
+  // click opens the calendar panel
+  MouseArea {
+    Layout.fillWidth: true
+    Layout.fillHeight: true
+    cursorShape: Qt.PointingHandCursor
+    onClicked: root.clicked()
   }
 
   Timer {

@@ -1,14 +1,22 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   WallpaperService
+ *
+ *   Finds the wallpaper folder, lists the images inside it and applies a chosen
+ *   file through the awww daemon. It remembers the active wallpaper so a later
+ *   restart can re theme off the same image, and it watches for wallpapers set
+ *   by other tools so the shell always colors from what is really on screen.
+ ***/
 pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// ---- wallpaper list + apply (caelestia-style service, applies via awww) ----
-// Reads settings from ~/.config/shelljar/config.kdl:
-//   wallpaper-dir "…";          # wallpaper folder
-//   wallpaper-thumb-width 150;  # carousel thumbnail width
-//   wallpaper-settle-ms 800;    # ms of no-scroll before applying
-// Scans the dir once; apply() sets the wallpaper through the awww daemon.
 Item {
   id: root
 
@@ -19,6 +27,8 @@ Item {
 
   readonly property string home: Quickshell.env("HOME") || "/home/user"
   readonly property string fallbackDir: home + "/resjar/wall-jar/wall-bin"
+  readonly property string configPath: (Quickshell.env("HOME") || "/home/user") + "/.config/shelljar/config.kdl"
+  readonly property string currentWallFile: home + "/.cache/shelljar/current-wall"
 
   function expand(path) {
     if (!path) return path
@@ -62,14 +72,13 @@ Item {
   }
 
   property string _dir: fallbackDir
-  readonly property string currentWallFile: (Quickshell.env("HOME") || "/home/user") + "/.cache/shelljar/current-wall"
 
   FileView {
     id: confFile
-    path: (Quickshell.env("HOME") || "/home/user") + "/.config/shelljar/config.kdl"
+    path: root.configPath
     printErrors: false
-    onLoaded: root.parseConfig(confFile.text())
-    onLoadFailed: root._dir = root.fallbackDir
+    onLoaded: { root.parseConfig(confFile.text()); root.scan() }
+    onLoadFailed: { root._dir = root.fallbackDir; root.scan() }
   }
 
   // Track the externally-applied wallpaper (written by random-wall / jwall) so
@@ -123,7 +132,7 @@ Item {
 
   Component.onCompleted: {
     confFile.reload()
-    root.scan()
     seedRetry.start()
+    currentFile.reload()
   }
 }

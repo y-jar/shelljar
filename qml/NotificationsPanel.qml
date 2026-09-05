@@ -1,9 +1,20 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   NotificationsPanel
+ *
+ *   A popout panel opened from the bar bell. It holds the list of notifications
+ *   the shell has tracked, offers a button to clear them all, and can be closed
+ *   with its own close mark.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-// Pop-out notification history panel, opened from a dock button. Holds the
-// list of tracked notifications from the shell's NotificationServer.
 Rectangle {
   id: root
 
@@ -11,11 +22,17 @@ Rectangle {
   property var notificationServer: null
   signal closeRequested
 
-  width: Math.round(330 * Config.uiScale)
-  height: Math.round(360 * Config.uiScale)
+  width: Config.notificationsWidth
+  height: Config.notificationsHeight
   radius: Config.cornerRadius
   color: Config.bgAlt
-  border.color: Qt.rgba(1,1,1,0.10)
+  border.color: Config.borderStrong
+
+  function clearAll() {
+    const srv = root.notificationServer
+    if (!srv || !srv.trackedNotifications) return
+    for (const n of srv.trackedNotifications.values) { if (n && n.dismiss) n.dismiss() }
+  }
 
   ColumnLayout {
     anchors.fill: parent
@@ -32,6 +49,17 @@ Rectangle {
       }
       Item { Layout.fillWidth: true }
       ShellText {
+        text: "Clear"
+        visible: root.notificationServer !== null && root.notificationServer.trackedNotifications.count > 0
+        color: Config.subtext
+        font.pixelSize: Config.fsTiny
+        MouseArea {
+          anchors.fill: parent
+          cursorShape: Qt.PointingHandCursor
+          onClicked: root.clearAll()
+        }
+      }
+      ShellText {
         text: "✕"
         color: Config.subtext
         font.pixelSize: Config.fsSmall
@@ -46,7 +74,7 @@ Rectangle {
     Rectangle {
       Layout.fillWidth: true
       height: 1
-      color: Qt.rgba(1,1,1,0.06)
+      color: Config.borderSoft
     }
 
     NotificationsList {

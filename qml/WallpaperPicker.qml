@@ -1,19 +1,22 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   WallpaperPicker
+ *
+ *   A full screen deliberate wallpaper chooser built on a PathView where the
+ *   centered tile is always the current one. Browse with drag, scroll or the
+ *   arrow keys, apply with space, enter or w, and back out with escape or a
+ *   click on a tile. Nothing applies until you choose, so it never fights you.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 
-// ---- full-screen wallpaper picker (calm, PathView) ----
-// Uses a PathView (like WallpaperCarousel + dotfiles hyprquickpaper) so the
-// current/selected tile is ALWAYS the one centered in the viewport -- and the
-// centered tile is the largest (isCurrentItem scale 1.0). Unlike a ListView,
-// selection never lags: space/enter/w apply view.currentIndex immediately,
-// no need to wait for a flick to settle.
-//
-// The wheel moves selection by small step-wise increments (not big flings), so
-// the snap animation is short and currentIndex is up to date the moment you
-// press a key. Browse by drag + scroll + hover; apply with space/enter/w; exit
-// with esc (or click a tile to apply it). Deliberate -- no auto-apply.
 Item {
   id: root
 
@@ -85,7 +88,7 @@ Item {
         height: root.tileH * 0.92
         radius: Config.cornerRadius
         color: Config.surface
-        border.color: PathView.isCurrentItem ? Config.accent : Qt.rgba(1, 1, 1, 0.10)
+        border.color: PathView.isCurrentItem ? Config.accent : Config.borderStrong
         border.width: PathView.isCurrentItem ? 2 : 0
         clip: true
 
@@ -149,11 +152,13 @@ Item {
         root.closeRequested()
         break
       case Qt.Key_Left:
+      case Qt.Key_Up:
       case Qt.Key_H:
         event.accepted = true
         view.decrementCurrentIndex()
         break
       case Qt.Key_Right:
+      case Qt.Key_Down:
       case Qt.Key_L:
         event.accepted = true
         view.incrementCurrentIndex()
@@ -188,7 +193,9 @@ Item {
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom
     anchors.bottomMargin: root.marginY
-    text: "scroll to move — space / enter / w to apply — esc to close"
+    text: WallpaperService.wallpapers.length === 0
+      ? "No wallpapers found"
+      : "scroll to move — space / enter / w to apply — esc to close"
     color: Config.subtext
     font.pixelSize: Config.fsSmall
     opacity: 0.9

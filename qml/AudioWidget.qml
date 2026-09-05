@@ -1,14 +1,27 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   AudioWidget
+ *
+ *   The volume and mute control shown in the control center. It binds to the
+ *   default pipewire sink and offers a mute button plus a live slider. The
+ *   slider leans on the shared Slider component so it feels identical to the
+ *   dedicated volume panel.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Pipewire
 
-// Volume / mute control for the default audio sink via pipewire.
 RowLayout {
   id: root
 
   property color textColor: Config.text
-  property color subColor: Config.subtext
+
   readonly property var sink: Pipewire.defaultAudioSink
   readonly property bool sinkReady: sink !== null && sink.ready && sink.audio !== null
   readonly property real vol: sinkReady ? sink.audio.volume : 0
@@ -44,45 +57,12 @@ RowLayout {
   }
 
   // larger slider with a draggable knob
-  Rectangle {
-    id: track
+  Slider {
     Layout.preferredWidth: Math.round(150 * Config.uiScale)
-    Layout.preferredHeight: Math.round(12 * Config.uiScale)
-    radius: height / 2
-    color: Config.surfaceAlt
-
-    // filled portion
-    Rectangle {
-      id: fill
-      width: track.width * root.vol
-      height: track.height
-      radius: height / 2
-      color: root.muted ? Config.subtext : Config.accent
-    }
-
-    // draggable knob
-    Rectangle {
-      id: knob
-      width: Math.round(18 * Config.uiScale)
-      height: width
-      radius: width / 2
-      x: Math.max(0, Math.min(track.width - width, fill.width - width / 2))
-      y: (track.height - height) / 2
-      color: "#ffffff"
-      border.color: Qt.rgba(0,0,0,0.3)
-      border.width: 1
-    }
-
-    // drag anywhere on the track to seek / fine-tune
-    MouseArea {
-      id: dragArea
-      anchors.fill: parent
-      hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
-      onPositionChanged: if (pressed) root.setVolume(mouse.x / width)
-      onClicked: root.setVolume(mouse.x / width)
-      onWheel: event => root.setVolume(root.vol + (event.angleDelta.y > 0 ? 0.02 : -0.02))
-    }
+    value: root.vol
+    step: Config.volStepFine
+    fillColor: root.muted ? Config.subtext : Config.accent
+    onChanged: v => root.setVolume(v)
   }
 
   ShellText {

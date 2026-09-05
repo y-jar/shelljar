@@ -1,13 +1,23 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   BrightnessService
+ *
+ *   Unifies two ways to change screen brightness into one value from zero to
+ *   one. On laptops it reads the kernel backlight through FileView and
+ *   brightnessctl, and on a desktop with no built in backlight it drives the
+ *   monitor over DDC CI with ddcutil. Availability is reported so widgets can
+ *   grey out when nothing can be adjusted.
+ ***/
 pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// ---- brightness service ----
-// Two backends:
-//   1. Kernel backlight (/sys/class/backlight/*) via FileView + brightnessctl (laptops).
-//   2. Desktop monitor brightness via DDC/CI (ddcutil) when no kernel backlight exists.
-// `available` is true if either backend is present; a widget shows greyed when false.
 Item {
   id: root
 
@@ -103,7 +113,7 @@ Item {
 
   Timer {
     id: pollTimer
-    interval: 2500
+    interval: Config.brightnessPollMs
     running: root.monitorAvailable
     repeat: true
     onTriggered: root.pollValue()

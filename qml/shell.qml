@@ -1,3 +1,17 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   shell
+ *
+ *   The invisible root window of the whole shell. It owns the shared
+ *   notification daemon, the toast model and the ipc handler, and it creates
+ *   one full screen PerScreen window per monitor so every display gets the same
+ *   islands, bar and popouts.
+ ***/
 //@ pragma UseQApplication
 
 import QtQuick
@@ -7,11 +21,6 @@ import Quickshell.Io
 import Quickshell.Services.Notifications
 import qs.components
 
-// ---- shelljar entry ----
-// The config root is an invisible FloatingWindow (not an Item) so quickshell
-// does NOT wrap it in a white ProxyFloatingWindow. It hosts the shared
-// notification daemon + toasts + IPC, and creates one full-screen PerScreen
-// window per monitor (caelestia-style multi-monitor).
 FloatingWindow {
   id: root
 
@@ -56,15 +65,15 @@ FloatingWindow {
 
     function first() { return screens.instances && screens.instances.length ? screens.instances[0] : null }
 
-    function close(): void { const s = first(); if (s) s.closeAll() }
+    function close() { const s = first(); if (s) s.closeAll() }
 
-    function toggleLauncher(): void { const s = first(); if (s) s.toggleLauncher() }
+    function toggleLauncher() { const s = first(); if (s) s.toggleLauncher() }
 
-    function toggleControlCenter(): void { const s = first(); if (s) s.toggleControlCenter() }
+    function toggleControlCenter() { const s = first(); if (s) s.toggleControlCenter() }
 
-    function toggleSession(): void { const s = first(); if (s) s.toggleSession() }
+    function toggleSession() { const s = first(); if (s) s.toggleSession() }
 
-    function wallpaperNext(): void { const s = first(); if (s) s.wallpaperCycle("next") }
-    function wallpaperPrev(): void { const s = first(); if (s) s.wallpaperCycle("prev") }
+    function wallpaperNext() { const s = first(); if (s) s.wallpaperCycle("next") }
+    function wallpaperPrev() { const s = first(); if (s) s.wallpaperCycle("prev") }
   }
 }

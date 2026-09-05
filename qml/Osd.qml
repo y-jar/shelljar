@@ -1,15 +1,26 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   Osd
+ *
+ *   A small on screen bar in the top right that gives feedback for volume and
+ *   brightness. It shows on a value change and while the user hovers the pills,
+ *   then quietly fades after its timers in Config have run.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Pipewire
 
-// Top-right OSD popup: shows volume / brightness feedback.
-// Shown on value change and on hover of the volume/brightness pills.
 Item {
   id: root
 
-  width: 260
-  height: 64
+  width: Config.osdWidth
+  height: Config.osdHeight
   visible: showTimer.running || hoverTimer.running
   anchors.right: parent.right
   anchors.rightMargin: 16
@@ -33,7 +44,7 @@ Item {
   }
 
   function showBrightness(val) {
-    root.icon = val <= 0.001 ? "☀" : (val <= 0.5 ? "🔅" : "🔆")
+    root.icon = val <= Config.brightnessEpsilon ? "☀" : (val <= 0.5 ? "🔅" : "🔆")
     root.percent = Math.round(val * 100)
     root.low = false
     restart()
@@ -51,18 +62,18 @@ Item {
 
   Timer {
     id: showTimer
-    interval: 2000
+    interval: Config.osdShowMs
   }
   Timer {
     id: hoverTimer
-    interval: 1200
+    interval: Config.osdHoverMs
   }
 
   Rectangle {
     anchors.fill: parent
     radius: Config.cornerRadius
     color: Config.bgAlt
-    border.color: Qt.rgba(1,1,1,0.10)
+    border.color: Config.borderStrong
 
     RowLayout {
       anchors.fill: parent

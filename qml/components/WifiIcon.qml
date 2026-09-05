@@ -1,8 +1,21 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   WifiIcon
+ *
+ *   A wireless glyph drawn on a canvas whose arcs light up based on a level
+ *   from zero to four. It can also draw a slash across itself when the radio is
+ *   on but not connected. Dimmed arcs use the dim color so an idle radio reads
+ *   as quiet while an active one stays bright.
+ ***/
+import ".."
 import qs.components
 import QtQuick
 
-// Drawn Wi-Fi glyph whose arcs light up with `level` (0-4).
-// level 0 = fully dim (off), 4 = strongest. Dimmed arcs use `dimColor`.
 Item {
   id: root
 
@@ -52,7 +65,7 @@ Item {
         ctx.moveTo(width * 0.18, height * 0.12)
         ctx.lineTo(width * 0.82, height * 0.88)
         ctx.lineWidth = lw
-        ctx.strokeStyle = root.color
+        ctx.strokeStyle = n >= 1 ? root.color : root.dimColor
         ctx.stroke()
       }
     }

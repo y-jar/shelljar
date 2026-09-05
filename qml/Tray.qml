@@ -1,10 +1,22 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   Tray
+ *
+ *   A row of status notifier icons for the left island. Left click activates
+ *   an item, right click opens its menu anchored below the icon and the wheel
+ *   scrolls through menus where supported.
+ ***/
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.SystemTray
 
-// StatusNotifier system tray cluster.
 RowLayout {
   id: root
 
@@ -15,7 +27,7 @@ RowLayout {
   // Referencing the SystemTray singleton turns on tray tracking.
   Repeater {
     id: items
-    model: SystemTray.items.values
+    model: SystemTray.items
 
     delegate: MouseArea {
       required property var modelData

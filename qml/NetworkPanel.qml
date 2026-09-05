@@ -1,3 +1,17 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   NetworkPanel
+ *
+ *   A full popout network panel opened from the left island. It can list and
+ *   connect to wifi networks with a password prompt, disconnect or forget a
+ *   saved one, show live details for both wifi and ethernet, toggle the radio
+ *   and report the current internet connectivity.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
@@ -6,19 +20,17 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 
-// Pop-out network panel: Wi-Fi (list, connect/PSK/disconnect/forget) and
-// Ethernet (interface details) plus a wifi enable toggle -- shelljar-styled.
 Rectangle {
   id: root
 
   property bool open: false
   signal closeRequested
 
-  width: Math.round(380 * Config.uiScale)
+  width: Config.networkPanelWidth
   height: Math.min(Math.round(520 * Config.uiScale), Math.round((root.parent ? root.parent.height : 600) - 90))
   radius: Config.cornerRadius
   color: Config.bgAlt
-  border.color: Qt.rgba(1, 1, 1, 0.10)
+  border.color: Config.borderStrong
 
   // ---- state ----
   property string view: "wifi" // "wifi" | "ethernet"
@@ -97,7 +109,7 @@ Rectangle {
         visible: root.hasWifi
         MouseArea { anchors.fill: parent; onClicked: Networking.wifiEnabled = !Networking.wifiEnabled }
         Rectangle {
-          width: 16; height: 16; radius: 8; color: "#ffffff"
+          width: 16; height: 16; radius: 8; color: Config.white
           x: root.wifiEnabled ? parent.width - width - 2 : 2
           anchors.verticalCenter: parent.verticalCenter
           Behavior on x { NumberAnimation { duration: 120 } }
@@ -128,7 +140,7 @@ Rectangle {
           ShellText {
             anchors.centerIn: parent
             text: modelData === "wifi" ? "Wi-Fi" : "Ethernet"
-            color: root.view === modelData ? "#ffffff" : Config.text
+            color: root.view === modelData ? Config.white : Config.text
             font.pixelSize: Config.fsSmall
           }
         }
@@ -138,7 +150,7 @@ Rectangle {
     Rectangle {
       Layout.fillWidth: true
       height: 1
-      color: Qt.rgba(1, 1, 1, 0.06)
+      color: Config.borderSoft
     }
 
     // ---- scrollable content ----
@@ -205,31 +217,31 @@ Rectangle {
                     WifiIcon {
                       anchors.fill: parent
                       level: root.level(modelData.signalStrength)
-                      color: modelData.connected ? "#ffffff" : Config.text
+                      color: modelData.connected ? Config.white : Config.text
                     }
                   }
                   ShellText {
                     Layout.fillWidth: true
                     text: modelData.name || "?"
-                    color: modelData.connected ? "#ffffff" : Config.text
+                    color: modelData.connected ? Config.white : Config.text
                     font.pixelSize: Config.fsSmall
                     elide: Text.ElideRight
                   }
                   ShellText {
                     text: root.secured(modelData) ? "🔒" : ""
-                    color: modelData.connected ? "#ffffff" : Config.subtext
+                    color: modelData.connected ? Config.white : Config.subtext
                     font.pixelSize: Config.fsTiny
                     visible: root.secured(modelData)
                   }
                   ShellText {
                     text: modelData.connected ? "Connected" : (modelData.known ? "Known" : "")
-                    color: modelData.connected ? "#ffffff" : Config.subtext
+                    color: modelData.connected ? Config.white : Config.subtext
                     font.pixelSize: Config.fsTiny
                     visible: modelData.connected || modelData.known
                   }
                   ShellText {
                     text: modelData.stateChanging ? "…" : ""
-                    color: "#ffffff"
+                    color: Config.white
                     font.pixelSize: Config.fsTiny
                     visible: !!modelData.stateChanging
                   }
@@ -242,10 +254,13 @@ Rectangle {
                   cursorShape: Qt.PointingHandCursor
                   onClicked: {
                     const n = modelData
-if (n.connected) {
-                        root.detailWifiIndex = isDetail() ? -1 : index
-                        root.pskTarget = null
-                      } else if (n.known || !root.secured(n)) {
+                    if (n.connected) {
+                      root.detailWifiIndex = isDetail() ? -1 : index
+                      root.pskTarget = null
+                      if (root.hasWifi && root.wifiDevice.name && root.detailWifiIndex === index) {
+                        root.runNm(root.wifiDevice.name)
+                      }
+                    } else if (n.known || !root.secured(n)) {
                       n.connect()
                     } else {
                       root.pskTarget = n
@@ -289,7 +304,7 @@ if (n.connected) {
                     }
                     ShellText {
                       anchors.centerIn: parent
-                      text: "Connect"; color: "#ffffff"; font.pixelSize: Config.fsTiny
+                      text: "Connect"; color: Config.white; font.pixelSize: Config.fsTiny
                     }
                   }
                 }
@@ -386,20 +401,20 @@ if (n.connected) {
                   spacing: 8
                   ShellText {
                     text: "🔌"
-                    color: modelData.connected ? "#ffffff" : Config.subtext
+                    color: modelData.connected ? Config.white : Config.subtext
                     font.pixelSize: Config.fsSmall
                   }
                   ShellText {
                     Layout.fillWidth: true
                     text: modelData.name || "Ethernet"
-                    color: modelData.connected ? "#ffffff" : Config.text
+                    color: modelData.connected ? Config.white : Config.text
                     font.pixelSize: Config.fsSmall
                     elide: Text.ElideRight
                   }
                   ShellText {
                     text: (modelData.address && modelData.address.length ? modelData.address[0] : "")
                       || (modelData.connected ? "Connected" : "Disconnected")
-                    color: modelData.connected ? "#ffffff" : Config.subtext
+                    color: modelData.connected ? Config.white : Config.subtext
                     font.pixelSize: Config.fsTiny
                     elide: Text.ElideRight
                   }

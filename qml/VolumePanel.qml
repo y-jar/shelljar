@@ -1,21 +1,33 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   VolumePanel
+ *
+ *   A small popout frame opened from the bar volume pill. It shows a large
+ *   draggable slider, a mute toggle and the current percentage. A close button
+ *   in the header lets the user dismiss it, so the closeRequested signal is
+ *   actually wired to something useful.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Pipewire
 
-// Pop-out volume panel: a compact frame with a large draggable slider, mute
-// toggle and live %. Opens from the bar's volume pill.
 Rectangle {
   id: root
 
   property bool open: false
   signal closeRequested
 
-  width: Math.round(300 * Config.uiScale)
-  implicitHeight: 110
+  width: Config.popupWidth
+  height: Math.round(110 * Config.uiScale)
   radius: Config.cornerRadius
   color: Config.bgAlt
-  border.color: Qt.rgba(1,1,1,0.10)
+  border.color: Config.borderStrong
 
   readonly property var sink: Pipewire.defaultAudioSink
   readonly property bool sinkReady: sink !== null && sink.ready && sink.audio !== null
@@ -49,7 +61,7 @@ Rectangle {
       Rectangle {
         width: Math.round(26 * Config.uiScale); height: Math.round(26 * Config.uiScale); radius: 8
         color: muteHover.containsMouse ? Config.surfaceAlt : Config.surface
-        border.color: Qt.rgba(1,1,1,0.08)
+        border.color: Config.borderMid
         ShellText {
           anchors.centerIn: parent
           text: root.muted ? "🔇" : (root.vol === 0 ? "🔈" : (root.vol < 0.5 ? "🔉" : "🔊"))
@@ -70,45 +82,27 @@ Rectangle {
         Layout.minimumWidth: Math.round(40 * Config.uiScale)
         horizontalAlignment: Text.AlignRight
       }
+      ShellText {
+        text: "✕"
+        color: Config.subtext
+        font.pixelSize: Config.fsSmall
+        MouseArea {
+          anchors.fill: parent
+          cursorShape: Qt.PointingHandCursor
+          onClicked: root.closeRequested()
+        }
+      }
     }
 
     // large slider
-    Rectangle {
-      id: track
+    Slider {
       Layout.fillWidth: true
-      Layout.preferredHeight: Math.round(20 * Config.uiScale)
-      radius: height / 2
-      color: Config.surfaceAlt
-
-      Rectangle {
-        id: fill
-        width: track.width * root.vol
-        height: track.height
-        radius: height / 2
-        color: root.muted ? Config.subtext : Config.accent
-      }
-
-      Rectangle {
-        id: knob
-        width: Math.round(26 * Config.uiScale)
-        height: width
-        radius: width / 2
-        x: Math.max(0, Math.min(track.width - width, fill.width - width / 2))
-        y: (track.height - height) / 2
-        color: "#ffffff"
-        border.color: Qt.rgba(0,0,0,0.3)
-        border.width: 1
-      }
-
-      MouseArea {
-        id: dragArea
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onPositionChanged: if (pressed) root.setVolume(mouse.x / width)
-        onClicked: root.setVolume(mouse.x / width)
-        onWheel: event => root.setVolume(root.vol + (event.angleDelta.y > 0 ? 0.05 : -0.05))
-      }
+      value: root.vol
+      step: Config.volStep
+      trackThickness: Math.round(20 * Config.uiScale)
+      knobSize: Math.round(26 * Config.uiScale)
+      fillColor: root.muted ? Config.subtext : Config.accent
+      onChanged: v => root.setVolume(v)
     }
   }
 }

@@ -1,3 +1,16 @@
+/*
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   flake
+ *
+ *   The nix packaging for the shell. It bundles the qml and resources trees,
+ *   wraps quickshell so the shell, its ipc control and its first run config
+ *   seeder are one install, and offers a dev shell for iterating from source.
+ */
 {
   description = "shelljar - my custom Quickshell desktop shell";
 
@@ -15,21 +28,11 @@
       # decode webp wallpapers.
       qtimageformats = pkgs.qt6.qtimageformats;
 
-      # Bundles QML, resources, and helper scripts, then wraps quickshell.
       shelljar = pkgs.runCommand "shelljar" { } ''
         mkdir -p $out/qml $out/resources $out/bin $out/libexec
 
         cp -r ${./qml}/* $out/qml/
         cp -r ${./resources}/* $out/resources/
-
-        # main launcher: `shelljar` runs the shell
-        cat > $out/bin/shelljar <<EOF
-        #!${pkgs.runtimeShell}
-        export SHJ_ROOT=$out
-        export PATH=$out/libexec:\$PATH
-        exec ${pkgs.quickshell}/bin/quickshell -p $out/qml "\$@"
-        EOF
-        chmod +x $out/bin/shelljar
 
         # ipc controller: `shelljar ipc call shelljar <function> [args]`
         cat > $out/bin/shjctl <<EOF
@@ -71,7 +74,6 @@
         cat > $out/bin/shelljar-dev <<EOF
         #!${pkgs.runtimeShell}
         export SHJ_ROOT=\$(pwd)
-        export PATH=\$(pwd)/scripts:\$PATH
         export QT_PLUGIN_PATH="${qtimageformats}/lib/qt-6/plugins:\$QT_PLUGIN_PATH"
         exec ${pkgs.quickshell}/bin/quickshell -n -p ${./qml} "\$@"
         EOF
@@ -82,6 +84,16 @@
       packages.${system} = {
         inherit shelljar;
         default = shelljar;
+      };
+
+      devShells.${system}.default = pkgs.mkShell {
+        name = "shelljar-dev";
+        packages = [ pkgs.quickshell qtimageformats ];
+        shellHook = ''
+          export SHJ_ROOT="$PWD"
+          export QT_PLUGIN_PATH="${qtimageformats}/lib/qt-6/plugins:$QT_PLUGIN_PATH"
+          echo "shelljar dev shell ready: run 'quickshell -p qml'"
+        '';
       };
     };
 }

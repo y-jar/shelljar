@@ -1,8 +1,20 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   WallpaperStrip
+ *
+ *   The walls button in the bar second row. The wheel slides the wallpaper
+ *   carousel, a click opens the grid and a right click opens the full screen
+ *   picker.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-// Dock wallpaper button: wheel pops out the wallpaper carousel, click opens the picker.
 RowLayout {
   id: root
 
@@ -14,15 +26,13 @@ RowLayout {
   signal gridRequested
   signal pickerRequested
 
-  function cycle(dir) { root.openRequested(dir) }
-
   Rectangle {
     Layout.fillHeight: true
     Layout.preferredWidth: Math.round(110 * Config.uiScale)
     implicitHeight: 34
     radius: 10
     color: root.hoverBg
-    border.color: Qt.rgba(1,1,1,0.05)
+    border.color: Config.borderSoft
 
     ColumnLayout {
       anchors.centerIn: parent
@@ -43,7 +53,7 @@ RowLayout {
       anchors.fill: parent
       cursorShape: Qt.PointingHandCursor
       acceptedButtons: Qt.LeftButton | Qt.RightButton
-      onWheel: event => root.cycle(event.angleDelta.y > 0 ? "prev" : "next")
+      onWheel: event => root.openRequested(event.angleDelta.y > 0 ? "prev" : "next")
       onClicked: event => {
         if (event.button === Qt.RightButton) root.pickerRequested()
         else root.gridRequested()

@@ -1,17 +1,28 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   SessionMenu
+ *
+ *   A full screen power menu for power off, reboot, logout, suspend and lock.
+ *   The destructive actions arm a countdown that confirms on a second click and
+ *   executes when it runs out, while the safe actions run at once. Escape or a
+ *   click on the backdrop cancels an armed action.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 
-// Full-screen power / session menu (adapted from noctalia-4.7.1 SessionMenu.qml).
-// Destructive actions (Power Off / Reboot) arm a countdown: click to arm, click
-// again or timeout executes, ESC cancels. Others run on click.
 Rectangle {
   id: root
 
   property bool open: false
-  property color scrimColor: "#99000000"
+  property color scrimColor: Config.scrimHeavy
   color: "transparent"
 
   signal closeRequested
@@ -34,7 +45,8 @@ Rectangle {
     switch (key) {
     case "lock": return "loginctl lock-session"
     case "suspend": return "systemctl suspend"
-    case "logout": return "loginctl terminate-user ${USER}"
+    // end only the current seat session, not every session for the user
+    case "logout": return "loginctl terminate-session $XDG_SESSION_ID"
     case "reboot": return "systemctl reboot"
     case "poweroff": return "systemctl poweroff"
     }
@@ -65,10 +77,10 @@ Rectangle {
 
   Timer {
     id: timer
-    interval: 250
+    interval: Config.sessionTickMs
     repeat: true
     onTriggered: {
-      timeRemaining -= 250
+      timeRemaining -= Config.sessionTickMs
       if (timeRemaining <= 0) root.execute(root.pendingKey)
     }
   }
@@ -107,7 +119,7 @@ Rectangle {
         radius: Math.round(Config.cornerRadius * 1.5)
         color: isPending ? Config.accent : (hoverArea.containsMouse ? Config.surfaceAlt : Config.surface)
         border.width: 1
-        border.color: isPending ? Config.accent : Qt.rgba(1,1,1,0.12)
+        border.color: isPending ? Config.accent : Config.borderStrong
 
         ColumnLayout {
           anchors.centerIn: parent
@@ -131,7 +143,7 @@ Rectangle {
               ctx.beginPath()
               ctx.arc(s/2, s/2, r-2, 0, 2*Math.PI)
               ctx.stroke()
-              ctx.strokeStyle = "#ffffff"
+              ctx.strokeStyle = Config.white
               ctx.beginPath()
               ctx.arc(s/2, s/2, r-2, -Math.PI/2, -Math.PI/2 + 2*Math.PI*btn.progress)
               ctx.stroke()
@@ -147,14 +159,14 @@ Rectangle {
             text: btn.isPending
                   ? Math.max(1, Math.ceil(root.timeRemaining / 1000)) + "s"
                   : modelData.glyph
-            color: btn.isPending ? "white" : (modelData.shutdown ? Config.red : Config.text)
+            color: btn.isPending ? Config.white : (modelData.shutdown ? Config.red : Config.text)
             font.pixelSize: Config.fsMedium * 1.6
           }
 
           ShellText {
             Layout.alignment: Qt.AlignHCenter
             text: modelData.label
-            color: btn.isPending ? "white" : Config.text
+            color: btn.isPending ? Config.white : Config.text
             font.pixelSize: Config.fsSmall + 2
           }
         }

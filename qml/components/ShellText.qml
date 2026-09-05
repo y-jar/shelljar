@@ -1,8 +1,20 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   ShellText
+ *
+ *   The base labeled text element for the whole shell.
+ *   It applies the configured shell font to every piece of text so labels stay
+ *   consistent. It lives in the components module because a root component
+ *   that inherits from QtQuick.Text would recurse inside quickshell.
+ ***/
+import ".."
 import QtQuick
 
-// Base text component: inherits shelljar's configured font.
-// Kept in components/ (module qs.components) — root-dir components that root
-// on QtQuick.Text recurse in quickshell; this subdir placement mirrors caelestia.
 Text {
-  font.family: "Monocraft"
+  font.family: Config.fontFamily
 }

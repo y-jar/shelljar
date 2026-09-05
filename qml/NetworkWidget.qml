@@ -1,14 +1,22 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   NetworkWidget
+ *
+ *   A compact icon pill for the left island. It shows the ethernet glyph when a
+ *   wire is up, or a wireless glyph at the live signal level otherwise. A wifi
+ *   radio that is on but idle shows a slash across the dim arcs so the state is
+ *   always readable at a glance.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Networking
 
-// Dock network icon (left island). Shows:
-//   - wired: ep = ethernet glyph only
-//   - wifi connected: wireless glyph at live signal level
-//   - wifi on but not connected: wireless glyph + "not connected" slash (dim)
-//   - wifi off: dim wireless glyph
-// Icon only (no label) so it stays compact and symmetric.
 RowLayout {
   id: root
 
@@ -34,10 +42,10 @@ RowLayout {
 
   Rectangle {
     Layout.preferredWidth: Math.round(32 * Config.uiScale)
-    implicitHeight: 30
+    Layout.preferredHeight: Math.round(30 * Config.uiScale)
     radius: 8
     color: hover.containsMouse ? Config.surfaceAlt : Config.surface
-    border.color: Qt.rgba(1, 1, 1, 0.10)
+    border.color: Config.borderStrong
 
     Item {
       anchors.centerIn: parent

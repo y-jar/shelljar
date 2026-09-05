@@ -1,19 +1,32 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   BrightnessPanel
+ *
+ *   A small popout frame opened from the right island brightness pill. It shows
+ *   a draggable slider and the current percentage and greys out when no display
+ *   can be adjusted. A close button dismisses it on demand.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-// Pop-out brightness panel: slider + %.
 Rectangle {
   id: root
 
   property bool open: false
+  readonly property bool available: BrightnessService.available
   signal closeRequested
 
-  width: Math.round(300 * Config.uiScale)
-  implicitHeight: 90
+  width: Config.popupWidth
+  height: Math.round(90 * Config.uiScale)
   radius: Config.cornerRadius
   color: Config.bgAlt
-  border.color: Qt.rgba(1,1,1,0.10)
+  border.color: Config.borderStrong
 
   ColumnLayout {
     anchors.fill: parent
@@ -31,47 +44,28 @@ Rectangle {
       Item { Layout.fillWidth: true }
       ShellText {
         text: Math.round(BrightnessService.value * 100) + "%"
-        color: Config.text
+        color: root.available ? Config.text : Config.subtext
         font.pixelSize: Config.fsSmall
+      }
+      ShellText {
+        text: "✕"
+        color: Config.subtext
+        font.pixelSize: Config.fsSmall
+        MouseArea {
+          anchors.fill: parent
+          cursorShape: Qt.PointingHandCursor
+          onClicked: root.closeRequested()
+        }
       }
     }
 
-    // slider
-    Rectangle {
-      id: track
+    Slider {
       Layout.fillWidth: true
-      Layout.preferredHeight: Math.round(10 * Config.uiScale)
-      radius: height / 2
-      color: Config.surfaceAlt
-
-      Rectangle {
-        id: fill
-        width: track.width * BrightnessService.value
-        height: track.height
-        radius: height / 2
-        color: Config.accent
-      }
-
-      Rectangle {
-        id: knob
-        width: Math.round(16 * Config.uiScale)
-        height: width
-        radius: width / 2
-        x: Math.max(0, Math.min(track.width - width, fill.width - width / 2))
-        y: (track.height - height) / 2
-        color: "#ffffff"
-        border.color: Qt.rgba(0,0,0,0.3)
-        border.width: 1
-      }
-
-      MouseArea {
-        id: dragArea
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onPositionChanged: if (pressed) BrightnessService.setValue(mouse.x / width)
-        onClicked: BrightnessService.setValue(mouse.x / width)
-      }
+      value: BrightnessService.value
+      step: Config.brightnessStep
+      enabled: root.available
+      fillColor: Config.accent
+      onChanged: v => BrightnessService.setValue(v)
     }
   }
 }

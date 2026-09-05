@@ -1,11 +1,20 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   LeftIsland
+ *
+ *   The auto hiding island on the left edge of the screen. Collapsed it is a
+ *   slim bar and a right click expands it into one row holding the network
+ *   icon, the power button, the system tray and the music controls.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 
-// Left auto-hiding island: [network | power | system tray | media manager].
-// Collapsed = a slim horizontal bar (like the middle island); right-click expands
-// into a single-row card. Mirrors the main Bar's collapse/expand mechanics.
 Item {
   id: root
 
@@ -26,7 +35,7 @@ Item {
     anchors.fill: parent
     radius: Config.cornerRadius
     color: Config.bg
-    border.color: Qt.rgba(1, 1, 1, 0.10)
+    border.color: Config.borderStrong
     clip: true
 
     // right-click toggles the expanded island
@@ -60,11 +69,11 @@ Item {
 
       // power button (opens the full-screen session menu)
       Rectangle {
-        Layout.preferredWidth: Math.round(30 * Config.uiScale)
+        Layout.preferredWidth: Config.iconButtonSize
         Layout.preferredHeight: width
         radius: width / 2
         color: hoverArea.containsMouse ? Config.surfaceAlt : Config.surface
-        border.color: Qt.rgba(1, 1, 1, 0.08)
+        border.color: Config.borderMid
         ShellText {
           anchors.centerIn: parent
           text: "⚡"

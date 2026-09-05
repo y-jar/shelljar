@@ -1,26 +1,42 @@
+/***
+ *  ╃
+ *  .▀▀█▀▀ .
+ *     :▓:.
+ *  .▀▀ : ╃
+ *   shelljar
+ *
+ *   ControlCenter
+ *
+ *   The profile frame that opens under the bar. It shows the current user, an
+ *   audio slider and a button that opens the full power menu. Notifications
+ *   keep their own separate panel so this stays a compact identity card.
+ ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
-import Quickshell.Services.Notifications
+import Quickshell.Bluetooth
 
-// Right-side control center: user, audio, notifications, session.
 Rectangle {
   id: root
 
   property bool open: false
   width: Config.controlCenterWidth
-  height: Math.round(250 * Config.uiScale)
+  height: Config.controlCenterHeight
   radius: Config.cornerRadius
   color: Config.bgAlt
-  border.color: Qt.rgba(1,1,1,0.08)
+  border.color: Config.borderMid
 
   property color textColor: Config.text
   property color subColor: Config.subtext
 
-  // wired up by shell.qml
   signal openSession
+
+  readonly property var radio: Bluetooth.defaultAdapter
+
+  function btOn() { return root.radio !== null && root.radio.enabled }
+  function btOff() { return root.radio !== null && !root.radio.enabled }
 
   ScrollView {
     anchors.fill: parent
@@ -39,7 +55,7 @@ Rectangle {
         Rectangle {
           width: Math.round(42 * Config.uiScale); height: Math.round(42 * Config.uiScale); radius: 21
           color: Config.surface
-          border.color: Qt.rgba(1,1,1,0.08)
+          border.color: Config.borderMid
           ShellText {
             anchors.centerIn: parent
             text: "👤"
@@ -57,7 +73,7 @@ Rectangle {
             font.weight: Font.DemiBold
           }
           ShellText {
-            text: "mouse-friendly shell"
+            text: "desktop shell"
             color: root.subColor
             font.pixelSize: Config.fsTiny
           }
@@ -69,7 +85,7 @@ Rectangle {
       Rectangle {
         Layout.fillWidth: true
         height: 1
-        color: Qt.rgba(1,1,1,0.06)
+        color: Config.borderSoft
       }
 
       ShellText { text: "Audio"; color: root.subColor; font.pixelSize: Config.fsTiny }
@@ -78,7 +94,44 @@ Rectangle {
       Rectangle {
         Layout.fillWidth: true
         height: 1
-        color: Qt.rgba(1,1,1,0.06)
+        color: Config.borderSoft
+      }
+
+      // Bluetooth toggle, shown only when a radio adapter exists
+      RowLayout {
+        visible: root.radio !== null
+        Layout.fillWidth: true
+        spacing: 8
+        ShellText {
+          text: "🅱"
+          color: root.textColor
+          font.pixelSize: Config.fsSmall
+        }
+        ShellText {
+          Layout.fillWidth: true
+          text: root.btOn() ? "Bluetooth on" : "Bluetooth off"
+          color: root.btOn() ? Config.green : root.subColor
+          font.pixelSize: Config.fsSmall
+        }
+        Rectangle {
+          Layout.preferredWidth: 36
+          Layout.preferredHeight: 20
+          radius: 10
+          color: root.btOn() ? Config.accent : Config.surfaceAlt
+          MouseArea { anchors.fill: parent; onClicked: root.radio.enabled = !root.radio.enabled }
+          Rectangle {
+            width: 16; height: 16; radius: 8; color: Config.white
+            x: root.btOn() ? parent.width - width - 2 : 2
+            anchors.verticalCenter: parent.verticalCenter
+            Behavior on x { NumberAnimation { duration: 120 } }
+          }
+        }
+      }
+
+      Rectangle {
+        Layout.fillWidth: true
+        height: 1
+        color: Config.borderSoft
       }
 
       // full-screen power menu trigger
@@ -87,7 +140,7 @@ Rectangle {
         implicitHeight: 40
         radius: 10
         color: Config.surface
-        border.color: Qt.rgba(1,1,1,0.08)
+        border.color: Config.borderMid
 
         RowLayout {
           anchors.fill: parent
@@ -117,7 +170,7 @@ Rectangle {
     }
   }
 
-function user() {
+  function user() {
     const u = Quickshell.env("USER")
     return u != null && u !== "" ? u : "jar"
   }
