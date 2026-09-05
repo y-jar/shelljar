@@ -59,8 +59,8 @@ Item {
   readonly property int eventBadgeSize: 12
 
   // ---- popup geometry ----
-  readonly property int launcherWidth: Math.round(660 * uiScale)
-  readonly property int launcherHeight: Math.round(480 * uiScale)
+  readonly property int launcherWidth: Math.round(720 * uiScale)
+  readonly property int launcherHeight: Math.round(540 * uiScale)
   readonly property int controlCenterWidth: Math.round(330 * uiScale)
   readonly property int controlCenterHeight: Math.round(250 * uiScale)
   readonly property int popupWidth: Math.round(300 * uiScale)
