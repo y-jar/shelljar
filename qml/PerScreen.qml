@@ -30,7 +30,9 @@ PanelWindow {
   WlrLayershell.namespace: ns
   WlrLayershell.exclusionMode: ExclusionMode.Ignore // overlay: no reserved space
   WlrLayershell.layer: WlrLayer.Top
-  WlrLayershell.keyboardFocus: (root.popupOpen || root.islandActive) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+  WlrLayershell.keyboardFocus: root.grabKeys
+    ? WlrKeyboardFocus.Exclusive
+    : (root.popupOpen || root.islandActive) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
   color: "transparent"
 
   anchors.top: true
@@ -51,6 +53,8 @@ PanelWindow {
   readonly property bool leftActive: leftIsland.open
   readonly property bool rightActive: rightIsland.open
   readonly property bool islandActive: barActive || leftActive || rightActive
+  // key-driven overlays grab keyboard focus; mouse popups stay hands-off
+  readonly property bool grabKeys: launcherOpen || pickerOpen || sessionOpen || (polkitDialog !== null && polkitDialog.active)
 
   // clickthrough: full screen while a popup or any island is open, otherwise
   // only the three islands' rects pass clicks.
@@ -280,6 +284,7 @@ PanelWindow {
 
   // ---- privileged action authentication dialog ----
   Polkit {
+    id: polkitDialog
     anchors.fill: parent
     enabled: true
   }
