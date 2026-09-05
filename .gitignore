@@ -3,3 +3,4 @@ result-*
 .qmlc
 .qmldir
 .DS_Store
+PLAN.md

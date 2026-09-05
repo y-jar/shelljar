@@ -7,23 +7,21 @@
 . ▀▀ : ╃
 ```
 
-> **A cozy Quickshell desktop shell for niri** — a little jar of widgets that
+> **A cozy Quickshell desktop shell for niri** a little jar of widgets that
 > lives at the top of your screen, hides when you don't need it, and pops out
 > bars, a launcher, a calendar and a control center at the click of a mouse or key.
 
 ## 💛 author's note
-> ✏️ **edit me!** words about you, why you made this, your favourite shortcut,
-> the little accidents that became features...
+> I made this shell in a jar for myself and a fun little project to work on, as wallpaper management was an issue and then I thought "But I could add a bar.. I could add a launcher"... etc. after using it I really liked the idea and wanted to share it with others.
 
 ## ✨ what is shelljar?
-> ✏️ **edit me!** a short paragraph in your own voice describing what this shell
-> feels like to use. (drop the blockquote if you'd rather write it plain)
+> It is a simple and albet kinda weird looking and funky looking shell made with quickshell. 
 
 <!-- main description lives here -->
 
-> 🖥️ **a tiny heads up:** shelljar is mostly built and tuned against **NixOS**.
+> **a tiny heads up:** shelljar is mostly built and tuned against **NixOS**.
 > if you run it somewhere else and something acts up, that very well may be my
-> NixOS assumptions showing. you're welcome to open an issue and i'll do my best
+> NixOS assumptions showing. you're welcome to open an issue and I'll do my best
 > to look into it 💚
 
 ---
@@ -101,15 +99,19 @@ qml/components/        reusable bits (Slider, canvas icons, ShellText)
 resources/             branding placeholders
 ```
 
-## 🙃 nerdy little things i'm proud of
-> ✏️ **edit me!** list fun implementation details, easter eggs, the random
-> `:` blink in the clock, the liquid sliders, etc.
+## 🙃 nerdy little things I'm proud of
+> The Large wallpaper manager was something I spent a lot of time on and I found it to be a great way to manage my wallpapers (kinda addicted to using it).
 
 ## 🤖 ai disclaimer
-this README (and a decent chunk of the code) was whipped up with the help of a
+This README (and a decent chunk of the code) was whipped up with the help of a
 code assistant between cups of coffee. it tries its best, proofread with love
 (and maybe a little more coffee), and if something looks dramatic it probably
-shipped anyway. you have been warned, but i hope the jar makes you smile.
+shipped anyway. you have been warned, but I hope this jar makes you smile.
+
+> NOTE: I have sense layed off of the coffee. 
 
 ## 📜 license
-> ✏️ **edit me!** (or delete this section) your chosen license line.
+> Free Steal and take credit. 
+
+Always Learning,
+Jar / Park
