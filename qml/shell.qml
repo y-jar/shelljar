@@ -18,6 +18,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import Quickshell.Services.Notifications
 import qs.components
 
@@ -59,21 +60,38 @@ FloatingWindow {
     }
   }
 
-  // IPC (target "shelljar"). Toggles operate on the first screen for now.
+  // IPC (target "shelljar"). Toggles open on the monitor the user is focused on.
   IpcHandler {
     target: "shelljar"
 
-    function first() { return screens.instances && screens.instances.length ? screens.instances[0] : null }
+    // the monitor of the currently focused window (like fuzzel)
+    function focusedScreen() {
+      try {
+        const t = typeof ToplevelManager !== "undefined" ? ToplevelManager.activeToplevel : null
+        if (t && t.screens && t.screens.length > 0) {
+          const n = t.screens[0].name
+          for (const s of Quickshell.screens) { if (s && s.name === n) return s }
+        }
+      } catch (e) {}
+      return null
+    }
 
-    function close() { const s = first(); if (s) s.closeAll() }
+    // the PerScreen instance for that screen, falling back to the first one
+    function target() {
+      const scr = focusedScreen()
+      for (const inst of screens.instances) { if (inst.modelData === scr) return inst }
+      return screens.instances && screens.instances.length ? screens.instances[0] : null
+    }
 
-    function toggleLauncher() { const s = first(); if (s) s.toggleLauncher() }
+    function close() { const s = target(); if (s) s.closeAll() }
 
-    function toggleControlCenter() { const s = first(); if (s) s.toggleControlCenter() }
+    function toggleLauncher() { const s = target(); if (s) s.toggleLauncher() }
 
-    function toggleSession() { const s = first(); if (s) s.toggleSession() }
+    function toggleControlCenter() { const s = target(); if (s) s.toggleControlCenter() }
 
-    function wallpaperNext() { const s = first(); if (s) s.wallpaperCycle("next") }
-    function wallpaperPrev() { const s = first(); if (s) s.wallpaperCycle("prev") }
+    function toggleSession() { const s = target(); if (s) s.toggleSession() }
+
+    function wallpaperNext() { const s = target(); if (s) s.wallpaperCycle("next") }
+    function wallpaperPrev() { const s = target(); if (s) s.wallpaperCycle("prev") }
   }
 }
