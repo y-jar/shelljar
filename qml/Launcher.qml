@@ -35,6 +35,8 @@ Rectangle {
   property var filteredApps: []
   property int currentEntry: -1
 
+  signal closeRequested
+
   function matches(entry, q) {
     if (q === "") return true
     if (entry.name.toLowerCase().includes(q)) return true
@@ -59,7 +61,7 @@ Rectangle {
     const apps = root.filteredApps
     if (index >= 0 && index < apps.length) {
       apps[index].execute()
-      root.open = false
+      root.closeRequested()
     }
   }
 
@@ -107,11 +109,10 @@ Rectangle {
   Connections {
     target: DesktopEntries && DesktopEntries.applications ? DesktopEntries.applications : null
     function onValuesChanged() { root.loadApps() }
-    function onCountChanged() { root.loadApps() }
   }
 
   Keys.onPressed: handleKey(event)
-  Keys.onEscapePressed: root.open = false
+  Keys.onEscapePressed: root.closeRequested()
 
   ColumnLayout {
     anchors.fill: parent
@@ -143,6 +144,7 @@ Rectangle {
           Keys.onUpPressed: root.nextEntry(-1)
           Keys.onDownPressed: root.nextEntry(1)
           Keys.onReturnPressed: root.launch(root.currentEntry)
+          Keys.onEscapePressed: root.closeRequested()
           onTextChanged: { root.filterText = text; root.rebuildFilter() }
           focus: true
         }
@@ -192,6 +194,7 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 6
             IconImage {
+              Layout.alignment: Qt.AlignHCenter
               Layout.preferredWidth: Math.round(36 * Config.uiScale)
               Layout.preferredHeight: Math.round(36 * Config.uiScale)
               asynchronous: true

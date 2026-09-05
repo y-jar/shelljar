@@ -84,6 +84,13 @@ Item {
           WallpaperService.applyByIndex(PathView.index)
           root.closeRequested()
         }
+        // wheel over a thumbnail slides the view too (a sibling catcher misses tiles)
+        onWheel: e => {
+          if (e.angleDelta.y > 0) view.decrementCurrentIndex()
+          else view.incrementCurrentIndex()
+          root.beginSettle()
+          e.accepted = true
+        }
       }
     }
 

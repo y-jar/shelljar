@@ -46,7 +46,7 @@ PanelWindow {
   property bool controlsOpen: false
   property bool sessionOpen: false
   property bool pickerOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || notificationsPanel.open || volumePanel.open || batteryPanel.open || brightnessPanel.open || networkPanel.open || calendarPanel.open
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || notificationsPanel.open || volumePanel.open || batteryPanel.open || brightnessPanel.open || networkPanel.open || calendarPanel.open || wallCarousel.open || wallGrid.open
   readonly property bool barActive: bar.barOpen
   readonly property bool leftActive: leftIsland.open
   readonly property bool rightActive: rightIsland.open
@@ -252,6 +252,7 @@ PanelWindow {
     anchors.topMargin: 12
     visible: root.launcherOpen
     open: root.launcherOpen
+    onCloseRequested: root.launcherOpen = false
   }
 
   // ---- control center (profile frame) — opens just below the bar ----
