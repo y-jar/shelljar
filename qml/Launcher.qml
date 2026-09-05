@@ -94,11 +94,20 @@ Rectangle {
     }
   }
 
-  Component.onCompleted: {
+  function loadApps() {
     const apps = DesktopEntries.applications.values
       .filter(e => !e.noDisplay)
     root.allApps = apps
     root.rebuildFilter()
+  }
+
+  Component.onCompleted: root.loadApps()
+
+  // the application list arrives asynchronously, so reload it when it changes
+  Connections {
+    target: DesktopEntries && DesktopEntries.applications ? DesktopEntries.applications : null
+    function onValuesChanged() { root.loadApps() }
+    function onCountChanged() { root.loadApps() }
   }
 
   Keys.onPressed: handleKey(event)

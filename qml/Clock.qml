@@ -22,9 +22,14 @@ Item {
   property color dateColor: Config.subtext
   signal clicked
 
+  // size the item to its content so it centers correctly and the click target covers it
+  width: col.implicitWidth
+  height: col.implicitHeight
+
   function pad(v) { return ("0" + v).slice(-2) }
 
   ColumnLayout {
+    id: col
     anchors.fill: parent
     spacing: 0
 
