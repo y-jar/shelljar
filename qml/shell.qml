@@ -103,5 +103,17 @@ FloatingWindow {
 
     function wallpaperNext(monitor: string) { const s = target(monitor); if (s) s.wallpaperCycle("next") }
     function wallpaperPrev(monitor: string) { const s = target(monitor); if (s) s.wallpaperCycle("prev") }
+
+    // uiScale: set (e.g. "1.1"), step ("+"/"inc"/"up"/"-"/"dec"/"down"), or report.
+    function uiScale(arg: string) {
+      const cur = ColorService && ColorService.setUiScale ? Config.userScale : 0.85
+      let v = cur
+      const s = (arg || "").trim().toLowerCase()
+      const n = parseFloat(s)
+      if (isFinite(n)) v = n
+      else if (s === "+" || s === "inc" || s === "up") v = cur + 0.05
+      else if (s === "-" || s === "dec" || s === "down") v = cur - 0.05
+      ColorService.setUiScale(v)
+    }
   }
 }

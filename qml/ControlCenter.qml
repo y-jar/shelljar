@@ -97,6 +97,47 @@ Rectangle {
         color: Config.borderSoft
       }
 
+      // UI scale — adjusts shelljar text/widget sizing, persisted to config.kdl.
+      RowLayout {
+        Layout.fillWidth: true
+        spacing: 10
+        ShellText {
+          text: "⚲"
+          color: root.textColor
+          font.pixelSize: Config.fsSmall
+        }
+        ShellText {
+          Layout.fillWidth: true
+          text: "UI scale"
+          color: root.subColor
+          font.pixelSize: Config.fsSmall
+        }
+        ShellText {
+          text: Math.round(Config.userScale * 100) + "%"
+          color: root.textColor
+          font.pixelSize: Config.fsSmall
+        }
+      }
+      Slider {
+        id: scaleSlider
+        Layout.fillWidth: true
+        from: 0.6
+        to: 2.0
+        step: 0.05
+        value: Config.userScale
+        onChanged: v => root.setScale(v)
+      }
+      Component.onCompleted: {
+        scaleSlider.value = Config.userScale
+        scaleSlider.changed.connect(root.setScale)
+      }
+
+      Rectangle {
+        Layout.fillWidth: true
+        height: 1
+        color: Config.borderSoft
+      }
+
       // Bluetooth toggle, shown only when a radio adapter exists
       RowLayout {
         visible: root.radio !== null
@@ -173,5 +214,9 @@ Rectangle {
   function user() {
     const u = Quickshell.env("USER")
     return u != null && u !== "" ? u : "jar"
+  }
+
+  function setScale(v) {
+    ColorService.setUiScale(v)
   }
 }

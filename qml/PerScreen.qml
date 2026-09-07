@@ -26,6 +26,16 @@ PanelWindow {
   required property var modelData
   screen: modelData // the screen Variants passes in
 
+  // Per-window screen scale: derive from this window's screen density so each
+  // monitor (e.g. a high-DPI 3K panel) scales on its own. 96 is the conventional
+  // non-DPI baseline. Every widget reads Config.uiScale, so this re-sizes it all.
+  onScreenChanged: root.applyScreenScale()
+  Component.onCompleted: root.applyScreenScale()
+  function applyScreenScale() {
+    const s = root.screen
+    if (s) Config.screenScale = (s.logicalPixelDensity || 96) / 96
+  }
+
   readonly property string ns: screen ? "shelljar-" + screen.name : "shelljar"
   WlrLayershell.namespace: ns
   WlrLayershell.exclusionMode: ExclusionMode.Ignore // overlay: no reserved space

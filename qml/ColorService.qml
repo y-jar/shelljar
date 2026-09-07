@@ -30,6 +30,37 @@ Item {
     const m = (text || "").match(/color-scheme\s*"([^"]+)"\s*;/)
     root.scheme = m ? m[1] : "tonal-spot"
     if (root.scheme !== "off") root.start()
+
+    // ui-scale N — baseline from the (declarative) config.kdl.
+    const sm = (text || "").match(/ui-scale\s+([0-9.]+)\s*;/)
+    if (sm) {
+      const v = parseFloat(sm[1])
+      if (isFinite(v) && v > 0) Config.userScale = v
+    }
+    // runtime override handled by runtimeScaleFile (auto-loads + wins if present)
+  }
+
+  // Runtime-adjustable scale, persisted to a writable cache file so it survives
+  // restarts without fighting home-manager's read-only config.kdl symlink.
+  readonly property string runtimeScalePath: (Quickshell.env("HOME") || "/home/user") + "/.cache/shelljar/ui-scale"
+  FileView {
+    id: runtimeScaleFile
+    path: root.runtimeScalePath
+    watchChanges: true
+    printErrors: false
+    onLoaded: {
+      const v = parseFloat((text() || "").trim())
+      if (isFinite(v) && v > 0) Config.userScale = v
+    }
+  }
+
+  function setUiScale(v) {
+    Config.userScale = Math.max(0.5, Math.min(2.0, v))
+    setScaleProc.exec([
+      "sh", "-c",
+      "mkdir -p \"$HOME/.cache/shelljar\"; printf '%s\\n' \"" + Config.userScale.toFixed(2) + "\" > \"$HOME/.cache/shelljar/ui-scale\""
+    ])
+    runtimeScaleFile.reload()
   }
 
   function reload() { confFile.reload() }
@@ -107,6 +138,11 @@ Item {
     onFileChanged: reload()
     onLoaded: root.readConfig(confFile.text())
     onLoadFailed: { root.scheme = "tonal-spot"; root.start() }
+  }
+
+  // writes, e.g. the ui-scale line back into config.kdl
+  Process {
+    id: setScaleProc
   }
 
   // wallpaper changed -> re-extract colors
