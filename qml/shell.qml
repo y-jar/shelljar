@@ -101,7 +101,7 @@ FloatingWindow {
 
     function toggleSession(monitor: string) { const s = target(monitor); if (s) s.toggleSession() }
 
-    function wallpaperNext() { const s = target(""); if (s) s.wallpaperCycle("next") }
-    function wallpaperPrev() { const s = target(""); if (s) s.wallpaperCycle("prev") }
+    function wallpaperNext(monitor: string) { const s = target(monitor); if (s) s.wallpaperCycle("next") }
+    function wallpaperPrev(monitor: string) { const s = target(monitor); if (s) s.wallpaperCycle("prev") }
   }
 }
