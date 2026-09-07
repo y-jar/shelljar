@@ -60,9 +60,18 @@ FloatingWindow {
     }
   }
 
-  // IPC (target "shelljar"). Toggles open on the monitor the user is focused on.
+  // IPC (target "shelljar"). Toggles open on the monitor the user is focused on,
+  // or on the monitor passed as a string arg (e.g. mango sends the cursor monitor
+  // so the launcher opens where the mouse is). Args are typed `string` because
+  // quickshell only registers handler functions with explicit IPC types.
   IpcHandler {
     target: "shelljar"
+
+    // a screen by name, or null
+    function screenByName(name: string) {
+      for (const s of Quickshell.screens) { if (s && s.name === name) return s }
+      return null
+    }
 
     // the monitor of the currently focused window (like fuzzel)
     function focusedScreen() {
@@ -76,22 +85,23 @@ FloatingWindow {
       return null
     }
 
-    // the PerScreen instance for that screen, falling back to the first one
-    function target() {
-      const scr = focusedScreen()
+    // the PerScreen instance for monitor (if given), else the focused one,
+    // falling back to the first one
+    function target(monitor: string) {
+      const scr = (monitor && screenByName(monitor)) || focusedScreen()
       for (const inst of screens.instances) { if (inst.modelData === scr) return inst }
       return screens.instances && screens.instances.length ? screens.instances[0] : null
     }
 
-    function close() { const s = target(); if (s) s.closeAll() }
+    function close() { const s = target(""); if (s) s.closeAll() }
 
-    function toggleLauncher() { const s = target(); if (s) s.toggleLauncher() }
+    function toggleLauncher(monitor: string) { const s = target(monitor); if (s) s.toggleLauncher() }
 
-    function toggleControlCenter() { const s = target(); if (s) s.toggleControlCenter() }
+    function toggleControlCenter(monitor: string) { const s = target(monitor); if (s) s.toggleControlCenter() }
 
-    function toggleSession() { const s = target(); if (s) s.toggleSession() }
+    function toggleSession(monitor: string) { const s = target(monitor); if (s) s.toggleSession() }
 
-    function wallpaperNext() { const s = target(); if (s) s.wallpaperCycle("next") }
-    function wallpaperPrev() { const s = target(); if (s) s.wallpaperCycle("prev") }
+    function wallpaperNext() { const s = target(""); if (s) s.wallpaperCycle("next") }
+    function wallpaperPrev() { const s = target(""); if (s) s.wallpaperCycle("prev") }
   }
 }
