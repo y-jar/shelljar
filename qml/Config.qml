@@ -44,13 +44,15 @@ Item {
 
   // ---- theming / scale ----
   // Base multiplier tuned to a ~96dpi desktop. `userScale` is what the user
-  // adjusts (config `ui-scale` / the control-center slider). `screenScale`
-  // is set per-window by each PerScreen from its own screen's pixel density,
-  // so a high-DPI display auto-enlarges while low-DPI stays the authored size.
+  // adjusts (config `ui-scale` / the control-center slider). `screenScale` is
+  // derived once from the primary screen's pixel density so a high-DPI display
+  // auto-enlarges; it is clamped to never shrink below ~1x. uiScale is floored
+  // so the shell can never collapse to something unreadable.
   readonly property real defaultScale: 0.85
   property real userScale: defaultScale
   property real screenScale: 1.0
-  readonly property real uiScale: userScale * screenScale
+  property bool screenScaleSet: false
+  readonly property real uiScale: Math.max(0.6, userScale * screenScale)
 
   // ---- island (strip / dock) ----
   readonly property real dockWidthRatio: 0.2 // dock/strip width as fraction of screen width
