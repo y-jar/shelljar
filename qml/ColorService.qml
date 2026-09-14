@@ -31,7 +31,7 @@ Item {
     root.scheme = m ? m[1] : "tonal-spot"
     if (root.scheme !== "off") root.start()
 
-    // ui-scale N — baseline from the (declarative) config.kdl.
+    // ui-scale N baseline from the (declarative) config.kdl.
     const sm = (text || "").match(/ui-scale\s+([0-9.]+)\s*;/)
     if (sm) {
       const v = parseFloat(sm[1])

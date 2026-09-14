@@ -36,7 +36,7 @@
 | **control center** | your face row, audio slider, bluetooth toggle, power-menu button. `Mod+S`. |
 | **volume / brightness / battery panels** | little pop-outs with a big slider, % and a ✕ to close. |
 | **notifications** | top-right toasts + a history panel with a **Clear** button and action buttons. |
-| **calendar** | click the clock — a month grid pops out. |
+| **calendar** | click the clock a month grid pops out. |
 | **power menu** | full-screen switch: power/reboot (countdown ring), logout, suspend, lock. `Mod+P`. |
 | **wallpapers** | scroll the bar button for a carousel, click for a grid, right-click for the full-screen picker. `Mod+W` next / `Mod+O` prev. |
 
@@ -49,7 +49,7 @@
 | `Mod+S` | control center |
 | `Mod+W` / `Mod+O` | wallpaper next / previous |
 | `Esc` | close whatever's open |
-> rebind these in your compositor / `bindings.kdl` — shelljar just listens for IPC.
+> rebind these in your compositor / `bindings.kdl` shelljar just listens for IPC.
 
 ## 🎨 theming
 shelljar colors itself from the live wallpaper. the user config lives at

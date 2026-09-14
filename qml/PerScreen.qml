@@ -275,7 +275,7 @@ PanelWindow {
     onCloseRequested: root.launcherOpen = false
   }
 
-  // ---- control center (profile frame) — opens just below the bar ----
+  // ---- control center (profile frame) opens just below the bar ----
   ControlCenter {
     id: controls
     anchors.left: bar.left

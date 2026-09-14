@@ -97,7 +97,7 @@ Rectangle {
         color: Config.borderSoft
       }
 
-      // UI scale — adjusts shelljar text/widget sizing, persisted to config.kdl.
+      // UI scale adjusts shelljar text/widget sizing, persisted to config.kdl.
       RowLayout {
         Layout.fillWidth: true
         spacing: 10

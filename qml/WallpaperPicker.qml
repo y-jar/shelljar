@@ -195,7 +195,7 @@ Item {
     anchors.bottomMargin: root.marginY
     text: WallpaperService.wallpapers.length === 0
       ? "No wallpapers found"
-      : "scroll to move — space / enter / w to apply — esc to close"
+      : "scroll to move space / enter / w to apply esc to close"
     color: Config.subtext
     font.pixelSize: Config.fsSmall
     opacity: 0.9
