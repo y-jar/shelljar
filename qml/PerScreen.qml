@@ -64,13 +64,14 @@ PanelWindow {
   property bool controlsOpen: false
   property bool sessionOpen: false
   property bool pickerOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || notificationsPanel.open || volumePanel.open || batteryPanel.open || brightnessPanel.open || networkPanel.open || calendarPanel.open || wallCarousel.open || wallGrid.open
+  property bool scaleLayerOpen: false
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || scaleLayerOpen || notificationsPanel.open || volumePanel.open || batteryPanel.open || brightnessPanel.open || networkPanel.open || calendarPanel.open || wallCarousel.open || wallGrid.open
   readonly property bool barActive: bar.barOpen
   readonly property bool leftActive: leftIsland.open
   readonly property bool rightActive: rightIsland.open
   readonly property bool islandActive: barActive || leftActive || rightActive
   // key-driven overlays grab keyboard focus; mouse popups stay hands-off
-  readonly property bool grabKeys: launcherOpen || pickerOpen || sessionOpen || (polkitDialog !== null && polkitDialog.active)
+  readonly property bool grabKeys: launcherOpen || pickerOpen || sessionOpen || scaleLayerOpen || (polkitDialog !== null && polkitDialog.active)
 
   // clickthrough: full screen while a popup or any island is open, otherwise
   // only the three islands' rects pass clicks.
@@ -288,6 +289,17 @@ PanelWindow {
       root.controlsOpen = false
       root.sessionOpen = true
     }
+    onOpenScaleLayer: {
+      root.closeAll()
+      root.scaleLayerOpen = true
+    }
+  }
+
+  // ---- full-screen UI scale calibrator (A/D or arrows, Enter saves) ----
+  UiScaleLayer {
+    anchors.fill: parent
+    visible: root.scaleLayerOpen
+    open: root.scaleLayerOpen
   }
 
   // ---- full-screen power menu ----
@@ -384,6 +396,7 @@ PanelWindow {
     root.controlsOpen = false
     root.sessionOpen = false
     root.pickerOpen = false
+    root.scaleLayerOpen = false
     bar.barOpen = false
     leftIsland.open = false
     rightIsland.open = false

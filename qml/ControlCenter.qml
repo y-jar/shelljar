@@ -32,6 +32,7 @@ Rectangle {
   property color subColor: Config.subtext
 
   signal openSession
+  signal openScaleLayer
 
   readonly property var radio: Bluetooth.defaultAdapter
 
@@ -97,39 +98,46 @@ Rectangle {
         color: Config.borderSoft
       }
 
-      // UI scale adjusts shelljar text/widget sizing, persisted to config.kdl.
-      RowLayout {
+      // UI scale: opens the keyboard calibrator layer (A/D or arrows adjust,
+      // Enter saves). The old inline slider was replaced because dragging a
+      // control that resizes itself mid-drag was unusable.
+      Rectangle {
         Layout.fillWidth: true
-        spacing: 10
-        ShellText {
-          text: "⚲"
-          color: root.textColor
-          font.pixelSize: Config.fsSmall
+        implicitHeight: 40
+        radius: 10
+        color: Config.surface
+        border.color: Config.borderMid
+
+        RowLayout {
+          anchors.fill: parent
+          anchors.margins: 12
+          spacing: 8
+          ShellText {
+            text: "⚲"
+            color: root.textColor
+            font.pixelSize: Config.fsMedium + 2
+          }
+          ShellText {
+            text: "UI scale"
+            color: root.textColor
+            font.pixelSize: Config.fsSmall
+          }
+          Item { Layout.fillWidth: true }
+          ShellText {
+            text: Math.round(Config.userScale * 100) + "%"
+            color: root.subColor
+            font.pixelSize: Config.fsSmall
+          }
         }
-        ShellText {
-          Layout.fillWidth: true
-          text: "UI scale"
-          color: root.subColor
-          font.pixelSize: Config.fsSmall
+
+        MouseArea {
+          anchors.fill: parent
+          hoverEnabled: true
+          cursorShape: Qt.PointingHandCursor
+          onEntered: parent.color = Config.surfaceAlt
+          onExited: parent.color = Config.surface
+          onClicked: root.openScaleLayer()
         }
-        ShellText {
-          text: Math.round(Config.userScale * 100) + "%"
-          color: root.textColor
-          font.pixelSize: Config.fsSmall
-        }
-      }
-      Slider {
-        id: scaleSlider
-        Layout.fillWidth: true
-        from: 0.6
-        to: 2.0
-        step: 0.05
-        value: Config.userScale
-        onChanged: v => root.setScale(v)
-      }
-      Component.onCompleted: {
-        scaleSlider.value = Config.userScale
-        scaleSlider.changed.connect(root.setScale)
       }
 
       Rectangle {
@@ -214,9 +222,5 @@ Rectangle {
   function user() {
     const u = Quickshell.env("USER")
     return u != null && u !== "" ? u : "jar"
-  }
-
-  function setScale(v) {
-    ColorService.setUiScale(v)
   }
 }

@@ -47,6 +47,13 @@ Rectangle {
     root.commit(root.value + delta * root.step)
   }
 
+  // map a track-relative x into the from..to range (raw x/width assumed 0..1
+  // and broke any slider with a range that was not 0..1)
+  function fromTrack(x) {
+    if (root.width <= 0) return root.value
+    return root.from + (x / root.width) * (root.to - root.from)
+  }
+
   // filled portion
   Rectangle {
     id: fill
@@ -76,8 +83,8 @@ Rectangle {
     enabled: root.enabled
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
-    onPositionChanged: if (pressed) root.commit(mouse.x / width)
-    onClicked: root.commit(mouse.x / width)
+    onPositionChanged: if (pressed) root.commit(root.fromTrack(mouse.x))
+    onClicked: root.commit(root.fromTrack(mouse.x))
     onWheel: event => root.nudge(event.angleDelta.y > 0 ? 1 : -1)
   }
 }
