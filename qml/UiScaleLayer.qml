@@ -29,9 +29,16 @@ Item {
   readonly property real maxScale: 2.0
   readonly property real stepSize: 0.05
 
+  // geometry bounds so the layer never clips or spills on smaller monitors:
+  // the side buttons shrink on small screens and the preview column only gets
+  // the width left between them (text sizes stay honest to the real scale)
+  readonly property real sideBtnSize: Math.min(Config.sessionButtonSize, Math.min(root.width, root.height) * 0.3)
+  readonly property real sideGutter: sideBtnSize + Math.round(48 * Config.uiScale)
+  readonly property real previewSpacing: Math.min(Math.round(24 * Config.uiScale), Math.round(root.height * 0.03))
+
   // keyboard: arrows or A/D adjust, Enter saves, Esc reverts
   // (generic onPressed: the Keys attached object has no per-letter handlers)
-  focus: root.open
+  focus: root.open && root.visible
   Keys.onPressed: event => {
     switch (event.key) {
     case Qt.Key_Left:
@@ -75,6 +82,10 @@ Item {
     if (root.open) {
       root.saved = false
       root.initialScale = Config.userScale
+      // take active focus after visibility settles: the click that opened us
+      // happened before this item was a focus target, so a plain focus binding
+      // can land before the layer is visible and never becomes active
+      Qt.callLater(() => root.forceActiveFocus())
     } else if (!root.saved) {
       // closed without saving: revert to the scale we opened with
       ColorService.setUiScale(root.initialScale)
@@ -83,8 +94,12 @@ Item {
 
   // ---- live preview: real clock + pills + a mock menu card ----
   ColumnLayout {
+    id: preview
     anchors.centerIn: parent
-    spacing: Math.round(24 * Config.uiScale)
+    // only the width left between the side buttons, so the card/prompt can
+    // never collide with them or run off a narrower monitor
+    width: Math.max(0, root.width - 2 * root.sideGutter)
+    spacing: root.previewSpacing
 
     Clock { Layout.alignment: Qt.AlignHCenter }
 
@@ -99,7 +114,7 @@ Item {
     // mock menu card: shows how the pop-out panels will size
     Rectangle {
       Layout.alignment: Qt.AlignHCenter
-      width: Config.controlCenterWidth
+      width: Math.min(Config.controlCenterWidth, preview.width)
       implicitHeight: menuPreview.implicitHeight + Math.round(24 * Config.uiScale)
       radius: Config.cornerRadius
       color: Config.bgAlt
@@ -143,7 +158,7 @@ Item {
     // prompt bar: current value + keys hint
     Rectangle {
       Layout.alignment: Qt.AlignHCenter
-      width: promptRow.implicitWidth + Math.round(28 * Config.uiScale)
+      width: Math.min(promptRow.implicitWidth + Math.round(28 * Config.uiScale), preview.width)
       implicitHeight: promptRow.implicitHeight + Math.round(14 * Config.uiScale)
       radius: Config.cornerRadius
       color: Config.bg
@@ -152,6 +167,8 @@ Item {
       RowLayout {
         id: promptRow
         anchors.centerIn: parent
+        width: implicitWidth
+        height: implicitHeight
         spacing: Math.round(10 * Config.uiScale)
 
         ShellText {
@@ -188,8 +205,8 @@ Item {
     id: btn
     property string label
     property int dir
-    width: Config.sessionButtonSize
-    height: Config.sessionButtonSize
+    width: root.sideBtnSize
+    height: root.sideBtnSize
     radius: Math.round(Config.cornerRadius * 1.5)
     color: btnHover.containsMouse ? Config.surfaceAlt : Config.surface
     border.width: 1
