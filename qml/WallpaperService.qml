@@ -55,8 +55,16 @@ Item {
   function apply(path) {
     root.current = path
     root.persistCurrent(path)
-    // Transition type is sourced from the dotfile env (AWWW_TRANSITION=random), no CLI override.
-    Quickshell.execDetached(["awww", "img", path])
+    // Transition is sourced from the AWWW_* env vars (nix-config sets grow),
+    // but passed explicitly so it works even if the awww-daemon started without them.
+    const t = Quickshell.env("AWWW_TRANSITION") || "grow"
+    const dur = Quickshell.env("AWWW_TRANSITION_DURATION") || "1"
+    const step = Quickshell.env("AWWW_TRANSITION_STEP") || "90"
+    Quickshell.execDetached(["awww", "img",
+      "--transition-type", t,
+      "--transition-duration", dur,
+      "--transition-step", step,
+      path])
   }
 
   // Record the applied wallpaper so a later shell restart can re-theme off it.

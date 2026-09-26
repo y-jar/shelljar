@@ -45,9 +45,10 @@ RowLayout {
 
       IconImage {
         anchors.centerIn: parent
-        source: modelData ? modelData.icon : ""
+        source: (modelData && modelData.icon) ? modelData.icon : ""
         width: root.iconSize
         height: root.iconSize
+        visible: status !== Image.Error
       }
 
       onClicked: mouse => {

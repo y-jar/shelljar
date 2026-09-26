@@ -251,7 +251,7 @@ Rectangle {
                 width: Math.round(30 * Config.uiScale)
                 height: Math.round(30 * Config.uiScale)
                 asynchronous: true
-                source: app ? Quickshell.iconPath(app.icon, "image-missing") : ""
+                source: (app && app.icon) ? Quickshell.iconPath(app.icon, "image-missing") : ""
               }
 
               MouseArea {
@@ -324,7 +324,7 @@ Rectangle {
                 Layout.preferredWidth: Math.round(36 * Config.uiScale)
                 Layout.preferredHeight: Math.round(36 * Config.uiScale)
                 asynchronous: true
-                source: Quickshell.iconPath(modelData.icon, "image-missing")
+                source: modelData.icon ? Quickshell.iconPath(modelData.icon, "image-missing") : ""
               }
               ShellText {
                 text: modelData.name
