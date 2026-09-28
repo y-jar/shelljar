@@ -102,8 +102,8 @@ Item {
   readonly property int toastMs: 6000
   readonly property int osdShowMs: 2000
   readonly property int osdHoverMs: 1200
-  readonly property int brightnessPollMs: 2500
-  readonly property int statsCpuMs: 1000
+  readonly property int brightnessPollMs: 15000
+  readonly property int statsCpuMs: 2000
   readonly property int statsNetMs: 3000
   readonly property int statsMemMs: 5000
   readonly property int statsDiskMs: 30000

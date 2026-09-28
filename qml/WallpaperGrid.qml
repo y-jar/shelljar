@@ -74,6 +74,7 @@ Rectangle {
               sourceSize.height: Math.round(256 * Config.uiScale)
               fillMode: Image.PreserveAspectCrop
               asynchronous: true
+              cache: false
             }
           }
 

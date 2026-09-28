@@ -8,9 +8,11 @@
  *   PerScreen
  *
  *   One full screen window per monitor. It hosts that monitor's bar, its
- *   islands and every popout panel, plus the launcher, control center, session
- *   menu, wallpaper pickers and toast column. Opening anything closes the rest
- *   through one shared closeAll so popups never stack on top of each other.
+ *   islands and the popups (launcher, control center, session menu, wallpaper
+ *   pickers, panels and toast column). Heavy popups are created on demand with
+ *   a Loader and destroyed again when closed, so a monitor only pays for what
+ *   it is actually showing. Opening anything closes the rest through one shared
+ *   closeAll so popups never stack on top of each other.
  ***/
 import qs.components
 import QtQuick
@@ -60,18 +62,34 @@ PanelWindow {
   property var notificationServer: null
   property var toastsModel: null
 
+  // ---- popup state: one flag per surface, each drives a Loader ----
   property bool launcherOpen: false
   property bool controlsOpen: false
   property bool sessionOpen: false
   property bool pickerOpen: false
   property bool scaleLayerOpen: false
-  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || scaleLayerOpen || notificationsPanel.open || volumePanel.open || batteryPanel.open || brightnessPanel.open || networkPanel.open || calendarPanel.open || wallCarousel.open || wallGrid.open
+  property bool volumeOpen: false
+  property bool batteryOpen: false
+  property bool brightnessOpen: false
+  property bool networkOpen: false
+  property bool calendarOpen: false
+  property bool notificationsOpen: false
+  property bool carouselOpen: false
+  property bool gridOpen: false
+
+  readonly property bool popupOpen: launcherOpen || controlsOpen || sessionOpen || pickerOpen || scaleLayerOpen
+    || notificationsOpen || volumeOpen || batteryOpen || brightnessOpen || networkOpen || calendarOpen
+    || carouselOpen || gridOpen
   readonly property bool barActive: bar.barOpen
   readonly property bool leftActive: leftIsland.open
   readonly property bool rightActive: rightIsland.open
   readonly property bool islandActive: barActive || leftActive || rightActive
   // key-driven overlays grab keyboard focus; mouse popups stay hands-off
   readonly property bool grabKeys: launcherOpen || pickerOpen || sessionOpen || scaleLayerOpen || (polkitDialog !== null && polkitDialog.active)
+
+  // wallpaper carousel sizing (kept in sync with WallpaperCarousel's own math)
+  readonly property real carouselThumbW: Math.round(WallpaperService.thumbWidth * Config.uiScale)
+  readonly property real carouselThumbH: Math.round(carouselThumbW / 16 * 9)
 
   // clickthrough: full screen while a popup or any island is open, otherwise
   // only the three islands' rects pass clicks.
@@ -127,14 +145,14 @@ PanelWindow {
     anchors.top: parent.top
     notificationServer: root.notificationServer
     onControlClicked: { root.closeAll(); root.controlsOpen = true }
-    onNotificationsRequested: root.togglePanel(notificationsPanel)
-    onWallpaperOpenRequested: dir => { root.closeAll(); wallCarousel.open = true; wallCarousel.nudge(dir) }
-    onWallpaperGridRequested: { root.closeAll(); wallGrid.open = true }
+    onNotificationsRequested: root.toggle("notificationsOpen")
+    onWallpaperOpenRequested: dir => { root.closeAll(); root.carouselOpen = true; Qt.callLater(() => carouselLoader.item && carouselLoader.item.nudge(dir)) }
+    onWallpaperGridRequested: { root.closeAll(); root.gridOpen = true }
     onWallpaperPickerRequested: root.openWallPicker()
     onOsdHoverRequested: { osd.showVolume(); osd.hover() }
     onOsdValueChanged: osd.showVolume()
-    onVolumePanelRequested: root.togglePanel(volumePanel)
-    onClockClicked: root.togglePanel(calendarPanel)
+    onVolumePanelRequested: root.toggle("volumeOpen")
+    onClockClicked: root.toggle("calendarOpen")
   }
 
   // ---- left island (network / power / tray / media), top-left edge ----
@@ -144,7 +162,7 @@ PanelWindow {
     anchors.leftMargin: 8
     anchors.top: parent.top
     anchors.topMargin: 0
-    onNetworkClicked: root.togglePanel(networkPanel)
+    onNetworkClicked: root.toggle("networkOpen")
     onPowerClicked: { root.closeAll(); root.sessionOpen = true }
   }
 
@@ -155,8 +173,8 @@ PanelWindow {
     anchors.rightMargin: 8
     anchors.top: parent.top
     anchors.topMargin: 0
-    onBatteryPanelRequested: { root.closeAll(); batteryPanel.open = true }
-    onBrightnessPanelRequested: { root.closeAll(); brightnessPanel.open = true }
+    onBatteryPanelRequested: { root.closeAll(); root.batteryOpen = true }
+    onBrightnessPanelRequested: { root.closeAll(); root.brightnessOpen = true }
     onOsdBrightnessHoverRequested: { osd.showBrightness(BrightnessService.value); osd.hover() }
     onOsdBrightnessValueChanged: osd.showBrightness(BrightnessService.value)
   }
@@ -165,152 +183,242 @@ PanelWindow {
   Osd { id: osd }
 
   // ---- volume panel (pop-out, under the bar's volume pill) ----
-  VolumePanel {
-    id: volumePanel
+  Loader {
+    id: volumeLoader
+    active: root.volumeOpen
     anchors.right: bar.right
     anchors.rightMargin: 8
     anchors.top: bar.bottom
     anchors.topMargin: 8
-    visible: open
-    open: false
-    onCloseRequested: open = false
+    width: Config.popupWidth
+    height: Math.round(110 * Config.uiScale)
+    sourceComponent: Component {
+      VolumePanel {
+        anchors.fill: parent
+        open: root.volumeOpen
+        onCloseRequested: root.volumeOpen = false
+      }
+    }
   }
 
   // ---- battery panel (pop-out, beside the right island) ----
-  BatteryPanel {
-    id: batteryPanel
+  Loader {
+    id: batteryLoader
+    active: root.batteryOpen
     anchors.right: rightIsland.left
     anchors.rightMargin: 8
     anchors.top: rightIsland.top
-    visible: open
-    open: false
-    onCloseRequested: open = false
+    width: Config.popupWidth
+    height: Math.round(300 * Config.uiScale)
+    sourceComponent: Component {
+      BatteryPanel {
+        anchors.fill: parent
+        open: root.batteryOpen
+        onCloseRequested: root.batteryOpen = false
+      }
+    }
   }
 
   // ---- brightness panel (pop-out, beside the right island) ----
-  BrightnessPanel {
-    id: brightnessPanel
+  Loader {
+    id: brightnessLoader
+    active: root.brightnessOpen
     anchors.right: rightIsland.left
     anchors.rightMargin: 8
     anchors.top: rightIsland.top
     anchors.topMargin: 44
-    visible: open
-    open: false
-    onCloseRequested: open = false
+    width: Config.popupWidth
+    height: Math.round(90 * Config.uiScale)
+    sourceComponent: Component {
+      BrightnessPanel {
+        anchors.fill: parent
+        open: root.brightnessOpen
+        onCloseRequested: root.brightnessOpen = false
+      }
+    }
   }
 
   // ---- network panel (pop-out, beside the left island) ----
-  NetworkPanel {
-    id: networkPanel
+  Loader {
+    id: networkLoader
+    active: root.networkOpen
     anchors.left: leftIsland.right
     anchors.leftMargin: 8
     anchors.top: leftIsland.top
-    visible: open
-    open: false
-    onCloseRequested: open = false
+    width: Config.networkPanelWidth
+    height: Math.min(Math.round(520 * Config.uiScale), Math.round(root.height - 90))
+    sourceComponent: Component {
+      NetworkPanel {
+        anchors.fill: parent
+        open: root.networkOpen
+        onCloseRequested: root.networkOpen = false
+      }
+    }
   }
 
   // ---- calendar panel (pop-out, under the clock) ----
-  CalendarPanel {
-    id: calendarPanel
+  Loader {
+    id: calendarLoader
+    active: root.calendarOpen
     anchors.horizontalCenter: bar.horizontalCenter
     anchors.top: bar.bottom
     anchors.topMargin: 8
-    visible: open
-    open: false
-    onCloseRequested: open = false
+    width: Config.popupWidth
+    height: Math.round(300 * Config.uiScale)
+    sourceComponent: Component {
+      CalendarPanel {
+        anchors.fill: parent
+        open: root.calendarOpen
+        onCloseRequested: root.calendarOpen = false
+      }
+    }
   }
 
   // ---- notifications panel (pop-out) ----
-  NotificationsPanel {
-    id: notificationsPanel
+  Loader {
+    id: notificationsLoader
+    active: root.notificationsOpen
     anchors.right: parent.right
     anchors.rightMargin: 12
     anchors.top: bar.bottom
     anchors.topMargin: 8
-    visible: open
-    open: false
-    notificationServer: root.notificationServer
-    onCloseRequested: open = false
+    width: Config.notificationsWidth
+    height: Config.notificationsHeight
+    sourceComponent: Component {
+      NotificationsPanel {
+        anchors.fill: parent
+        open: root.notificationsOpen
+        notificationServer: root.notificationServer
+        onCloseRequested: root.notificationsOpen = false
+      }
+    }
   }
 
   // ---- wallpaper preview carousel (pop-out) ----
-  WallpaperCarousel {
-    id: wallCarousel
+  Loader {
+    id: carouselLoader
+    active: root.carouselOpen
     anchors.horizontalCenter: bar.horizontalCenter
     anchors.top: bar.bottom
     anchors.topMargin: 8
-    visible: open
-    open: false
-    onCloseRequested: open = false
+    width: 5 * (root.carouselThumbW + 8)
+    height: root.carouselThumbH
+    sourceComponent: Component {
+      WallpaperCarousel {
+        anchors.fill: parent
+        open: root.carouselOpen
+        onCloseRequested: root.carouselOpen = false
+      }
+    }
   }
 
   // ---- wallpaper picker grid (pop-out) ----
-  WallpaperGrid {
-    id: wallGrid
+  Loader {
+    id: gridLoader
+    active: root.gridOpen
     anchors.horizontalCenter: bar.horizontalCenter
     anchors.top: bar.bottom
     anchors.topMargin: 8
-    visible: open
-    open: false
-    onCloseRequested: open = false
+    width: Math.min(Math.round(800 * Config.uiScale), Math.round(root.width * 0.5))
+    height: Math.round(430 * Config.uiScale)
+    sourceComponent: Component {
+      WallpaperGrid {
+        anchors.fill: parent
+        open: root.gridOpen
+        onCloseRequested: root.gridOpen = false
+      }
+    }
   }
 
   // ---- full-screen calm wallpaper picker (super+w / right-click) ----
-  WallpaperPicker {
-    id: wallPicker
+  Loader {
+    id: pickerLoader
+    active: root.pickerOpen
     anchors.fill: parent
-    visible: root.pickerOpen
-    open: root.pickerOpen
-    onCloseRequested: root.pickerOpen = false
+    sourceComponent: Component {
+      WallpaperPicker {
+        anchors.fill: parent
+        open: root.pickerOpen
+        onCloseRequested: root.pickerOpen = false
+      }
+    }
   }
 
   // ---- launcher (grid) ----
-  Launcher {
-    id: launcher
+  Loader {
+    id: launcherLoader
+    active: root.launcherOpen
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.top: bar.bottom
     anchors.topMargin: 12
-    visible: root.launcherOpen
-    open: root.launcherOpen
-    onCloseRequested: root.launcherOpen = false
+    width: Config.launcherWidth
+    height: Config.launcherHeight
+    sourceComponent: Component {
+      Launcher {
+        anchors.fill: parent
+        open: root.launcherOpen
+        onCloseRequested: root.launcherOpen = false
+      }
+    }
   }
 
   // ---- control center (profile frame) opens just below the bar ----
-  ControlCenter {
-    id: controls
+  Loader {
+    id: controlsLoader
+    active: root.controlsOpen
     anchors.left: bar.left
     anchors.leftMargin: 8
     anchors.top: bar.bottom
     anchors.topMargin: 12
-    visible: root.controlsOpen
-    open: root.controlsOpen
-    onOpenSession: {
-      root.controlsOpen = false
-      root.sessionOpen = true
-    }
-    onOpenScaleLayer: {
-      root.closeAll()
-      root.scaleLayerOpen = true
+    width: Config.controlCenterWidth
+    height: Config.controlCenterHeight
+    sourceComponent: Component {
+      ControlCenter {
+        anchors.fill: parent
+        open: root.controlsOpen
+        onOpenSession: {
+          root.controlsOpen = false
+          root.sessionOpen = true
+        }
+        onOpenScaleLayer: {
+          root.closeAll()
+          root.scaleLayerOpen = true
+        }
+      }
     }
   }
 
   // ---- full-screen UI scale calibrator (A/D or arrows, Enter saves) ----
-  UiScaleLayer {
+  Loader {
+    id: scaleLayerLoader
+    active: root.scaleLayerOpen
     anchors.fill: parent
-    visible: root.scaleLayerOpen
-    open: root.scaleLayerOpen
+    sourceComponent: Component {
+      UiScaleLayer {
+        anchors.fill: parent
+        open: root.scaleLayerOpen
+        onCloseRequested: root.scaleLayerOpen = false
+      }
+    }
   }
 
   // ---- full-screen power menu ----
-  SessionMenu {
+  Loader {
+    id: sessionLoader
+    active: root.sessionOpen
     anchors.fill: parent
-    visible: root.sessionOpen
-    open: root.sessionOpen
-    onCloseRequested: root.sessionOpen = false
+    sourceComponent: Component {
+      SessionMenu {
+        anchors.fill: parent
+        open: root.sessionOpen
+        onCloseRequested: root.sessionOpen = false
+      }
+    }
   }
 
   // ---- privileged action authentication dialog ----
+  // Kept always-instantiated: the agent must be listening for auth requests
+  // even when no surface is open.
   Polkit {
     id: polkitDialog
     anchors.fill: parent
@@ -397,24 +505,24 @@ PanelWindow {
     root.sessionOpen = false
     root.pickerOpen = false
     root.scaleLayerOpen = false
+    root.volumeOpen = false
+    root.batteryOpen = false
+    root.brightnessOpen = false
+    root.networkOpen = false
+    root.calendarOpen = false
+    root.notificationsOpen = false
+    root.carouselOpen = false
+    root.gridOpen = false
     bar.barOpen = false
     leftIsland.open = false
     rightIsland.open = false
-    batteryPanel.open = false
-    brightnessPanel.open = false
-    volumePanel.open = false
-    notificationsPanel.open = false
-    networkPanel.open = false
-    wallCarousel.open = false
-    wallGrid.open = false
-    calendarPanel.open = false
   }
 
-  // close everything, then toggle just the given panel open or closed
-  function togglePanel(panel) {
-    const alreadyOpen = panel.open
+  // close everything, then toggle just the given surface flag open or closed
+  function toggle(name) {
+    const was = root[name]
     root.closeAll()
-    panel.open = !alreadyOpen
+    root[name] = !was
   }
 
   function toggleLauncher() {
@@ -444,6 +552,6 @@ PanelWindow {
   // keybind-driven cycle: open the full-screen picker and slide one step
   function wallpaperCycle(dir) {
     if (!root.pickerOpen) root.openWallPicker()
-    wallPicker.nudge(dir)
+    Qt.callLater(() => pickerLoader.item && pickerLoader.item.nudge(dir))
   }
 }

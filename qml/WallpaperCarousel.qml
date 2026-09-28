@@ -67,6 +67,7 @@ Item {
           sourceSize.height: Math.round(root.thumbH)
           fillMode: Image.PreserveAspectCrop
           asynchronous: true
+          cache: false
         }
         Rectangle {
           anchors.fill: parent

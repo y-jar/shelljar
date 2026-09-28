@@ -151,6 +151,8 @@ Rectangle {
   Component.onCompleted: {
     root.loadApps()
     favFileView.reload()
+    // created on demand (LazyLoader): grab focus so typing lands in the box
+    if (root.visible) Qt.callLater(() => searchBox.forceActiveFocus())
   }
 
   // the application list arrives asynchronously, so reload it when it changes

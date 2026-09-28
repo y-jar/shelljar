@@ -24,6 +24,7 @@ Item {
   property bool open: false
   property real initialScale: Config.userScale
   property bool saved: false
+  signal closeRequested
 
   readonly property real minScale: 0.6
   readonly property real maxScale: 2.0
@@ -72,10 +73,12 @@ Item {
     root.saved = true
     ColorService.setUiScale(Config.userScale)
     root.open = false
+    root.closeRequested()
   }
 
   function close() {
     root.open = false
+    root.closeRequested()
   }
 
   onOpenChanged: {

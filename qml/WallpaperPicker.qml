@@ -100,7 +100,8 @@ Item {
           sourceSize.height: Math.round(root.tileH * 2)
           fillMode: Image.PreserveAspectCrop
           asynchronous: true
-          cache: true
+          // don't retain decoded frames of every wallpaper in the pixmap cache
+          cache: false
           smooth: false
         }
 
