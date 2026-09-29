@@ -47,8 +47,14 @@ Item {
       : "transparent"
     border.width: root.checked ? 0 : 1
     border.color: Config.outlineSoft
+    clip: true
     Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Motion.easeStandard } }
     Behavior on border.color { ColorAnimation { duration: Motion.fast; easing.type: Motion.easeStandard } }
+
+    Ripple {
+      id: ripple
+      color: root.checked ? Config.accentInk : Config.text
+    }
   }
 
   GlyphIcon {
@@ -66,6 +72,7 @@ Item {
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
     acceptedButtons: Qt.LeftButton | Qt.RightButton
+    onPressed: ripple.fire(mouse.x, mouse.y)
     onClicked: event => {
       if (event.button === Qt.RightButton) root.rightClicked()
       else root.clicked()
@@ -81,6 +88,6 @@ Item {
     placement: "below"
   }
 
-  scale: mouse.pressed ? 0.94 : 1
+  scale: mouse.pressed ? 0.94 : (root.hovered ? 1.04 : 1)
   Behavior on scale { NumberAnimation { duration: Motion.fast; easing.type: Motion.easeStandard } }
 }

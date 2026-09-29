@@ -105,6 +105,19 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Math.round(8 * Config.uiScale)
 
+        readonly property real slide: root.barOpen ? 0 : Math.round(6 * Config.uiScale)
+        opacity: root.barOpen ? 1 : 0
+        transform: Translate {
+          y: leftCluster.slide
+          Behavior on y { NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard } }
+        }
+        Behavior on opacity {
+          SequentialAnimation {
+            PauseAnimation { duration: 0 }
+            NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard }
+          }
+        }
+
         IconButton {
           glyph: "menu"
           tooltip: "Control center"
@@ -128,6 +141,19 @@ Item {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         spacing: Math.round(8 * Config.uiScale)
+
+        readonly property real slide: root.barOpen ? 0 : Math.round(6 * Config.uiScale)
+        opacity: root.barOpen ? 1 : 0
+        transform: Translate {
+          y: rightCluster.slide
+          Behavior on y { NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard } }
+        }
+        Behavior on opacity {
+          SequentialAnimation {
+            PauseAnimation { duration: 70 }
+            NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard }
+          }
+        }
 
         WallpaperStrip {
           onOpenRequested: dir => root.wallpaperOpenRequested(dir)
@@ -179,6 +205,19 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
         onClicked: root.clockClicked()
+
+        readonly property real slide: root.barOpen ? 0 : Math.round(6 * Config.uiScale)
+        opacity: root.barOpen ? 1 : 0
+        transform: Translate {
+          y: clock.slide
+          Behavior on y { NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard } }
+        }
+        Behavior on opacity {
+          SequentialAnimation {
+            PauseAnimation { duration: 35 }
+            NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard }
+          }
+        }
       }
     }
   }

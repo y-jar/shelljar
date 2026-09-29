@@ -30,6 +30,7 @@ Item {
   signal clicked
 
   Surface {
+    id: card
     anchors.fill: parent
     radius: Config.radiusMd
     interactive: root.enabled
@@ -38,6 +39,11 @@ Item {
     fillTop: root.checked ? Config.accentContainer : Config.surfaceMid
     fillBot: root.checked ? Config.accentContainer : Config.surfaceLow
     opacity: root.enabled ? 1 : 0.4
+
+    Ripple {
+      id: ripple
+      color: root.checked ? Config.accentInk : Config.text
+    }
   }
 
   ColumnLayout {
@@ -66,6 +72,10 @@ Item {
     hoverEnabled: true
     enabled: root.enabled
     cursorShape: Qt.PointingHandCursor
+    onPressed: ripple.fire(mouse.x, mouse.y)
     onClicked: root.clicked()
   }
+
+  scale: mouse.pressed ? 0.96 : (mouse.containsMouse && root.enabled ? 1.02 : 1)
+  Behavior on scale { NumberAnimation { duration: Motion.fast; easing.type: Motion.easeStandard } }
 }

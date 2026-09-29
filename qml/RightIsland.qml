@@ -62,6 +62,19 @@ Item {
       spacing: 6
       visible: root.open
 
+      readonly property real slide: root.open ? 0 : Math.round(5 * Config.uiScale)
+      opacity: root.open ? 1 : 0
+      transform: Translate {
+        y: content.slide
+        Behavior on y { NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard } }
+      }
+      Behavior on opacity {
+        SequentialAnimation {
+          PauseAnimation { duration: 20 }
+          NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard }
+        }
+      }
+
       // When no battery (e.g. a desktop PC) show a small tag instead.
       // BatteryWidget hides itself when it has no battery, so mirror its state.
       ShellText {
