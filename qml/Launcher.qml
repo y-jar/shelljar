@@ -413,7 +413,7 @@ Panel {
     // ---- hint ----
     ShellText {
       Layout.fillWidth: true
-      text: "Right-click an app to pin it"
+      text: "Psst.. Right-click an app to pin it <Jar!~>"
       color: root.subColor
       font.pixelSize: Config.fsTiny
       horizontalAlignment: Text.AlignHCenter
