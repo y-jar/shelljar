@@ -40,6 +40,8 @@
 | **power menu** | full-screen switch: power/reboot (countdown ring), logout, suspend, lock. `Mod+P`. |
 | **wallpapers** | scroll the bar button for a carousel, click for a grid, right-click for the full-screen picker. `Mod+W` next / `Mod+O` prev. |
 
+![latestIMG](./resources/latestIMG.png)
+
 ## ⌨️ controls you'll actually remember
 
 | keys | action |
@@ -98,6 +100,7 @@ qml/                   shell config: Config.qml + surfaces + widgets + services
 qml/components/        reusable bits (Slider, canvas icons, ShellText)
 resources/             branding placeholders
 ```
+
 
 ## 🙃 nerdy little things I'm proud of
 > The Large wallpaper manager was something I spent a lot of time on and I found it to be a great way to manage my wallpapers (kinda addicted to using it).
