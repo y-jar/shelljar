@@ -51,10 +51,19 @@ Item {
 
   HoverHandler { id: hover }
 
-  Tooltip {
-    s: Config.uiScale
-    title: root.tooltip
-    show: hover.hovered && root.tooltip !== ""
-    placement: "below"
+  // tooltip is created only while hovered, so no idle bubbles per stat
+  Loader {
+    id: tipLoader
+    anchors.fill: parent
+    z: 100
+    active: hover.hovered && root.tooltip !== ""
+    sourceComponent: Component {
+      Tooltip {
+        s: Config.uiScale
+        title: root.tooltip
+        show: true
+        placement: "below"
+      }
+    }
   }
 }

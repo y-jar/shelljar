@@ -143,9 +143,11 @@ Item {
 
   // ---- timing ----
   readonly property int toastMs: 6000
+  // cap the retained notification history so a long session can't grow it forever
+  readonly property int notifHistoryMax: 50
   readonly property int osdShowMs: 2000
   readonly property int osdHoverMs: 1200
-  readonly property int brightnessPollMs: 15000
+  readonly property int brightnessPollMs: 30000
   readonly property int statsCpuMs: 2000
   readonly property int statsNetMs: 3000
   readonly property int statsMemMs: 5000

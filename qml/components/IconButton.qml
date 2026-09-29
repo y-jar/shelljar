@@ -80,12 +80,21 @@ Item {
     onWheel: event => root.scrolled(event.angleDelta.y > 0 ? 1 : -1)
   }
 
-  Tooltip {
-    s: Config.uiScale
-    title: root.tooltip
-    desc: root.tooltipDesc
-    show: root.hovered && root.tooltip !== ""
-    placement: "below"
+  // tooltip is created only while hovered, so no idle bubbles per button
+  Loader {
+    id: tipLoader
+    anchors.fill: parent
+    z: 100
+    active: root.hovered && root.tooltip !== ""
+    sourceComponent: Component {
+      Tooltip {
+        s: Config.uiScale
+        title: root.tooltip
+        desc: root.tooltipDesc
+        show: true
+        placement: "below"
+      }
+    }
   }
 
   scale: mouse.pressed ? 0.94 : (root.hovered ? 1.04 : 1)

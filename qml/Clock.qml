@@ -7,9 +7,10 @@
  *
  *   Clock
  *
- *   The big digital clock and date shown in the middle island. It keeps a
- *   fixed width for the blinking separator so the row never shifts sideways
- *   every second, and it refreshes on a one second timer.
+ *   The big digital clock and date shown in the middle island. It renders the
+ *   shared ClockService so the shell keeps one ticking timer for every screen;
+ *   the separator blinks off a fixed-width slot so the row never shifts
+ *   sideways.
  ***/
 import qs.components
 import QtQuick
@@ -26,8 +27,6 @@ Item {
   width: col.implicitWidth
   height: col.implicitHeight
 
-  function pad(v) { return ("0" + v).slice(-2) }
-
   ColumnLayout {
     id: col
     anchors.fill: parent
@@ -38,7 +37,7 @@ Item {
       spacing: 2
 
       ShellText {
-        text: clock.hours
+        text: ClockService.hours
         color: root.textColor
         font.pixelSize: Config.fsLarge
         font.weight: Font.DemiBold
@@ -48,14 +47,14 @@ Item {
       ShellText {
         Layout.preferredWidth: Math.round(9 * Config.uiScale)
         horizontalAlignment: Text.AlignHCenter
-        text: clock.blink ? ":" : ""
+        text: ClockService.blink ? ":" : ""
         color: root.dateColor
         font.pixelSize: Config.fsLarge
         font.weight: Font.DemiBold
       }
 
       ShellText {
-        text: clock.minutes
+        text: ClockService.minutes
         color: root.textColor
         font.pixelSize: Config.fsLarge
         font.weight: Font.DemiBold
@@ -63,7 +62,7 @@ Item {
     }
 
     ShellText {
-      text: clock.dateStr
+      text: ClockService.dateStr
       color: root.dateColor
       font.pixelSize: Config.fsSmall
       Layout.alignment: Qt.AlignHCenter
@@ -76,26 +75,5 @@ Item {
     z: 10
     cursorShape: Qt.PointingHandCursor
     onClicked: root.clicked()
-  }
-
-  Timer {
-    id: clock
-    property string hours: "00"
-    property string minutes: "00"
-    property string dateStr: ""
-    property bool blink: false
-
-    interval: 1000
-    repeat: true
-    running: true
-    onTriggered: update()
-
-    function update() {
-      const now = new Date()
-      hours = root.pad(now.getHours())
-      minutes = root.pad(now.getMinutes())
-      blink = (now.getSeconds() % 2) === 0
-      dateStr = Qt.formatDate(now, "dddd MMM d")
-    }
   }
 }

@@ -39,6 +39,14 @@ FloatingWindow {
         body: n.body,
       })
       while (toasts.count > 4) toasts.remove(toasts.count - 1)
+      // keep the tracked history bounded: drop the oldest once past the cap
+      if (notiServer.trackedNotifications.count > Config.notifHistoryMax) {
+        const oldest = notiServer.trackedNotifications.values[0]
+        if (oldest) {
+          oldest.tracked = false
+          if (oldest.dismiss) oldest.dismiss()
+        }
+      }
     }
   }
 
