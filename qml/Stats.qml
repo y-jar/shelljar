@@ -7,9 +7,10 @@
  *
  *   Stats
  *
- *   A compact single row readout of CPU, memory, network and disk usage that
- *   draws on the SystemStat singleton. Each field has its own color so the row
- *   stays easy to scan, and long values elide instead of squeezing the layout.
+ *   A compact single row of system stats for the bar. Each figure is one
+ *   StatsPill (glyph + short value); the full reading lives in the pill's
+ *   tooltip, so the bar stays scannable instead of turning into a wall of text.
+ *   It draws on the SystemStat singleton.
  ***/
 import qs.components
 import QtQuick
@@ -20,60 +21,47 @@ RowLayout {
 
   property color textColor: Config.text
   property color subColor: Config.subtext
-  spacing: 8
+  spacing: Math.round(9 * Config.uiScale)
 
   function human(v) {
-    if (v >= 1073741824) return (v / 1073741824).toFixed(2) + "G"
-    if (v >= 1048576) return (v / 1048576).toFixed(2) + "M"
-    if (v >= 1024) return (v / 1024).toFixed(2) + "K"
-    return v.toFixed(2)
+    if (v >= 1073741824) return (v / 1073741824).toFixed(1) + "G"
+    if (v >= 1048576) return (v / 1048576).toFixed(1) + "M"
+    if (v >= 1024) return (v / 1024).toFixed(0) + "K"
+    return Math.round(v) + "B"
   }
 
-  // ---- CPU ----
-  ShellText { text: "CPU"; color: root.subColor; font.pixelSize: Config.fsTiny }
-  ShellText {
-    text: Math.round(SystemStat.cpuUsage) + "%"
-    color: root.textColor
-    font.pixelSize: Config.fsTiny
-    Layout.minimumWidth: Math.round(30 * Config.uiScale)
-    elide: Text.ElideRight
+  StatsPill {
+    glyph: "cpu"
+    glyphColor: Config.blue
+    value: Math.round(SystemStat.cpuUsage) + "%"
+    tooltip: "CPU · " + Math.round(SystemStat.cpuUsage) + "%"
   }
 
-  // ---- RAM ----
-  ShellText { text: "RAM"; color: root.subColor; font.pixelSize: Config.fsTiny }
-  ShellText {
-    text: root.human(SystemStat.memUsedBytes) + "/" + root.human(SystemStat.memTotalBytes)
-    color: root.textColor
-    font.pixelSize: Config.fsTiny
-    Layout.minimumWidth: Math.round(52 * Config.uiScale)
-    elide: Text.ElideRight
+  StatsPill {
+    glyph: "ram"
+    glyphColor: Config.green
+    value: root.human(SystemStat.memUsedBytes)
+    tooltip: "RAM · " + root.human(SystemStat.memUsedBytes) + " / " + root.human(SystemStat.memTotalBytes)
   }
 
-  // ---- NET ----
-  ShellText { text: "↓"; color: Config.green; font.pixelSize: Config.fsTiny }
-  ShellText {
-    text: root.human(SystemStat.rxBps) + "/s"
-    color: root.textColor
-    font.pixelSize: Config.fsTiny
-    Layout.minimumWidth: Math.round(34 * Config.uiScale)
-    elide: Text.ElideRight
-  }
-  ShellText { text: "↑"; color: Config.red; font.pixelSize: Config.fsTiny }
-  ShellText {
-    text: root.human(SystemStat.txBps) + "/s"
-    color: root.textColor
-    font.pixelSize: Config.fsTiny
-    Layout.minimumWidth: Math.round(34 * Config.uiScale)
-    elide: Text.ElideRight
+  StatsPill {
+    glyph: "arrow-down"
+    glyphColor: Config.green
+    value: root.human(SystemStat.rxBps) + "/s"
+    tooltip: "Network down · " + root.human(SystemStat.rxBps) + "/s"
   }
 
-  // ---- DISK ----
-  ShellText { text: "DISK"; color: root.subColor; font.pixelSize: Config.fsTiny }
-  ShellText {
-    text: root.human(SystemStat.diskUsedBytes) + "/" + root.human(SystemStat.diskTotalBytes)
-    color: Config.yellow
-    font.pixelSize: Config.fsTiny
-    Layout.minimumWidth: Math.round(52 * Config.uiScale)
-    elide: Text.ElideRight
+  StatsPill {
+    glyph: "arrow-up"
+    glyphColor: Config.red
+    value: root.human(SystemStat.txBps) + "/s"
+    tooltip: "Network up · " + root.human(SystemStat.txBps) + "/s"
+  }
+
+  StatsPill {
+    glyph: "disk"
+    glyphColor: Config.yellow
+    value: root.human(SystemStat.diskUsedBytes)
+    tooltip: "Disk · " + root.human(SystemStat.diskUsedBytes) + " / " + root.human(SystemStat.diskTotalBytes)
   }
 }

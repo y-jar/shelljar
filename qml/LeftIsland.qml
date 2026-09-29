@@ -21,22 +21,20 @@ Item {
   readonly property real stripW: Math.max(120, Math.round(150 * Config.uiScale))
   width: open ? Math.max(Config.minDockWidth, (content ? content.implicitWidth + 16 : stripW))
               : stripW
-  height: open ? Config.dockHeight : Config.stripHeight
+  height: open ? Config.islandHeight : Config.stripHeight
 
   property bool open: false
   signal networkClicked
   signal powerClicked
 
-  Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
-  Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+  Behavior on width { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
+  Behavior on height { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
 
-  Rectangle {
+  Surface {
     id: card
     anchors.fill: parent
     radius: Config.cornerRadius
-    color: Config.bg
-    border.color: Config.borderStrong
-    clip: true
+    clip: false
 
     // right-click toggles the expanded island
     MouseArea {
@@ -51,8 +49,8 @@ Item {
       anchors.centerIn: parent
       visible: !root.open
       width: Math.round(parent.width * 0.5)
-      height: 4
-      radius: 2
+      height: Math.max(3, Math.round(4 * Config.uiScale))
+      radius: height / 2
       color: Config.surfaceAlt
     }
 
@@ -68,25 +66,11 @@ Item {
       }
 
       // power button (opens the full-screen session menu)
-      Rectangle {
-        Layout.preferredWidth: Config.iconButtonSize
-        Layout.preferredHeight: width
-        radius: width / 2
-        color: hoverArea.containsMouse ? Config.surfaceAlt : Config.surface
-        border.color: Config.borderMid
-        ShellText {
-          anchors.centerIn: parent
-          text: "⚡"
-          color: Config.red
-          font.pixelSize: Config.fsSmall
-        }
-        MouseArea {
-          id: hoverArea
-          anchors.fill: parent
-          hoverEnabled: true
-          cursorShape: Qt.PointingHandCursor
-          onClicked: root.powerClicked()
-        }
+      IconButton {
+        glyph: "power"
+        glyphColor: Config.red
+        tooltip: "Power"
+        onClicked: root.powerClicked()
       }
 
       Tray { }

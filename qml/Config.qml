@@ -36,6 +36,24 @@ Item {
   readonly property color scrimHeavy: "#99000000"
   readonly property color knobColor: "#ffffff"
 
+  // ---- nested surface ramp (mutable: ColorService derives these) ----
+  // One source of greys: every card, tile and popup picks a step instead of
+  // inventing its own shade. Higher steps sit nearer the viewer.
+  property color surfaceLow: "#181825"
+  property color surfaceMid: "#313244"
+  property color surfaceHigh: "#45475a"
+
+  // ---- outlines, sheen and text ramp (mutable) ----
+  property color outline: Qt.rgba(1, 1, 1, 0.10)
+  property color outlineSoft: Qt.rgba(1, 1, 1, 0.06)
+  property color outlineStrong: Qt.rgba(1, 1, 1, 0.16)
+  readonly property color sheen: Qt.rgba(1, 1, 1, 0.06)
+  property color textBright: "#ffffff"
+  property color dim: "#a6adc8"
+  property color faint: "#6c7086"
+  property color accentContainer: "#45475a"
+  property color accentInk: "#ffffff"
+
   // ---- typography ----
   readonly property string fontFamily: "Monocraft"
 
@@ -62,21 +80,46 @@ Item {
   readonly property real cornerRadius: 12
   readonly property real spacing: 8
 
+  // ---- radius + spacing scale (new components use these; the old singles stay) ----
+  readonly property real radiusSm: 8
+  readonly property real radiusMd: 12
+  readonly property real radiusLg: 18
+  readonly property real radiusPill: 9999
+  readonly property real spaceXs: 4
+  readonly property real spaceSm: 6
+  readonly property real spaceMd: 8
+  readonly property real spaceLg: 12
+  readonly property real spaceXl: 16
+
   // ---- shared pill / widget sizing ----
   readonly property real pillWidth: Math.round(64 * uiScale)
   readonly property real pillHeight: Math.round(26 * uiScale)
   readonly property real iconButtonSize: Math.round(30 * uiScale)
   readonly property int eventBadgeSize: 12
 
+  // ---- chrome geometry ----
+  readonly property real barHeight: Math.round(62 * uiScale) // expanded single-row bar
+  readonly property real islandHeight: Math.round(44 * uiScale) // expanded side island
+  readonly property real edgeFilletRadius: Math.round(14 * uiScale)
+  readonly property bool barEdgeMerge: true // merge the bar into the top screen edge
+  readonly property real iconLg: Math.round(18 * uiScale)
+  readonly property real iconMd: Math.round(15 * uiScale)
+  readonly property real iconSm: Math.round(12 * uiScale)
+
   // ---- popup geometry ----
   readonly property int launcherWidth: Math.round(720 * uiScale)
   readonly property int launcherHeight: Math.round(540 * uiScale)
   readonly property int controlCenterWidth: Math.round(330 * uiScale)
-  readonly property int controlCenterHeight: Math.round(250 * uiScale)
+  readonly property int controlCenterHeight: Math.round(430 * uiScale)
   readonly property int popupWidth: Math.round(300 * uiScale)
   readonly property int networkPanelWidth: Math.round(380 * uiScale)
   readonly property int notificationsWidth: Math.round(330 * uiScale)
   readonly property int notificationsHeight: Math.round(360 * uiScale)
+  readonly property int volumePanelHeight: Math.round(104 * uiScale)
+  readonly property int brightnessPanelHeight: Math.round(86 * uiScale)
+  readonly property int batteryPanelHeight: Math.round(300 * uiScale)
+  readonly property int calendarPanelHeight: Math.round(300 * uiScale)
+  readonly property int networkPanelHeight: Math.round(520 * uiScale)
   readonly property int osdWidth: 260
   readonly property int osdHeight: 64
   readonly property int toastWidth: 360
@@ -118,4 +161,5 @@ Item {
   readonly property int fsSmall: Math.round(11 * uiScale)
   readonly property int fsMedium: Math.round(13 * uiScale)
   readonly property int fsLarge: Math.round(18 * uiScale)
+  readonly property int fsHuge: Math.round(26 * uiScale)
 }

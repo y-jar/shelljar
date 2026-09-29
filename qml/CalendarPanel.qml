@@ -15,17 +15,11 @@ import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-Rectangle {
+Panel {
   id: root
+  anchors.fill: parent
 
-  property bool open: false
   signal closeRequested
-
-  width: Config.popupWidth
-  height: Math.round(300 * Config.uiScale)
-  radius: Config.cornerRadius
-  color: Config.bgAlt
-  border.color: Config.borderStrong
 
   property date cursor: new Date()
   property var selectedDay: null
@@ -64,7 +58,6 @@ Rectangle {
 
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 12
     spacing: 8
 
     // header: month + arrows

@@ -68,13 +68,13 @@ FloatingWindow {
     target: "shelljar"
 
     // a screen by name, or null
-    function screenByName(name: string) {
+    function screenByName(name: string): var {
       for (const s of Quickshell.screens) { if (s && s.name === name) return s }
       return null
     }
 
     // the monitor of the currently focused window (like fuzzel)
-    function focusedScreen() {
+    function focusedScreen(): var {
       try {
         const t = typeof ToplevelManager !== "undefined" ? ToplevelManager.activeToplevel : null
         if (t && t.screens && t.screens.length > 0) {
@@ -87,25 +87,25 @@ FloatingWindow {
 
     // the PerScreen instance for monitor (if given), else the focused one,
     // falling back to the first one
-    function target(monitor: string) {
+    function target(monitor: string): var {
       const scr = (monitor && screenByName(monitor)) || focusedScreen()
       for (const inst of screens.instances) { if (inst.modelData === scr) return inst }
       return screens.instances && screens.instances.length ? screens.instances[0] : null
     }
 
-    function close() { const s = target(""); if (s) s.closeAll() }
+    function close(): void { const s = target(""); if (s) s.closeAll() }
 
-    function toggleLauncher(monitor: string) { const s = target(monitor); if (s) s.toggleLauncher() }
+    function toggleLauncher(monitor: string): void { const s = target(monitor); if (s) s.toggleLauncher() }
 
-    function toggleControlCenter(monitor: string) { const s = target(monitor); if (s) s.toggleControlCenter() }
+    function toggleControlCenter(monitor: string): void { const s = target(monitor); if (s) s.toggleControlCenter() }
 
-    function toggleSession(monitor: string) { const s = target(monitor); if (s) s.toggleSession() }
+    function toggleSession(monitor: string): void { const s = target(monitor); if (s) s.toggleSession() }
 
-    function wallpaperNext(monitor: string) { const s = target(monitor); if (s) s.wallpaperCycle("next") }
-    function wallpaperPrev(monitor: string) { const s = target(monitor); if (s) s.wallpaperCycle("prev") }
+    function wallpaperNext(monitor: string): void { const s = target(monitor); if (s) s.wallpaperCycle("next") }
+    function wallpaperPrev(monitor: string): void { const s = target(monitor); if (s) s.wallpaperCycle("prev") }
 
     // uiScale: set (e.g. "1.1"), step ("+"/"inc"/"up"/"-"/"dec"/"down"), or report.
-    function uiScale(arg: string) {
+    function uiScale(arg: string): void {
       const cur = ColorService && ColorService.setUiScale ? Config.userScale : 0.85
       let v = cur
       const s = (arg || "").trim().toLowerCase()

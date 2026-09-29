@@ -15,22 +15,15 @@ import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-Rectangle {
+Panel {
   id: root
+  anchors.fill: parent
 
-  property bool open: false
   readonly property bool available: BrightnessService.available
   signal closeRequested
 
-  width: Config.popupWidth
-  height: Math.round(90 * Config.uiScale)
-  radius: Config.cornerRadius
-  color: Config.bgAlt
-  border.color: Config.borderStrong
-
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 14
     spacing: 10
 
     RowLayout {

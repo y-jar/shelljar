@@ -15,18 +15,12 @@ import qs.components
 import QtQuick
 import QtQuick.Layouts
 
-Rectangle {
+Panel {
   id: root
+  anchors.fill: parent
 
-  property bool open: false
   property var notificationServer: null
   signal closeRequested
-
-  width: Config.notificationsWidth
-  height: Config.notificationsHeight
-  radius: Config.cornerRadius
-  color: Config.bgAlt
-  border.color: Config.borderStrong
 
   function clearAll() {
     const srv = root.notificationServer
@@ -36,7 +30,6 @@ Rectangle {
 
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 12
     spacing: 8
 
     RowLayout {

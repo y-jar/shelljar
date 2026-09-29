@@ -35,10 +35,9 @@ RowLayout {
 
   visible: hasBattery
 
-  function icon() {
-    if (charging) return "⚡"
-    if (pct >= 50) return "🔋"
-    return "🪫"
+  function iconName() {
+    if (charging) return "battery-charging"
+    return "battery"
   }
 
   Rectangle {
@@ -51,10 +50,12 @@ RowLayout {
     RowLayout {
       anchors.centerIn: parent
       spacing: 5
-      ShellText {
-        text: root.icon()
+      GlyphIcon {
+        Layout.preferredWidth: Math.round(14 * Config.uiScale)
+        Layout.preferredHeight: Math.round(14 * Config.uiScale)
+        name: root.iconName()
         color: root.statusColor
-        font.pixelSize: Config.fsSmall
+        stroke: 1.7
       }
       ShellText {
         text: Math.round(root.pct) + "%"

@@ -38,6 +38,12 @@ RowLayout {
     if (sinkReady) sink.audio.volume = Math.max(0, Math.min(1, v))
   }
 
+  function iconName() {
+    if (!sinkReady || root.muted || root.vol === 0) return "speaker-off"
+    if (root.vol < 0.5) return "speaker-low"
+    return "speaker"
+  }
+
   Rectangle {
     Layout.preferredWidth: Config.pillWidth
     Layout.preferredHeight: Config.pillHeight
@@ -48,10 +54,12 @@ RowLayout {
     RowLayout {
       anchors.centerIn: parent
       spacing: 5
-      ShellText {
-        text: root.muted ? "🔇" : (root.vol === 0 ? "🔈" : (root.vol < 0.5 ? "🔉" : "🔊"))
+      GlyphIcon {
+        Layout.preferredWidth: Math.round(13 * Config.uiScale)
+        Layout.preferredHeight: Math.round(13 * Config.uiScale)
+        name: root.iconName()
         color: root.textColor
-        font.pixelSize: Config.fsSmall
+        stroke: 1.7
       }
       ShellText {
         text: Math.round(root.vol * 100) + "%"

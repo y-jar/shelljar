@@ -105,13 +105,36 @@ Item {
   function applyTonalSpot(seed) {
     const hsl = root.rgbToHsl(seed)
     const h = Math.round(hsl.h * 360)
-    Config.accent = Qt.hsla(h / 360, Math.max(0.35, Math.min(0.75, hsl.s * 0.7 + 0.25)), 0.55, 1)
-    Config.bg = Qt.hsla(h / 360, 0.30, 0.10, 1)
-    Config.bgAlt = Qt.hsla(h / 360, 0.25, 0.08, 1)
-    Config.surface = Qt.hsla(h / 360, 0.35, 0.16, 1)
-    Config.surfaceAlt = Qt.hsla(h / 360, 0.35, 0.24, 1)
-    Config.text = Qt.hsla(h / 360, 0.05, 0.92, 1)
-    Config.subtext = Qt.hsla(h / 360, 0.05, 0.72, 1)
+    const hue = h / 360
+    // accent keeps the seed's punch; surfaces stay low-chroma so the wallpaper
+    // does the shouting and the shell stays a calm frame around it
+    const accS = Math.max(0.35, Math.min(0.75, hsl.s * 0.7 + 0.25))
+    const surfS = Math.max(0.16, Math.min(0.50, hsl.s * 0.55 + 0.12))
+
+    Config.accent = Qt.hsla(hue, accS, 0.60, 1)
+    Config.accentContainer = Qt.hsla(hue, accS * 0.8, 0.30, 1)
+    Config.accentInk = Qt.hsla(hue, 0.08, 0.98, 1)
+
+    // surface ramp: deepest bg -> nearest card
+    Config.bg = Qt.hsla(hue, surfS * 0.55, 0.09, 1)
+    Config.bgAlt = Qt.hsla(hue, surfS * 0.50, 0.065, 1)
+    Config.surfaceLow = Qt.hsla(hue, surfS * 0.60, 0.12, 1)
+    Config.surfaceMid = Qt.hsla(hue, surfS * 0.60, 0.16, 1)
+    Config.surfaceHigh = Qt.hsla(hue, surfS * 0.60, 0.23, 1)
+    Config.surface = Qt.hsla(hue, surfS * 0.70, 0.16, 1)
+    Config.surfaceAlt = Qt.hsla(hue, surfS * 0.70, 0.24, 1)
+
+    // text ramp
+    Config.textBright = Qt.hsla(hue, 0.03, 0.99, 1)
+    Config.text = Qt.hsla(hue, 0.05, 0.92, 1)
+    Config.subtext = Qt.hsla(hue, 0.06, 0.70, 1)
+    Config.dim = Qt.hsla(hue, 0.06, 0.66, 1)
+    Config.faint = Qt.hsla(hue, 0.07, 0.50, 1)
+
+    // outlines: a light hairline, never a hard white
+    Config.outline = Qt.hsla(hue, 0.20, 0.80, 0.14)
+    Config.outlineSoft = Qt.hsla(hue, 0.20, 0.80, 0.07)
+    Config.outlineStrong = Qt.hsla(hue, 0.22, 0.85, 0.22)
   }
 
   function buildPalette(colors) {

@@ -31,15 +31,18 @@ Rectangle {
 
   // ---- actions ----
   readonly property var actions: [
-    { key: "poweroff", label: "Power Off", glyph: "⏻", shutdown: true },
-    { key: "reboot", label: "Reboot", glyph: "⟳", shutdown: true },
-    { key: "logout", label: "Logout", glyph: "↪", shutdown: false },
-    { key: "suspend", label: "Suspend", glyph: "⏾", shutdown: false },
-    { key: "lock", label: "Lock", glyph: "🔒", shutdown: false },
+    { key: "poweroff", label: "Power Off", glyph: "shutdown", shutdown: true },
+    { key: "reboot", label: "Reboot", glyph: "reboot", shutdown: true },
+    { key: "logout", label: "Logout", glyph: "logout", shutdown: false },
+    { key: "suspend", label: "Suspend", glyph: "suspend", shutdown: false },
+    { key: "lock", label: "Lock", glyph: "lock", shutdown: false },
   ]
 
-  property var pendingKey: "" // action currently counting down
+  property string pendingKey: "" // action currently counting down
   property int timeRemaining: 0
+
+  opacity: root.open ? 1 : 0
+  Behavior on opacity { NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard } }
 
   function command(key) {
     switch (key) {
@@ -104,10 +107,13 @@ Rectangle {
     columnSpacing: Config.spacing * 2
     rowSpacing: Config.spacing * 2
 
+    scale: root.open ? 1 : 0.96
+    Behavior on scale { NumberAnimation { duration: Motion.morph; easing.type: Motion.easeMorph; easing.bezierCurve: Motion.morphCurve } }
+
     Repeater {
       model: root.actions
 
-      delegate: Rectangle {
+      delegate: Surface {
         id: btn
         required property var modelData
         required property int index
@@ -117,9 +123,11 @@ Rectangle {
         width: Config.sessionButtonSize
         height: Config.sessionButtonSize
         radius: Math.round(Config.cornerRadius * 1.5)
-        color: isPending ? Config.accent : (hoverArea.containsMouse ? Config.surfaceAlt : Config.surface)
-        border.width: 1
-        border.color: isPending ? Config.accent : Config.borderStrong
+        interactive: true
+        hovered: hoverArea.containsMouse
+        active: btn.isPending
+        fillTop: btn.isPending ? Config.accentContainer : Config.surfaceMid
+        fillBot: btn.isPending ? Config.accentContainer : Config.surfaceLow
 
         ColumnLayout {
           anchors.centerIn: parent
@@ -139,13 +147,13 @@ Rectangle {
               const s = width
               ctx.clearRect(0, 0, s, s)
               ctx.lineWidth = 4
-              ctx.strokeStyle = Qt.rgba(1,1,1,0.25)
+              ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.25)
               ctx.beginPath()
-              ctx.arc(s/2, s/2, r-2, 0, 2*Math.PI)
+              ctx.arc(s / 2, s / 2, r - 2, 0, 2 * Math.PI)
               ctx.stroke()
-              ctx.strokeStyle = Config.white
+              ctx.strokeStyle = Config.accentInk
               ctx.beginPath()
-              ctx.arc(s/2, s/2, r-2, -Math.PI/2, -Math.PI/2 + 2*Math.PI*btn.progress)
+              ctx.arc(s / 2, s / 2, r - 2, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * btn.progress)
               ctx.stroke()
             }
             Connections {
@@ -156,17 +164,26 @@ Rectangle {
 
           ShellText {
             Layout.alignment: Qt.AlignHCenter
-            text: btn.isPending
-                  ? Math.max(1, Math.ceil(root.timeRemaining / 1000)) + "s"
-                  : modelData.glyph
-            color: btn.isPending ? Config.white : (modelData.shutdown ? Config.red : Config.text)
+            visible: btn.isPending
+            text: Math.max(1, Math.ceil(root.timeRemaining / 1000)) + "s"
+            color: Config.accentInk
             font.pixelSize: Config.fsMedium * 1.6
+          }
+
+          GlyphIcon {
+            Layout.alignment: Qt.AlignHCenter
+            visible: !btn.isPending
+            width: Math.round(30 * Config.uiScale)
+            height: width
+            name: modelData.glyph
+            color: modelData.shutdown ? Config.red : Config.text
+            stroke: 1.6
           }
 
           ShellText {
             Layout.alignment: Qt.AlignHCenter
             text: modelData.label
-            color: btn.isPending ? Config.white : Config.text
+            color: btn.isPending ? Config.accentInk : Config.text
             font.pixelSize: Config.fsSmall + 2
           }
         }

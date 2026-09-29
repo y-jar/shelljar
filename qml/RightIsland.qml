@@ -22,7 +22,7 @@ Item {
   readonly property real stripW: Math.max(120, Math.round(150 * Config.uiScale))
   width: open ? Math.max(Config.minDockWidth, (content ? content.implicitWidth + 16 : stripW))
               : stripW
-  height: open ? Config.dockHeight : Config.stripHeight
+  height: open ? Config.islandHeight : Config.stripHeight
 
   property bool open: false
   signal batteryPanelRequested
@@ -30,16 +30,14 @@ Item {
   signal osdBrightnessHoverRequested
   signal osdBrightnessValueChanged
 
-  Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
-  Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+  Behavior on width { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
+  Behavior on height { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
 
-  Rectangle {
+  Surface {
     id: card
     anchors.fill: parent
     radius: Config.cornerRadius
-    color: Config.bg
-    border.color: Config.borderStrong
-    clip: true
+    clip: false
 
     MouseArea {
       anchors.fill: parent
@@ -52,8 +50,8 @@ Item {
       anchors.centerIn: parent
       visible: !root.open
       width: Math.round(parent.width * 0.5)
-      height: 4
-      radius: 2
+      height: Math.max(3, Math.round(4 * Config.uiScale))
+      radius: height / 2
       color: Config.surfaceAlt
     }
 

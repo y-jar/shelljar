@@ -191,7 +191,7 @@ PanelWindow {
     anchors.top: bar.bottom
     anchors.topMargin: 8
     width: Config.popupWidth
-    height: Math.round(110 * Config.uiScale)
+    height: Config.volumePanelHeight
     sourceComponent: Component {
       VolumePanel {
         anchors.fill: parent
@@ -209,7 +209,7 @@ PanelWindow {
     anchors.rightMargin: 8
     anchors.top: rightIsland.top
     width: Config.popupWidth
-    height: Math.round(300 * Config.uiScale)
+    height: Config.batteryPanelHeight
     sourceComponent: Component {
       BatteryPanel {
         anchors.fill: parent
@@ -228,7 +228,7 @@ PanelWindow {
     anchors.top: rightIsland.top
     anchors.topMargin: 44
     width: Config.popupWidth
-    height: Math.round(90 * Config.uiScale)
+    height: Config.brightnessPanelHeight
     sourceComponent: Component {
       BrightnessPanel {
         anchors.fill: parent
@@ -246,7 +246,7 @@ PanelWindow {
     anchors.leftMargin: 8
     anchors.top: leftIsland.top
     width: Config.networkPanelWidth
-    height: Math.min(Math.round(520 * Config.uiScale), Math.round(root.height - 90))
+    height: Math.min(Config.networkPanelHeight, Math.round(root.height - 90))
     sourceComponent: Component {
       NetworkPanel {
         anchors.fill: parent
@@ -264,7 +264,7 @@ PanelWindow {
     anchors.top: bar.bottom
     anchors.topMargin: 8
     width: Config.popupWidth
-    height: Math.round(300 * Config.uiScale)
+    height: Config.calendarPanelHeight
     sourceComponent: Component {
       CalendarPanel {
         anchors.fill: parent
@@ -384,6 +384,7 @@ PanelWindow {
           root.closeAll()
           root.scaleLayerOpen = true
         }
+        onOpenWallpaper: root.openWallPicker()
       }
     }
   }
@@ -453,10 +454,13 @@ PanelWindow {
           anchors.fill: parent
           anchors.margins: 10
           spacing: 8
-          ShellText {
-            text: "▣"
+          GlyphIcon {
+            Layout.alignment: Qt.AlignTop
+            width: Math.round(14 * Config.uiScale)
+            height: width
+            name: "bell"
             color: Config.accent
-            font.pixelSize: Config.fsMedium
+            stroke: 1.7
           }
           ColumnLayout {
             Layout.fillWidth: true
@@ -475,15 +479,23 @@ PanelWindow {
               Layout.fillWidth: true
             }
           }
-          Rectangle {
-            width: 16; height: 16; radius: 8; color: "transparent"
-            ShellText {
+          Item {
+            Layout.alignment: Qt.AlignTop
+            width: Math.round(16 * Config.uiScale); height: width
+            GlyphIcon {
               anchors.centerIn: parent
-              text: "✕"
+              width: Math.round(11 * Config.uiScale)
+              height: width
+              name: "close"
               color: Config.subtext
-              font.pixelSize: Config.fsTiny
+              stroke: 1.8
             }
-            MouseArea { anchors.fill: parent; onClicked: root.toastsModel.remove(index) }
+            MouseArea {
+              anchors.fill: parent
+              anchors.margins: -Math.round(6 * Config.uiScale)
+              cursorShape: Qt.PointingHandCursor
+              onClicked: root.toastsModel.remove(index)
+            }
           }
         }
 

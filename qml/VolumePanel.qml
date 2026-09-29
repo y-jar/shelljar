@@ -17,17 +17,11 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Pipewire
 
-Rectangle {
+Panel {
   id: root
+  anchors.fill: parent
 
-  property bool open: false
   signal closeRequested
-
-  width: Config.popupWidth
-  height: Math.round(110 * Config.uiScale)
-  radius: Config.cornerRadius
-  color: Config.bgAlt
-  border.color: Config.borderStrong
 
   readonly property var sink: Pipewire.defaultAudioSink
   readonly property bool sinkReady: sink !== null && sink.ready && sink.audio !== null
@@ -45,7 +39,6 @@ Rectangle {
 
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 14
     spacing: 12
 
     RowLayout {
@@ -62,10 +55,13 @@ Rectangle {
         width: Math.round(26 * Config.uiScale); height: Math.round(26 * Config.uiScale); radius: 8
         color: muteHover.containsMouse ? Config.surfaceAlt : Config.surface
         border.color: Config.borderMid
-        ShellText {
+        GlyphIcon {
           anchors.centerIn: parent
-          text: root.muted ? "🔇" : (root.vol === 0 ? "🔈" : (root.vol < 0.5 ? "🔉" : "🔊"))
-          font.pixelSize: Config.fsSmall
+          width: Math.round(13 * Config.uiScale)
+          height: width
+          name: root.muted || root.vol === 0 ? "speaker-off" : (root.vol < 0.5 ? "speaker-low" : "speaker")
+          color: Config.text
+          stroke: 1.7
         }
         MouseArea {
           id: muteHover

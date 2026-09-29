@@ -21,7 +21,12 @@ Item {
 
   width: Config.osdWidth
   height: Config.osdHeight
-  visible: showTimer.running || hoverTimer.running
+  readonly property bool active: showTimer.running || hoverTimer.running
+  visible: opacity > 0.01
+  opacity: root.active ? 1 : 0
+  scale: root.active ? 1 : 0.94
+  Behavior on opacity { NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard } }
+  Behavior on scale { NumberAnimation { duration: Motion.glide; easing.type: Motion.easeStandard } }
   anchors.right: parent.right
   anchors.rightMargin: 16
   anchors.top: parent.top
@@ -37,14 +42,14 @@ Item {
     if (!sink || !sink.ready || !sink.audio) return
     const muted = sink.audio.muted
     const v = sink.audio.volume
-    root.icon = muted || v === 0 ? "🔇" : (v < 0.5 ? "🔉" : "🔊")
+    root.icon = muted || v === 0 ? "speaker-off" : (v < 0.5 ? "speaker-low" : "speaker")
     root.percent = Math.round(v * 100)
     root.low = muted
     restart()
   }
 
   function showBrightness(val) {
-    root.icon = val <= Config.brightnessEpsilon ? "☀" : (val <= 0.5 ? "🔅" : "🔆")
+    root.icon = "sun"
     root.percent = Math.round(val * 100)
     root.low = false
     restart()
@@ -80,12 +85,13 @@ Item {
       anchors.margins: 12
       spacing: 10
 
-      ShellText {
-        text: root.icon
-        color: root.low ? Config.red : Config.text
-        font.pixelSize: Config.fsLarge
-        Layout.preferredWidth: 24
+      GlyphIcon {
+        Layout.preferredWidth: Math.round(22 * Config.uiScale)
+        Layout.preferredHeight: Math.round(22 * Config.uiScale)
         Layout.alignment: Qt.AlignVCenter
+        name: root.icon
+        color: root.low ? Config.red : Config.text
+        stroke: 1.8
       }
 
       Rectangle {

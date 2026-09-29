@@ -41,6 +41,12 @@ RowLayout {
     if (sinkReady) sink.audio.volume = Math.max(0, Math.min(1, v))
   }
 
+  function iconName() {
+    if (root.muted || root.vol === 0) return "speaker-off"
+    if (root.vol < 0.5) return "speaker-low"
+    return "speaker"
+  }
+
   // mute toggle button
   Rectangle {
     width: Math.round(24 * Config.uiScale); height: Math.round(24 * Config.uiScale); radius: 6
@@ -48,10 +54,13 @@ RowLayout {
     MouseArea {
       anchors.fill: parent
       onClicked: root.toggleMute()
-      ShellText {
+      GlyphIcon {
         anchors.centerIn: parent
-        text: root.muted ? "🔇" : (root.vol === 0 ? "🔈" : (root.vol < 0.5 ? "🔉" : "🔊"))
-        font.pixelSize: Config.fsMedium
+        width: Math.round(15 * Config.uiScale)
+        height: width
+        name: root.iconName()
+        color: root.textColor
+        stroke: 1.7
       }
     }
   }

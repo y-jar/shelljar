@@ -17,17 +17,11 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.UPower
 
-Rectangle {
+Panel {
   id: root
+  anchors.fill: parent
 
-  property bool open: false
   signal closeRequested
-
-  width: Config.popupWidth
-  height: Math.round(300 * Config.uiScale)
-  radius: Config.cornerRadius
-  color: Config.bgAlt
-  border.color: Config.borderStrong
 
   function fmtTime(seconds) {
     if (seconds <= 0) return ""
@@ -39,7 +33,6 @@ Rectangle {
 
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 12
     spacing: 8
 
     RowLayout {
@@ -164,11 +157,13 @@ Rectangle {
             else if (modelData === "performance") PowerProfiles.profile = PowerProfile.Performance
           }
 
-          ShellText {
+          GlyphIcon {
             anchors.centerIn: parent
-            text: modelData === "powersaver" ? "🌿" : modelData === "balanced" ? "⚖️" : "🚀"
+            width: Math.round(15 * Config.uiScale)
+            height: width
+            name: modelData === "powersaver" ? "leaf" : modelData === "balanced" ? "gauge" : "rocket"
             color: parent.active() ? Config.white : Config.text
-            font.pixelSize: Config.fsSmall
+            stroke: 1.7
           }
           MouseArea {
             anchors.fill: parent

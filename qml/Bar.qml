@@ -8,9 +8,10 @@
  *   Bar
  *
  *   The top center island per screen. Collapsed it is a thin strip and a right
- *   click expands it into two rows. Row one holds the profile hamburger and the
- *   centered clock with notifications and volume on the right. Row two holds
- *   the walls button and the system stats.
+ *   click expands it into one row: the profile button and system stats on the
+ *   left, the clock and date dead center, and the wallpaper, notifications and
+ *   sound controls on the right. With `Config.barEdgeMerge` the card's top
+ *   corners are squared and EdgeFillets blend it into the top of the screen.
  ***/
 import qs.components
 import QtQuick
@@ -20,10 +21,14 @@ import Quickshell
 Item {
   id: root
 
-  // collapsed = thin ~20% strip; expanded = auto-fit to its content (no cutoff)
   readonly property real stripWidth: Math.max(140, Math.round((parent ? parent.width : 1600) * Config.dockWidthRatio))
-  width: barOpen ? Math.max(Config.minDockWidth, barLayout.implicitWidth + 16) : stripWidth
-  height: barOpen ? Config.dockHeight : Config.stripHeight
+  readonly property real contentMargin: Math.round(8 * Config.uiScale)
+  readonly property real contentGap: Math.round(22 * Config.uiScale)
+  // true-centered clock: reserve the wider cluster on both sides
+  readonly property real contentWidth: 2 * Math.max(leftCluster.implicitWidth, rightCluster.implicitWidth)
+    + clock.width + 2 * root.contentGap
+  width: barOpen ? Math.max(Config.minDockWidth, root.contentWidth + 2 * root.contentMargin) : root.stripWidth
+  height: barOpen ? Config.barHeight : Config.stripHeight
 
   property bool barOpen: false
   // wired by PerScreen for the notifications button badge count
@@ -38,18 +43,37 @@ Item {
   signal volumePanelRequested
   signal clockClicked
 
-  Behavior on width { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
-  Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+  Behavior on width { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
+  Behavior on height { NumberAnimation { duration: Motion.standard; easing.type: Motion.easeStandard } }
 
-  Rectangle {
+  // concave corners that let the bar flow into the screen's top edge
+  EdgeFillet {
+    side: "left"
+    size: root.merge ? Math.min(Config.edgeFilletRadius, root.height) : 0
+    visible: root.merge
+    x: -width
+    y: 0
+    color: Config.surfaceMid
+  }
+  EdgeFillet {
+    side: "right"
+    size: root.merge ? Math.min(Config.edgeFilletRadius, root.height) : 0
+    visible: root.merge
+    x: root.width
+    y: 0
+    color: Config.surfaceMid
+  }
+
+  Surface {
     id: card
     anchors.fill: parent
     radius: Config.cornerRadius
-    color: Config.bg
-    border.color: Config.borderStrong
-    clip: true
+    topLeftRadius: root.merge ? 0 : Config.cornerRadius
+    topRightRadius: root.merge ? 0 : Config.cornerRadius
+    topEdgeFlush: root.merge
+    clip: false
 
-    // right-click toggles the expanded bar
+    // right-click on empty bar space toggles the expanded bar
     MouseArea {
       anchors.fill: parent
       hoverEnabled: true
@@ -62,130 +86,102 @@ Item {
       anchors.centerIn: parent
       visible: !root.barOpen
       width: Math.round(parent.width * 0.5)
-      height: 4
-      radius: 2
+      height: Math.max(3, Math.round(4 * Config.uiScale))
+      radius: height / 2
       color: Config.surfaceAlt
     }
 
-    // expanded content
-    ColumnLayout {
-      id: barLayout
+    // expanded content (single row)
+    Item {
+      id: content
       anchors.fill: parent
-      anchors.margins: 8
-      spacing: Config.spacing
+      anchors.margins: root.contentMargin
       visible: root.barOpen
 
-      // ==== row 1 (clock dead-centered; clusters anchor to the edges) ====
-      Item {
-        Layout.fillWidth: true
-        implicitWidth: Math.round(230 * Config.uiScale)
-        implicitHeight: Math.round(30 * Config.uiScale)
-        Layout.alignment: Qt.AlignVCenter
-        clip: false
+      // left cluster: profile + stats
+      RowLayout {
+        id: leftCluster
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: Math.round(8 * Config.uiScale)
 
-        Clock {
-          id: clock
-          anchors.horizontalCenter: parent.horizontalCenter
-          anchors.verticalCenter: parent.verticalCenter
-          z: 1
-          onClicked: root.clockClicked()
+        IconButton {
+          glyph: "menu"
+          tooltip: "Control center"
+          onClicked: root.controlClicked()
         }
 
-        // left cluster: profile hamburger (opens control center)
-        RowLayout {
-          anchors.left: parent.left
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: 0
-          Rectangle {
-            Layout.preferredWidth: Config.iconButtonSize
-            Layout.preferredHeight: width
-            radius: width / 2
-            color: root.hovered(hamb) ? Config.surfaceAlt : Config.surface
-            border.color: Config.borderMid
-            ShellText {
-              anchors.centerIn: parent
-              text: "☰"
-              color: Config.text
-              font.pixelSize: Config.fsSmall
-            }
-            MouseArea {
-              id: hamb
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: root.controlClicked()
-            }
-          }
+        Divider {
+          vertical: true
+          Layout.fillHeight: true
+          Layout.topMargin: Math.round(7 * Config.uiScale)
+          Layout.bottomMargin: Math.round(7 * Config.uiScale)
+          Layout.preferredWidth: 1
         }
 
-        // right cluster: notifications + sound
-        RowLayout {
-          anchors.right: parent.right
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: 8
-
-          Rectangle {
-            id: notifBtn
-            Layout.preferredWidth: Config.iconButtonSize
-            Layout.preferredHeight: width
-            radius: width / 2
-            color: root.hovered(notifHover) ? Config.surfaceAlt : Config.surface
-            border.color: Config.borderMid
-            ShellText {
-              anchors.centerIn: parent
-              text: "🔔"
-              font.pixelSize: Config.fsSmall
-            }
-            Rectangle {
-              visible: root.notificationServer && root.notificationServer.trackedNotifications.count > 0
-              anchors.top: parent.top
-              anchors.right: parent.right
-              anchors.margins: 1
-              width: Config.eventBadgeSize; height: Config.eventBadgeSize; radius: Config.eventBadgeSize / 2
-              color: Config.red
-              ShellText {
-                anchors.centerIn: parent
-                text: String(root.notificationServer ? root.notificationServer.trackedNotifications.count : 0)
-                color: Config.white
-                font.pixelSize: Config.fsTiny
-                font.weight: Font.DemiBold
-              }
-            }
-            MouseArea {
-              id: notifHover
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: root.notificationsRequested()
-            }
-          }
-
-          VolumeWidget {
-            onToggleRequested: root.volumePanelRequested()
-            onHoverRequested: root.osdHoverRequested()
-            onValueChanged: root.osdValueChanged()
-          }
-        }
+        Stats { }
       }
 
-      // ==== row 2 ====
+      // right cluster: wallpaper + notifications + sound
       RowLayout {
-        Layout.fillWidth: true
-        implicitHeight: Math.round(34 * Config.uiScale)
-        Layout.alignment: Qt.AlignVCenter
-        spacing: 6
+        id: rightCluster
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: Math.round(8 * Config.uiScale)
 
         WallpaperStrip {
           onOpenRequested: dir => root.wallpaperOpenRequested(dir)
           onGridRequested: root.wallpaperGridRequested()
           onPickerRequested: root.wallpaperPickerRequested()
         }
-        Stats { }
-        Item { Layout.fillWidth: true }
+
+        // notifications with a count badge
+        Item {
+          implicitWidth: Config.iconButtonSize
+          implicitHeight: Config.iconButtonSize
+
+          IconButton {
+            anchors.fill: parent
+            glyph: "bell"
+            tooltip: "Notifications"
+            onClicked: root.notificationsRequested()
+          }
+
+          Rectangle {
+            visible: root.notificationServer && root.notificationServer.trackedNotifications.count > 0
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: 1
+            width: Config.eventBadgeSize
+            height: Config.eventBadgeSize
+            radius: Config.eventBadgeSize / 2
+            color: Config.red
+            ShellText {
+              anchors.centerIn: parent
+              text: String(root.notificationServer ? root.notificationServer.trackedNotifications.count : 0)
+              color: Config.white
+              font.pixelSize: Config.fsTiny
+              font.weight: Font.DemiBold
+            }
+          }
+        }
+
+        VolumeWidget {
+          onToggleRequested: root.volumePanelRequested()
+          onHoverRequested: root.osdHoverRequested()
+          onValueChanged: root.osdValueChanged()
+        }
+      }
+
+      // clock dead center (independent of the clusters' widths)
+      Clock {
+        id: clock
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        onClicked: root.clockClicked()
       }
     }
   }
 
-  // hover helper so pill MouseAreas can share one color transform
-  function hovered(m) { return !!m && m.containsMouse }
+  readonly property bool merge: Config.barEdgeMerge
 }

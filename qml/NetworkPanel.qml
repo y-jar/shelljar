@@ -20,17 +20,11 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 
-Rectangle {
+Panel {
   id: root
+  anchors.fill: parent
 
-  property bool open: false
   signal closeRequested
-
-  width: Config.networkPanelWidth
-  height: Math.min(Math.round(520 * Config.uiScale), Math.round((root.parent ? root.parent.height : 600) - 90))
-  radius: Config.cornerRadius
-  color: Config.bgAlt
-  border.color: Config.borderStrong
 
   // ---- state ----
   property string view: "wifi" // "wifi" | "ethernet"
@@ -80,7 +74,6 @@ Rectangle {
 
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 12
     spacing: 8
 
     // ---- header ----
@@ -227,10 +220,13 @@ Rectangle {
                     font.pixelSize: Config.fsSmall
                     elide: Text.ElideRight
                   }
-                  ShellText {
-                    text: root.secured(modelData) ? "🔒" : ""
+                  GlyphIcon {
+                    Layout.preferredWidth: Math.round(12 * Config.uiScale)
+                    Layout.preferredHeight: Math.round(12 * Config.uiScale)
+                    Layout.alignment: Qt.AlignVCenter
+                    name: "lock"
                     color: modelData.connected ? Config.white : Config.subtext
-                    font.pixelSize: Config.fsTiny
+                    stroke: 1.8
                     visible: root.secured(modelData)
                   }
                   ShellText {
@@ -399,10 +395,13 @@ Rectangle {
                   anchors.fill: parent
                   anchors.margins: 8
                   spacing: 8
-                  ShellText {
-                    text: "🔌"
+                  GlyphIcon {
+                    Layout.preferredWidth: Math.round(15 * Config.uiScale)
+                    Layout.preferredHeight: Math.round(15 * Config.uiScale)
+                    Layout.alignment: Qt.AlignVCenter
+                    name: "ethernet"
                     color: modelData.connected ? Config.white : Config.subtext
-                    font.pixelSize: Config.fsSmall
+                    stroke: 1.7
                   }
                   ShellText {
                     Layout.fillWidth: true

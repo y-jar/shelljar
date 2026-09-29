@@ -7,220 +7,187 @@
  *
  *   ControlCenter
  *
- *   The profile frame that opens under the bar. It shows the current user, an
- *   audio slider and a button that opens the full power menu. Notifications
- *   keep their own separate panel so this stays a compact identity card.
+ *   The profile frame that opens under the bar: the user row with a power
+ *   button, a grid of quick-settings tiles (wifi, bluetooth, wallpaper, UI
+ *   scale), audio and brightness sliders, and a power-profile segmented
+ *   control. It is a Panel, so it inherits the shared surface and reveal.
  ***/
 import qs.components
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
 import Quickshell
+import Quickshell.Networking
 import Quickshell.Bluetooth
+import Quickshell.Services.UPower
 
-Rectangle {
+Panel {
   id: root
-
-  property bool open: false
-  width: Config.controlCenterWidth
-  height: Config.controlCenterHeight
-  radius: Config.cornerRadius
-  color: Config.bgAlt
-  border.color: Config.borderMid
-
-  property color textColor: Config.text
-  property color subColor: Config.subtext
+  anchors.fill: parent
 
   signal openSession
   signal openScaleLayer
+  signal openWallpaper
 
   readonly property var radio: Bluetooth.defaultAdapter
 
   function btOn() { return root.radio !== null && root.radio.enabled }
-  function btOff() { return root.radio !== null && !root.radio.enabled }
 
-  ScrollView {
-    anchors.fill: parent
-    anchors.margins: 14
-    clip: true
-
-    ColumnLayout {
-      width: parent.width
-      spacing: 12
-
-      // user row
-      RowLayout {
-        Layout.fillWidth: true
-        spacing: 10
-
-        Rectangle {
-          width: Math.round(42 * Config.uiScale); height: Math.round(42 * Config.uiScale); radius: 21
-          color: Config.surface
-          border.color: Config.borderMid
-          ShellText {
-            anchors.centerIn: parent
-            text: "👤"
-            font.pixelSize: Config.fsLarge
-          }
-        }
-
-        ColumnLayout {
-          spacing: 2
-          ShellText {
-            id: userLabel
-            text: user()
-            color: root.textColor
-            font.pixelSize: Config.fsMedium
-            font.weight: Font.DemiBold
-          }
-          ShellText {
-            text: "desktop shell"
-            color: root.subColor
-            font.pixelSize: Config.fsTiny
-          }
-        }
-
-        Item { Layout.fillWidth: true }
-      }
-
-      Rectangle {
-        Layout.fillWidth: true
-        height: 1
-        color: Config.borderSoft
-      }
-
-      ShellText { text: "Audio"; color: root.subColor; font.pixelSize: Config.fsTiny }
-      AudioWidget { }
-
-      Rectangle {
-        Layout.fillWidth: true
-        height: 1
-        color: Config.borderSoft
-      }
-
-      // UI scale: opens the keyboard calibrator layer (A/D or arrows adjust,
-      // Enter saves). The old inline slider was replaced because dragging a
-      // control that resizes itself mid-drag was unusable.
-      Rectangle {
-        Layout.fillWidth: true
-        implicitHeight: 40
-        radius: 10
-        color: Config.surface
-        border.color: Config.borderMid
-
-        RowLayout {
-          anchors.fill: parent
-          anchors.margins: 12
-          spacing: 8
-          ShellText {
-            text: "⚲"
-            color: root.textColor
-            font.pixelSize: Config.fsMedium + 2
-          }
-          ShellText {
-            text: "UI scale"
-            color: root.textColor
-            font.pixelSize: Config.fsSmall
-          }
-          Item { Layout.fillWidth: true }
-          ShellText {
-            text: Math.round(Config.userScale * 100) + "%"
-            color: root.subColor
-            font.pixelSize: Config.fsSmall
-          }
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          hoverEnabled: true
-          cursorShape: Qt.PointingHandCursor
-          onEntered: parent.color = Config.surfaceAlt
-          onExited: parent.color = Config.surface
-          onClicked: root.openScaleLayer()
-        }
-      }
-
-      Rectangle {
-        Layout.fillWidth: true
-        height: 1
-        color: Config.borderSoft
-      }
-
-      // Bluetooth toggle, shown only when a radio adapter exists
-      RowLayout {
-        visible: root.radio !== null
-        Layout.fillWidth: true
-        spacing: 8
-        ShellText {
-          text: "🅱"
-          color: root.textColor
-          font.pixelSize: Config.fsSmall
-        }
-        ShellText {
-          Layout.fillWidth: true
-          text: root.btOn() ? "Bluetooth on" : "Bluetooth off"
-          color: root.btOn() ? Config.green : root.subColor
-          font.pixelSize: Config.fsSmall
-        }
-        Rectangle {
-          Layout.preferredWidth: 36
-          Layout.preferredHeight: 20
-          radius: 10
-          color: root.btOn() ? Config.accent : Config.surfaceAlt
-          MouseArea { anchors.fill: parent; onClicked: root.radio.enabled = !root.radio.enabled }
-          Rectangle {
-            width: 16; height: 16; radius: 8; color: Config.white
-            x: root.btOn() ? parent.width - width - 2 : 2
-            anchors.verticalCenter: parent.verticalCenter
-            Behavior on x { NumberAnimation { duration: 120 } }
-          }
-        }
-      }
-
-      Rectangle {
-        Layout.fillWidth: true
-        height: 1
-        color: Config.borderSoft
-      }
-
-      // full-screen power menu trigger
-      Rectangle {
-        Layout.fillWidth: true
-        implicitHeight: 40
-        radius: 10
-        color: Config.surface
-        border.color: Config.borderMid
-
-        RowLayout {
-          anchors.fill: parent
-          anchors.margins: 12
-          spacing: 8
-          ShellText {
-            text: "⏻"
-            color: Config.red
-            font.pixelSize: Config.fsMedium + 2
-          }
-          ShellText {
-            text: "Power menu"
-            color: root.textColor
-            font.pixelSize: Config.fsSmall
-          }
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          hoverEnabled: true
-          cursorShape: Qt.PointingHandCursor
-          onEntered: parent.color = Config.surfaceAlt
-          onExited: parent.color = Config.surface
-          onClicked: root.openSession()
-        }
-      }
+  function profileKey() {
+    switch (PowerProfiles.profile) {
+    case PowerProfile.PowerSaver: return "powersaver"
+    case PowerProfile.Performance: return "performance"
+    default: return "balanced"
     }
   }
 
-  function user() {
-    const u = Quickshell.env("USER")
-    return u != null && u !== "" ? u : "jar"
+  function applyProfile(key) {
+    if (key === "powersaver") PowerProfiles.profile = PowerProfile.PowerSaver
+    else if (key === "performance") PowerProfiles.profile = PowerProfile.Performance
+    else PowerProfiles.profile = PowerProfile.Balanced
+  }
+
+  ColumnLayout {
+    anchors.fill: parent
+    spacing: Math.round(12 * Config.uiScale)
+
+    // ---- user row ----
+    RowLayout {
+      Layout.fillWidth: true
+      spacing: Math.round(10 * Config.uiScale)
+
+      Rectangle {
+        width: Math.round(38 * Config.uiScale)
+        height: width
+        radius: width / 2
+        color: Config.surfaceHigh
+        border.width: 1
+        border.color: Config.outlineSoft
+        GlyphIcon {
+          anchors.centerIn: parent
+          width: Math.round(20 * Config.uiScale)
+          height: width
+          name: "user"
+          color: Config.text
+          stroke: 1.7
+        }
+      }
+
+      ColumnLayout {
+        spacing: 0
+        ShellText {
+          text: {
+            const u = Quickshell.env("USER")
+            return u != null && u !== "" ? u : "jar"
+          }
+          color: Config.text
+          font.pixelSize: Config.fsMedium
+          font.weight: Font.DemiBold
+        }
+        ShellText {
+          text: "shelljar"
+          color: Config.subtext
+          font.pixelSize: Config.fsTiny
+        }
+      }
+
+      Item { Layout.fillWidth: true }
+
+      IconButton {
+        glyph: "power"
+        glyphColor: Config.red
+        tooltip: "Power menu"
+        onClicked: root.openSession()
+      }
+    }
+
+    Divider { Layout.fillWidth: true }
+
+    // ---- quick-settings tiles ----
+    GridLayout {
+      Layout.fillWidth: true
+      columns: 4
+      columnSpacing: Math.round(8 * Config.uiScale)
+      rowSpacing: Math.round(8 * Config.uiScale)
+
+      ToggleTile {
+        Layout.fillWidth: true
+        glyph: "wifi"
+        label: "Wi-Fi"
+        checked: Networking.wifiEnabled
+        onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
+      }
+      ToggleTile {
+        Layout.fillWidth: true
+        glyph: "bluetooth"
+        label: "BT"
+        checked: root.btOn()
+        enabled: root.radio !== null
+        onClicked: root.radio.enabled = !root.radio.enabled
+      }
+      ToggleTile {
+        Layout.fillWidth: true
+        glyph: "wallpaper"
+        label: "Wall"
+        onClicked: root.openWallpaper()
+      }
+      ToggleTile {
+        Layout.fillWidth: true
+        glyph: "scaling"
+        label: "Scale"
+        onClicked: root.openScaleLayer()
+      }
+    }
+
+    Divider { Layout.fillWidth: true }
+
+    // ---- audio ----
+    ShellText { text: "Audio"; color: Config.subtext; font.pixelSize: Config.fsTiny }
+    AudioWidget { Layout.fillWidth: true }
+
+    // ---- brightness ----
+    RowLayout {
+      Layout.fillWidth: true
+      spacing: Math.round(8 * Config.uiScale)
+
+      GlyphIcon {
+        Layout.alignment: Qt.AlignVCenter
+        width: Math.round(14 * Config.uiScale)
+        height: width
+        name: "sun"
+        color: Config.text
+        stroke: 1.7
+      }
+      Slider {
+        Layout.fillWidth: true
+        value: BrightnessService.value
+        step: Config.brightnessStep
+        enabled: BrightnessService.available
+        fillColor: Config.accent
+        onChanged: v => BrightnessService.setValue(v)
+      }
+      ShellText {
+        Layout.alignment: Qt.AlignVCenter
+        Layout.minimumWidth: Math.round(34 * Config.uiScale)
+        text: Math.round(BrightnessService.value * 100) + "%"
+        color: Config.text
+        font.pixelSize: Config.fsTiny
+        horizontalAlignment: Text.AlignRight
+      }
+    }
+
+    Divider { Layout.fillWidth: true }
+
+    // ---- power profile ----
+    ShellText { text: "Power profile"; color: Config.subtext; font.pixelSize: Config.fsTiny }
+    Segmented {
+      Layout.fillWidth: true
+      value: root.profileKey()
+      options: [
+        { value: "powersaver", label: "Saver" },
+        { value: "balanced", label: "Balanced" },
+        { value: "performance", label: "Performance" }
+      ]
+      onSelected: v => root.applyProfile(v)
+    }
   }
 }

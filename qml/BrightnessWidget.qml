@@ -25,13 +25,6 @@ RowLayout {
   readonly property real value: BrightnessService.value
   readonly property bool available: BrightnessService.available
 
-  function icon() {
-    if (!available) return "☀"
-    if (value <= Config.brightnessEpsilon) return "☀"
-    if (value <= 0.5) return "🔅"
-    return "🔆"
-  }
-
   Rectangle {
     Layout.preferredWidth: Config.pillWidth
     Layout.preferredHeight: Config.pillHeight
@@ -43,10 +36,12 @@ RowLayout {
     RowLayout {
       anchors.centerIn: parent
       spacing: 5
-      ShellText {
-        text: root.icon()
+      GlyphIcon {
+        Layout.preferredWidth: Math.round(13 * Config.uiScale)
+        Layout.preferredHeight: Math.round(13 * Config.uiScale)
+        name: "sun"
         color: (root.available ? root.textColor : Config.subtext)
-        font.pixelSize: Config.fsSmall
+        stroke: 1.7
       }
       ShellText {
         text: Math.round(root.value * 100) + "%"

@@ -7,10 +7,11 @@
  *
  *   Launcher
  *
- *   A grid of installed applications with a search box. Typing filters the apps
- *   by name, generic name, keywords and categories, and the arrow keys move a
- *   highlight through the grid while enter launches the highlighted app. Right
- *   clicking an app pins it to the Pinned strip, which is saved between runs.
+ *   A search field over a ranked list of installed applications. Typing scores
+ *   entries by a fuzzy match on the name (then generic name, comment, keywords
+ *   and categories) boosted by how often each app has been launched, so the
+ *   things you use float up. Arrow keys move the selection, Enter launches,
+ *   right click pins to the strip up top.
  ***/
 import qs.components
 import QtQuick
@@ -20,51 +21,69 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
 
-Rectangle {
+Panel {
   id: root
-
-  property bool open: false
-  width: Config.launcherWidth
-  height: Config.launcherHeight
-  radius: Config.cornerRadius
-  color: Config.bg
-  border.color: Config.borderMid
+  anchors.fill: parent
 
   property color textColor: Config.text
   property color subColor: Config.subtext
-  property var allApps: [] // array of DesktopEntry
+  property var allApps: []
   property string filterText: ""
   property var filteredApps: []
   property int currentEntry: -1
 
   // pinned app ids, persisted to ~/.cache/shelljar/favorites
   property var pinned: []
-  property real cellW: Math.round(96 * Config.uiScale)
-  property real cellH: Math.round(88 * Config.uiScale)
-  readonly property int columns: Math.max(1, Math.floor((width - 28) / root.cellW))
-
-  readonly property string favFile: (Quickshell.env("HOME") || "/home/user") + "/.cache/shelljar/favorites"
+  // launch counts, persisted to ~/.cache/shelljar/launcher-usage.json
+  property var usage: ({})
 
   signal closeRequested
 
-  function matches(entry, q) {
-    if (q === "") return true
-    if (entry.name.toLowerCase().includes(q)) return true
-    if (entry.genericName && entry.genericName.toLowerCase().includes(q)) return true
-    if (entry.comment && entry.comment.toLowerCase().includes(q)) return true
-    if (entry.keywords) for (const k of entry.keywords) if (k.toLowerCase().includes(q)) return true
-    if (entry.categories) for (const c of entry.categories) if (c.toLowerCase().includes(q)) return true
-    return false
+  readonly property string cacheDir: (Quickshell.env("HOME") || "/home/user") + "/.cache/shelljar"
+  readonly property string favFile: root.cacheDir + "/favorites"
+  readonly property string usageFile: root.cacheDir + "/launcher-usage.json"
+
+  // ---- matching ----
+  function matchScore(entry, q) {
+    if (q === "") return 1
+    const fields = [
+      entry.name || "",
+      entry.genericName || "",
+      entry.comment || "",
+      (entry.keywords || []).join(" "),
+      (entry.categories || []).join(" ")
+    ]
+    let best = 0
+    for (let i = 0; i < fields.length; i++) {
+      const f = fields[i].toLowerCase()
+      if (f === "") continue
+      let s = 0
+      if (f === q) s = 1000
+      else if (f.indexOf(q) === 0) s = 600
+      else if (f.indexOf(q) !== -1) s = 400 - Math.min(200, f.indexOf(q))
+      else {
+        let j = 0
+        for (let k = 0; k < f.length && j < q.length; k++) { if (f[k] === q[j]) j++ }
+        if (j === q.length) s = 120
+      }
+      s -= i * 10 // the name matters more than the category
+      if (s > best) best = s
+    }
+    if (best > 0) best += (root.usage[entry.id] || 0) * 25
+    return best
   }
 
   function rebuildFilter() {
     const q = root.filterText.toLowerCase().trim()
-    const out = []
+    const scored = []
     for (const entry of root.allApps) {
-      if (root.matches(entry, q)) out.push(entry)
+      const s = root.matchScore(entry, q)
+      if (s > 0) scored.push({ e: entry, s: s })
     }
-    root.filteredApps = out
-    root.currentEntry = out.length > 0 ? 0 : -1
+    if (q !== "") scored.sort((a, b) => b.s - a.s)
+    else scored.sort((a, b) => (a.e.name || "").localeCompare(b.e.name || ""))
+    root.filteredApps = scored.map(x => x.e)
+    root.currentEntry = root.filteredApps.length > 0 ? 0 : -1
   }
 
   function byId(id) {
@@ -72,8 +91,17 @@ Rectangle {
     return null
   }
 
+  function bumpUsage(id) {
+    if (!id) return
+    const u = Object.assign({}, root.usage)
+    u[id] = (u[id] || 0) + 1
+    root.usage = u
+    usageStore.setText(JSON.stringify(u))
+  }
+
   function launch(entry) {
     if (!entry) return
+    root.bumpUsage(entry.id)
     entry.execute()
     root.closeRequested()
   }
@@ -94,7 +122,6 @@ Rectangle {
     root.savePinned()
   }
 
-  // persist pinned ids, one per line, then re-read so they're canonical
   function savePinned() {
     Quickshell.execDetached(["sh", "-c",
       "mkdir -p \"$HOME/.cache/shelljar\" && : > \"$HOME/.cache/shelljar/favorites\" && for f in \"$@\"; do echo \"$f\"; done >> \"$HOME/.cache/shelljar/favorites\"",
@@ -110,11 +137,19 @@ Rectangle {
     root.pinned = out
   }
 
+  function loadUsage(text) {
+    try {
+      root.usage = (text && text.length) ? JSON.parse(text) : ({})
+    } catch (e) {
+      root.usage = ({})
+    }
+  }
+
   function nextEntry(dir) {
     const n = root.filteredApps.length
     if (n === 0) return
     root.currentEntry = (root.currentEntry + dir + n) % n
-    grid.positionViewAtIndex(root.currentEntry, GridView.Center)
+    list.positionViewAtIndex(root.currentEntry, ListView.Contain)
   }
 
   function handleKey(event) {
@@ -125,34 +160,34 @@ Rectangle {
       root.launchIndex(root.currentEntry)
       break
     case Qt.Key_Down:
-      event.accepted = true; root.currentEntry = (root.currentEntry + 1) % Math.max(1, root.filteredApps.length); break
+      event.accepted = true; root.nextEntry(1); break
     case Qt.Key_Up:
-      event.accepted = true; root.currentEntry = (root.currentEntry - 1 + root.filteredApps.length) % Math.max(1, root.filteredApps.length); break
-    case Qt.Key_Right:
-      event.accepted = true
-      root.currentEntry = Math.min(root.currentEntry + 1, root.filteredApps.length - 1)
-      break
-    case Qt.Key_Left:
-      event.accepted = true
-      root.currentEntry = Math.max(root.currentEntry - 1, 0)
-      break
+      event.accepted = true; root.nextEntry(-1); break
     default:
       break
     }
   }
 
   function loadApps() {
-    const apps = DesktopEntries.applications.values
-      .filter(e => !e.noDisplay)
-    root.allApps = apps
+    root.allApps = DesktopEntries.applications.values.filter(e => !e.noDisplay)
     root.rebuildFilter()
   }
 
   Component.onCompleted: {
     root.loadApps()
+    if (typeof usageStore.text === "function") root.loadUsage(usageStore.text())
+    usageStore.reload()
     favFileView.reload()
-    // created on demand (LazyLoader): grab focus so typing lands in the box
-    if (root.visible) Qt.callLater(() => searchBox.forceActiveFocus())
+    Qt.callLater(() => searchBox.forceActiveFocus())
+  }
+
+  onOpenChanged: {
+    if (root.open) {
+      searchBox.text = ""
+      root.filterText = ""
+      root.rebuildFilter()
+      Qt.callLater(() => searchBox.forceActiveFocus())
+    }
   }
 
   // the application list arrives asynchronously, so reload it when it changes
@@ -161,7 +196,6 @@ Rectangle {
     function onValuesChanged() { root.loadApps() }
   }
 
-  // read pinned ids from disk
   FileView {
     id: favFileView
     path: root.favFile
@@ -169,196 +203,217 @@ Rectangle {
     onLoaded: root.loadPinned(text())
   }
 
-  // reset + grab focus whenever the launcher is shown/hidden
-  onVisibleChanged: {
-    if (root.visible) {
-      searchBox.forceActiveFocus()
-    } else {
-      root.filterText = ""
-      searchBox.text = ""
-    }
+  FileView {
+    id: usageStore
+    path: root.usageFile
+    blockLoading: true
+    atomicWrites: true
+    printErrors: false
+    onLoaded: root.loadUsage(text())
   }
 
-  Keys.onPressed: handleKey(event)
+  Keys.onPressed: root.handleKey(event)
   Keys.onEscapePressed: root.closeRequested()
 
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 14
-    spacing: 10
+    spacing: Math.round(10 * Config.uiScale)
 
-    // ---- search bar (no emoji; just a friendly placeholder) ----
-    Rectangle {
+    // ---- search bar ----
+    Surface {
       Layout.fillWidth: true
-      implicitHeight: 32
-      radius: 8
-      color: Config.surface
-      border.color: Config.borderSoft
+      implicitHeight: Math.round(36 * Config.uiScale)
+      radius: Config.radiusSm
+      fillTop: Config.surfaceHigh
+      fillBot: Config.surfaceMid
+      border.color: searchBox.activeFocus ? Config.accent : Config.outlineSoft
 
-      TextField {
-        id: searchBox
+      RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 12
-        anchors.rightMargin: 12
-        verticalAlignment: Text.AlignVCenter
-        color: root.textColor
-        placeholderText: "Search apps... :)"
-        placeholderTextColor: root.subColor
-        background: Item {}
-        font.pixelSize: Config.fsMedium
-        Keys.onUpPressed: root.nextEntry(-1)
-        Keys.onDownPressed: root.nextEntry(1)
-        Keys.onReturnPressed: root.launchIndex(root.currentEntry)
-        Keys.onEscapePressed: root.closeRequested()
-        onTextChanged: { root.filterText = text; root.rebuildFilter() }
-        focus: true
+        anchors.leftMargin: Math.round(12 * Config.uiScale)
+        anchors.rightMargin: Math.round(12 * Config.uiScale)
+        spacing: Math.round(8 * Config.uiScale)
+
+        GlyphIcon {
+          Layout.alignment: Qt.AlignVCenter
+          width: Math.round(15 * Config.uiScale)
+          height: width
+          name: "search"
+          color: Config.subtext
+          stroke: 1.8
+        }
+
+        TextField {
+          id: searchBox
+          Layout.fillWidth: true
+          color: root.textColor
+          placeholderText: "Search apps"
+          placeholderTextColor: root.subColor
+          background: Item {}
+          font.pixelSize: Config.fsMedium
+          verticalAlignment: Text.AlignVCenter
+          Keys.onUpPressed: root.nextEntry(-1)
+          Keys.onDownPressed: root.nextEntry(1)
+          Keys.onReturnPressed: root.launchIndex(root.currentEntry)
+          Keys.onEscapePressed: root.closeRequested()
+          onTextChanged: { root.filterText = text; root.rebuildFilter() }
+        }
       }
     }
 
-    // ---- pinned strip (hidden when nothing is pinned) ----
-    ColumnLayout {
-      visible: root.pinned.length > 0
+    // ---- pinned strip (hidden when nothing is pinned or while searching) ----
+    Flow {
+      visible: root.pinned.length > 0 && root.filterText === ""
       Layout.fillWidth: true
-      spacing: 6
+      spacing: Math.round(8 * Config.uiScale)
 
-      ShellText {
-        text: "Pinned"
-        color: root.subColor
-        font.pixelSize: Config.fsTiny
-        font.weight: Font.DemiBold
-      }
+      Repeater {
+        model: root.pinned
 
-      Flow {
-        Layout.fillWidth: true
-        spacing: 8
+        delegate: Item {
+          required property string modelData
+          readonly property var app: root.byId(modelData)
+          width: Math.round(46 * Config.uiScale)
+          height: width
+          visible: app !== null
 
-        Repeater {
-          model: root.pinned
+          Surface {
+            anchors.fill: parent
+            radius: Config.radiusSm
+            interactive: true
+            hovered: pinHover.containsMouse
+            fillTop: Config.surfaceMid
+            fillBot: Config.surfaceLow
+          }
 
-          delegate: Item {
-            required property string modelData
-            readonly property var app: root.byId(modelData)
-            width: Math.round(56 * Config.uiScale)
-            height: Math.round(56 * Config.uiScale)
-            visible: app !== null
+          IconImage {
+            anchors.centerIn: parent
+            width: Math.round(26 * Config.uiScale)
+            height: Math.round(26 * Config.uiScale)
+            asynchronous: true
+            source: (app && app.icon) ? Quickshell.iconPath(app.icon, "image-missing") : ""
+          }
 
-            Rectangle {
-              anchors.fill: parent
-              radius: 12
-              color: pinHover.containsMouse ? Config.surfaceAlt : Config.surface
-              border.color: Config.borderSoft
-
-              IconImage {
-                anchors.centerIn: parent
-                width: Math.round(30 * Config.uiScale)
-                height: Math.round(30 * Config.uiScale)
-                asynchronous: true
-                source: (app && app.icon) ? Quickshell.iconPath(app.icon, "image-missing") : ""
-              }
-
-              MouseArea {
-                id: pinHover
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onClicked: event => {
-                  if (event.button === Qt.RightButton) root.togglePinned(app)
-                  else root.launch(app)
-                }
-              }
+          MouseArea {
+            id: pinHover
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: event => {
+              if (event.button === Qt.RightButton) root.togglePinned(app)
+              else root.launch(app)
             }
           }
         }
       }
     }
 
-    // ---- empty state ----
-    ShellText {
-      Layout.fillWidth: true
-      visible: root.filteredApps.length === 0
-      text: "No apps match"
-      color: root.subColor
-      font.pixelSize: Config.fsSmall
-      horizontalAlignment: Text.AlignHCenter
-      Layout.preferredHeight: Math.round(40 * Config.uiScale)
-    }
-
-    // ---- app grid (centered block, vertical scroll) ----
+    // ---- results ----
     Item {
       Layout.fillWidth: true
       Layout.fillHeight: true
 
-      GridView {
-        id: grid
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        width: root.columns * root.cellW
-        cellWidth: root.cellW
-        cellHeight: root.cellH
+      ShellText {
+        anchors.centerIn: parent
+        visible: root.filteredApps.length === 0
+        text: root.filterText.length ? "No matches" : "No apps found"
+        color: root.subColor
+        font.pixelSize: Config.fsSmall
+      }
+
+      ListView {
+        id: list
+        anchors.fill: parent
         clip: true
         model: root.filteredApps
+        spacing: Math.round(4 * Config.uiScale)
         boundsBehavior: Flickable.StopAtBounds
-        interactive: true
         currentIndex: root.currentEntry
-        highlightFollowsCurrentItem: true
 
-        delegate: Item {
+        delegate: Surface {
+          id: row
           required property var modelData
           required property int index
-          width: root.cellW
-          height: root.cellH
+          width: list.width
+          height: Math.round(44 * Config.uiScale)
+          radius: Config.radiusSm
+          interactive: true
+          hovered: rowArea.containsMouse
+          active: index === root.currentEntry
+          fillTop: index === root.currentEntry ? Config.surfaceHigh : Config.surfaceMid
+          fillBot: index === root.currentEntry ? Config.surfaceHigh : Config.surfaceLow
 
-          Rectangle {
+          Item {
             anchors.fill: parent
-            anchors.margins: 4
-            radius: 10
-            color: root.currentEntry === index ? Config.surface : "transparent"
-            border.width: root.currentEntry === index ? 2 : 0
-            border.color: Config.accent
+            anchors.leftMargin: Math.round(10 * Config.uiScale)
+            anchors.rightMargin: Math.round(10 * Config.uiScale)
+
+            IconImage {
+              id: appIcon
+              anchors.verticalCenter: parent.verticalCenter
+              width: Math.round(26 * Config.uiScale)
+              height: width
+              asynchronous: true
+              source: modelData.icon ? Quickshell.iconPath(modelData.icon, "image-missing") : ""
+            }
 
             ColumnLayout {
-              anchors.centerIn: parent
-              spacing: 6
-              IconImage {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: Math.round(36 * Config.uiScale)
-                Layout.preferredHeight: Math.round(36 * Config.uiScale)
-                asynchronous: true
-                source: modelData.icon ? Quickshell.iconPath(modelData.icon, "image-missing") : ""
-              }
+              anchors.left: appIcon.right
+              anchors.leftMargin: Math.round(10 * Config.uiScale)
+              anchors.right: parent.right
+              anchors.verticalCenter: parent.verticalCenter
+              spacing: 0
+
               ShellText {
+                Layout.fillWidth: true
                 text: modelData.name
                 color: root.textColor
                 font.pixelSize: Config.fsSmall
                 elide: Text.ElideRight
-                Layout.preferredWidth: root.cellW - 16
-                horizontalAlignment: Text.AlignHCenter
+              }
+              ShellText {
+                Layout.fillWidth: true
+                visible: text.length > 0
+                text: modelData.genericName || (modelData.categories ? modelData.categories.join(", ") : "")
+                color: root.subColor
+                font.pixelSize: Config.fsTiny
+                elide: Text.ElideRight
               }
             }
 
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              acceptedButtons: Qt.LeftButton | Qt.RightButton
-              onEntered: root.currentEntry = index
-              onExited: if (root.currentEntry === index) root.currentEntry = -1
-              onClicked: event => {
-                if (event.button === Qt.RightButton) { root.togglePinned(modelData); root.currentEntry = index }
-                else root.launchIndex(index)
-              }
+            GlyphIcon {
+              anchors.verticalCenter: parent.verticalCenter
+              anchors.right: parent.right
+              width: Math.round(12 * Config.uiScale)
+              height: width
+              visible: root.isPinned(modelData.id)
+              name: "pin"
+              color: Config.accent
+              stroke: 2
+            }
+          }
+
+          MouseArea {
+            id: rowArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onPositionChanged: if (hoverEnabled && containsMouse) root.currentEntry = index
+            onClicked: event => {
+              if (event.button === Qt.RightButton) { root.togglePinned(modelData); root.currentEntry = index }
+              else root.launchIndex(index)
             }
           }
         }
       }
     }
 
-    // ---- silly bottom tip ----
+    // ---- hint ----
     ShellText {
       Layout.fillWidth: true
-      text: "psst... right click an app to pin it up top :)"
+      text: "Right-click an app to pin it"
       color: root.subColor
       font.pixelSize: Config.fsTiny
       horizontalAlignment: Text.AlignHCenter
