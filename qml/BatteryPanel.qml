@@ -64,11 +64,10 @@ Panel {
 
     // batteries
     Repeater {
-      model: UPower.devices
+      model: BatteryService.batteries
 
       delegate: Item {
         required property var modelData
-        visible: modelData.isLaptopBattery
         Layout.fillWidth: true
         implicitHeight: 40
 
@@ -94,7 +93,7 @@ Panel {
               font.pixelSize: Config.fsTiny
             }
             ShellText {
-              text: Math.round(modelData.percentage) + "%"
+              text: BatteryService.percentOf(modelData) + "%"
               color: Config.text
               font.pixelSize: Config.fsTiny
               font.weight: Font.DemiBold
@@ -107,11 +106,11 @@ Panel {
             radius: 3
             color: Config.surfaceAlt
             Rectangle {
-              width: parent.width * Math.min(1, modelData.percentage / 100)
+              width: parent.width * Math.min(1, BatteryService.percentOf(modelData) / 100)
               height: parent.height
               radius: 3
               color: (modelData.state === UPowerDeviceState.Charging || modelData.state === UPowerDeviceState.FullyCharged)
-                ? Config.green : (modelData.percentage <= Config.batteryCritical ? Config.red : Config.accent)
+                ? Config.green : (BatteryService.percentOf(modelData) <= Config.batteryCritical ? Config.red : Config.accent)
             }
           }
         }
@@ -175,8 +174,8 @@ Panel {
     }
 
     ShellText {
-      text: "Health: " + Math.round(UPower.displayDevice && UPower.displayDevice.healthSupported ? UPower.displayDevice.healthPercentage : 0) + "%"
-      visible: UPower.displayDevice !== null && UPower.displayDevice.healthSupported
+      text: "Health: " + Math.round(BatteryService.healthPercent) + "%"
+      visible: BatteryService.healthSupported
       color: Config.subtext
       font.pixelSize: Config.fsTiny
     }

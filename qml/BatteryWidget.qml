@@ -14,7 +14,6 @@
 import qs.components
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Services.UPower
 
 RowLayout {
   id: root
@@ -22,14 +21,12 @@ RowLayout {
   property color textColor: Config.text
   signal batteryClicked
 
-  readonly property var battery: UPower.displayDevice
-  readonly property bool hasBattery: battery !== null && battery.isPresent
-  readonly property bool charging: battery !== null && (battery.state === UPowerDeviceState.Charging
-      || battery.state === UPowerDeviceState.PendingCharge
-      || battery.state === UPowerDeviceState.FullyCharged)
-  readonly property real pct: battery !== null ? battery.percentage : 0
-  readonly property bool low: battery !== null && !charging && pct <= Config.batteryLow
-  readonly property bool critical: battery !== null && !charging && pct <= Config.batteryCritical
+  // all battery maths lives in BatteryService (UPower reports 0-1 fractions)
+  readonly property bool hasBattery: BatteryService.present
+  readonly property bool charging: BatteryService.charging
+  readonly property real pct: BatteryService.percent
+  readonly property bool low: BatteryService.low
+  readonly property bool critical: BatteryService.critical
 
   readonly property color statusColor: charging ? Config.green : (critical ? Config.red : (low ? Config.yellow : root.textColor))
 
