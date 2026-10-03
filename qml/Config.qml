@@ -124,6 +124,8 @@ Item {
   readonly property int osdHeight: 64
   readonly property int toastWidth: 360
   readonly property int toastHeight: 348
+  // shown on every toast; keep in sync with the WM keybind (Super+Ctrl+Shift+C)
+  readonly property string notifCopyHint: "psst · press Super+Ctrl+Shift+C or middle-click to copy"
 
   // ---- system thresholds ----
   readonly property int batteryLow: 20

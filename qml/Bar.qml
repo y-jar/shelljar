@@ -31,10 +31,7 @@ Item {
   height: barOpen ? Config.barHeight : Config.stripHeight
 
   property bool barOpen: false
-  // wired by PerScreen for the notifications button badge count
-  property var notificationServer: null
   signal controlClicked
-  signal notificationsRequested
   signal wallpaperOpenRequested(var dir)
   signal wallpaperGridRequested
   signal wallpaperPickerRequested
@@ -159,37 +156,6 @@ Item {
           onOpenRequested: dir => root.wallpaperOpenRequested(dir)
           onGridRequested: root.wallpaperGridRequested()
           onPickerRequested: root.wallpaperPickerRequested()
-        }
-
-        // notifications with a count badge
-        Item {
-          implicitWidth: Config.iconButtonSize
-          implicitHeight: Config.iconButtonSize
-
-          IconButton {
-            anchors.fill: parent
-            glyph: "bell"
-            tooltip: "Notifications"
-            onClicked: root.notificationsRequested()
-          }
-
-          Rectangle {
-            visible: root.notificationServer && root.notificationServer.trackedNotifications.count > 0
-            anchors.top: parent.top
-            anchors.right: parent.right
-            anchors.margins: 1
-            width: Config.eventBadgeSize
-            height: Config.eventBadgeSize
-            radius: Config.eventBadgeSize / 2
-            color: Config.red
-            ShellText {
-              anchors.centerIn: parent
-              text: String(root.notificationServer ? root.notificationServer.trackedNotifications.count : 0)
-              color: Config.white
-              font.pixelSize: Config.fsTiny
-              font.weight: Font.DemiBold
-            }
-          }
         }
 
         VolumeWidget {

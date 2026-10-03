@@ -41,13 +41,30 @@ Panel {
         font.weight: Font.DemiBold
       }
       Item { Layout.fillWidth: true }
-      ShellText {
-        text: "Clear"
+
+      // clear-all pill
+      Surface {
         visible: root.notificationServer !== null && root.notificationServer.trackedNotifications.count > 0
-        color: Config.subtext
-        font.pixelSize: Config.fsTiny
+        Layout.alignment: Qt.AlignVCenter
+        implicitWidth: clearLabel.implicitWidth + Math.round(22 * Config.uiScale)
+        implicitHeight: Math.round(26 * Config.uiScale)
+        radius: height / 2
+        interactive: true
+        hovered: clearHover.containsMouse
+        fillTop: Config.surfaceHigh
+        fillBot: Config.surfaceMid
+
+        ShellText {
+          id: clearLabel
+          anchors.centerIn: parent
+          text: "Clear all"
+          color: Config.text
+          font.pixelSize: Config.fsTiny
+        }
         MouseArea {
+          id: clearHover
           anchors.fill: parent
+          hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
           onClicked: root.clearAll()
         }

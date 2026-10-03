@@ -143,9 +143,7 @@ PanelWindow {
     id: bar
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.top: parent.top
-    notificationServer: root.notificationServer
     onControlClicked: { root.closeAll(); root.controlsOpen = true }
-    onNotificationsRequested: root.toggle("notificationsOpen")
     onWallpaperOpenRequested: dir => { root.closeAll(); root.carouselOpen = true; Qt.callLater(() => carouselLoader.item && carouselLoader.item.nudge(dir)) }
     onWallpaperGridRequested: { root.closeAll(); root.gridOpen = true }
     onWallpaperPickerRequested: root.openWallPicker()
@@ -173,6 +171,8 @@ PanelWindow {
     anchors.rightMargin: 8
     anchors.top: parent.top
     anchors.topMargin: 0
+    notificationServer: root.notificationServer
+    onNotificationsRequested: root.toggle("notificationsOpen")
     onBatteryPanelRequested: { root.closeAll(); root.batteryOpen = true }
     onBrightnessPanelRequested: { root.closeAll(); root.brightnessOpen = true }
     onOsdBrightnessHoverRequested: { osd.showBrightness(BrightnessService.value); osd.hover() }
@@ -426,11 +426,11 @@ PanelWindow {
     enabled: true
   }
 
-  // ---- toast notifications (top-right) ----
+  // ---- toast notifications (top-right, under the right island bell) ----
   ColumnLayout {
     id: toasts
     anchors.right: parent.right
-    anchors.rightMargin: 12
+    anchors.rightMargin: 8
     anchors.top: bar.bottom
     anchors.topMargin: 12
     width: Config.toastWidth
@@ -442,59 +442,107 @@ PanelWindow {
       model: root.toastsModel
 
       delegate: Rectangle {
+        id: toastCard
         required property var modelData
         required property int index
         Layout.fillWidth: true
-        height: toastText.implicitHeight + 16
+        // fit the content (icon + hint + app + wrapped body); no clipped text
+        height: toastBody.implicitHeight + 20
         radius: 10
         color: Config.bg
         border.color: Config.borderMid
+        clip: true
 
-        RowLayout {
+        function messageText() {
+          return (modelData.summary || "") + (modelData.body ? "\n\n" + modelData.body : "")
+        }
+
+        // resolve the sender's app so a left click can open it
+        function appEntry() {
+          const id = (modelData.desktopEntry || "").trim()
+          if (id !== "") {
+            const e = DesktopEntries.byId(id) || DesktopEntries.heuristicLookup(id)
+            if (e) return e
+          }
+          const name = (modelData.appName || "").trim()
+          return name !== "" ? DesktopEntries.heuristicLookup(name) : null
+        }
+
+        // left click opens the app (if linked), middle click copies the message
+        MouseArea {
+          anchors.fill: parent
+          acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+          cursorShape: Qt.PointingHandCursor
+          onClicked: event => {
+            if (event.button === Qt.MiddleButton) {
+              Clipboard.copy(toastCard.messageText())
+            } else {
+              const entry = toastCard.appEntry()
+              if (entry) entry.execute()
+            }
+            root.toastsModel.remove(index)
+          }
+        }
+
+        ColumnLayout {
+          id: toastBody
           anchors.fill: parent
           anchors.margins: 10
-          spacing: 8
-          GlyphIcon {
-            Layout.alignment: Qt.AlignTop
-            width: Math.round(14 * Config.uiScale)
-            height: width
-            name: "bell"
-            color: Config.accent
-            stroke: 1.7
-          }
-          ColumnLayout {
+          spacing: 4
+
+          ShellText {
             Layout.fillWidth: true
-            spacing: 0
-            ShellText {
-              text: modelData.appName || ""
-              color: Config.accent
-              font.pixelSize: Config.fsTiny
-            }
-            ShellText {
-              id: toastText
-              text: (modelData.summary || "") + (modelData.body ? "\n" + modelData.body : "")
-              color: Config.text
-              font.pixelSize: Config.fsSmall
-              wrapMode: Text.WordWrap
-              Layout.fillWidth: true
-            }
+            text: Config.notifCopyHint
+            color: Config.subtext
+            font.pixelSize: Config.fsTiny
+            elide: Text.ElideRight
           }
-          Item {
-            Layout.alignment: Qt.AlignTop
-            width: Math.round(16 * Config.uiScale); height: width
+
+          RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
             GlyphIcon {
-              anchors.centerIn: parent
-              width: Math.round(11 * Config.uiScale)
+              Layout.alignment: Qt.AlignTop
+              width: Math.round(14 * Config.uiScale)
               height: width
-              name: "close"
-              color: Config.subtext
-              stroke: 1.8
+              name: "bell"
+              color: Config.accent
+              stroke: 1.7
             }
-            MouseArea {
-              anchors.fill: parent
-              anchors.margins: -Math.round(6 * Config.uiScale)
-              cursorShape: Qt.PointingHandCursor
-              onClicked: root.toastsModel.remove(index)
+            ColumnLayout {
+              Layout.fillWidth: true
+              spacing: 0
+              ShellText {
+                text: modelData.appName || ""
+                color: Config.accent
+                font.pixelSize: Config.fsTiny
+              }
+              ShellText {
+                id: toastText
+                text: (modelData.summary || "") + (modelData.body ? "\n" + modelData.body : "")
+                color: Config.text
+                font.pixelSize: Config.fsSmall
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+              }
+            }
+            Item {
+              Layout.alignment: Qt.AlignTop
+              width: Math.round(16 * Config.uiScale); height: width
+              GlyphIcon {
+                anchors.centerIn: parent
+                width: Math.round(11 * Config.uiScale)
+                height: width
+                name: "close"
+                color: Config.subtext
+                stroke: 1.8
+              }
+              MouseArea {
+                anchors.fill: parent
+                anchors.margins: -Math.round(6 * Config.uiScale)
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.toastsModel.remove(index)
+              }
             }
           }
         }

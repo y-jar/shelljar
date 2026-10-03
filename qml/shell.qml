@@ -28,15 +28,22 @@ FloatingWindow {
   visible: false      // this window never maps; only the per-screen windows show
   color: "transparent"
 
+  // text of the newest notification, kept even after its toast expires so the
+  // copy keybind (IPC copyLastNotification) always has something to copy
+  property string lastNotifText: ""
+
   // notification daemon (implements org.freedesktop.Notifications), shared
   NotificationServer {
     id: notiServer
     onNotification: n => {
       n.tracked = true // keep in history for the control center
+      root.lastNotifText = (n.summary || "") + (n.body ? "\n\n" + n.body : "")
       toasts.insert(0, {
         appName: n.appName,
         summary: n.summary,
         body: n.body,
+        desktopEntry: n.desktopEntry,
+        appIcon: n.appIcon,
       })
       while (toasts.count > 4) toasts.remove(toasts.count - 1)
       // keep the tracked history bounded: drop the oldest once past the cap
@@ -123,5 +130,8 @@ FloatingWindow {
       else if (s === "-" || s === "dec" || s === "down") v = cur - 0.05
       ColorService.setUiScale(v)
     }
+
+    // copy the newest notification's text (summary + body) to the clipboard
+    function copyLastNotification(): void { Clipboard.copy(root.lastNotifText) }
   }
 }

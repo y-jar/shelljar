@@ -25,6 +25,8 @@ Item {
   height: open ? Config.islandHeight : Config.stripHeight
 
   property bool open: false
+  property var notificationServer: null
+  signal notificationsRequested
   signal batteryPanelRequested
   signal brightnessPanelRequested
   signal osdBrightnessHoverRequested
@@ -93,6 +95,33 @@ Item {
         onHoverRequested: root.osdBrightnessHoverRequested()
         onValueChanged: root.osdBrightnessValueChanged()
         onBrightnessPanelRequested: root.brightnessPanelRequested()
+      }
+
+      // notifications live here (right island) so the toast, this bell and the
+      // history panel all sit in the same top-right zone
+      IconButton {
+        id: notifButton
+        glyph: "bell"
+        tooltip: "Notifications"
+        onClicked: root.notificationsRequested()
+
+        Rectangle {
+          visible: root.notificationServer && root.notificationServer.trackedNotifications.count > 0
+          anchors.top: parent.top
+          anchors.right: parent.right
+          anchors.margins: 1
+          width: Config.eventBadgeSize
+          height: Config.eventBadgeSize
+          radius: Config.eventBadgeSize / 2
+          color: Config.red
+          ShellText {
+            anchors.centerIn: parent
+            text: String(root.notificationServer ? root.notificationServer.trackedNotifications.count : 0)
+            color: Config.white
+            font.pixelSize: Config.fsTiny
+            font.weight: Font.DemiBold
+          }
+        }
       }
     }
   }

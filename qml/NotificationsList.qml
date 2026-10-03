@@ -66,7 +66,8 @@ ColumnLayout {
           anchors.fill: parent
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
-          onClicked: modelData.dismiss()
+          // left click copies the message; the ✕ still dismisses
+          onClicked: Clipboard.copy((modelData.summary || "") + (modelData.body ? "\n\n" + modelData.body : ""))
         }
 
         RowLayout {
